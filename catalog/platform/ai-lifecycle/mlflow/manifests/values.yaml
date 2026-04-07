@@ -5,101 +5,102 @@
 # ISO/IEC 42001: B.6.1.3.2, B.6.1.3.4, B.6.2.6.4
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Image
-# -----------------------------------------------------------------------------
-image:
-  repository: ghcr.io/mlflow/mlflow
-  tag: "2.14.0"
-  pullPolicy: IfNotPresent
+mlflow:
+  # -----------------------------------------------------------------------
+  # Image
+  # -----------------------------------------------------------------------
+  image:
+    repository: ghcr.io/mlflow/mlflow
+    tag: "2.14.0"
+    pullPolicy: IfNotPresent
 
-replicaCount: 1
+  replicaCount: 1
 
-# -----------------------------------------------------------------------------
-# Backend store — PostgreSQL for metadata
-# -----------------------------------------------------------------------------
-backendStore:
-  postgres:
+  # -----------------------------------------------------------------------
+  # Backend store — PostgreSQL for metadata
+  # -----------------------------------------------------------------------
+  backendStore:
+    postgres:
+      enabled: true
+      host: postgresql.platform.svc.cluster.local
+      port: 5432
+      database: mlflow
+      user: mlflow
+      password: ""                  # Mount from Kubernetes Secret
+      # existingSecret: mlflow-db-credentials
+      # existingSecretKey: password
+
+  # -----------------------------------------------------------------------
+  # Artifact store — MinIO (S3-compatible)
+  # -----------------------------------------------------------------------
+  artifactRoot:
+    s3:
+      enabled: true
+      bucket: mlflow-artifacts
+      awsAccessKeyId: ""            # Mount from Kubernetes Secret
+      awsSecretAccessKey: ""
+    s3EnvVars:
+      - name: MLFLOW_S3_ENDPOINT_URL
+        value: "http://minio.minio.svc.cluster.local:9000"
+      - name: AWS_DEFAULT_REGION
+        value: "us-east-1"          # MinIO default
+
+  # -----------------------------------------------------------------------
+  # Service
+  # -----------------------------------------------------------------------
+  service:
+    type: ClusterIP
+    port: 5000
+
+  # -----------------------------------------------------------------------
+  # Ingress — Traefik (K3S default)
+  # -----------------------------------------------------------------------
+  ingress:
     enabled: true
-    host: postgresql.platform.svc.cluster.local
-    port: 5432
-    database: mlflow
-    user: mlflow
-    password: ""                  # Mount from Kubernetes Secret
-    # existingSecret: mlflow-db-credentials
-    # existingSecretKey: password
+    className: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+      # For authentication via Keycloak OIDC proxy:
+      # traefik.ingress.kubernetes.io/router.middlewares: security-oauth2-proxy@kubernetescrd
+    hosts:
+      - host: mlflow.platform.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+    # - secretName: mlflow-tls
+    #   hosts:
+    #     - mlflow.platform.local
 
-# -----------------------------------------------------------------------------
-# Artifact store — MinIO (S3-compatible)
-# -----------------------------------------------------------------------------
-artifactRoot:
-  s3:
+  # -----------------------------------------------------------------------
+  # Persistence — local cache for temporary files
+  # -----------------------------------------------------------------------
+  persistence:
     enabled: true
-    bucket: mlflow-artifacts
-    awsAccessKeyId: ""            # Mount from Kubernetes Secret
-    awsSecretAccessKey: ""
-  s3EnvVars:
-    - name: MLFLOW_S3_ENDPOINT_URL
-      value: "http://minio.minio.svc.cluster.local:9000"
-    - name: AWS_DEFAULT_REGION
-      value: "us-east-1"          # MinIO default
+    storageClass: local-path
+    size: 10Gi
+    accessMode: ReadWriteOnce
 
-# -----------------------------------------------------------------------------
-# Service
-# -----------------------------------------------------------------------------
-service:
-  type: ClusterIP
-  port: 5000
+  # -----------------------------------------------------------------------
+  # Resources
+  # -----------------------------------------------------------------------
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
 
-# -----------------------------------------------------------------------------
-# Ingress — Traefik (K3S default)
-# -----------------------------------------------------------------------------
-ingress:
-  enabled: true
-  className: traefik
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
-    # For authentication via Keycloak OIDC proxy:
-    # traefik.ingress.kubernetes.io/router.middlewares: security-oauth2-proxy@kubernetescrd
-  hosts:
-    - host: mlflow.platform.local
-      paths:
-        - path: /
-          pathType: Prefix
-  tls: []
-  # - secretName: mlflow-tls
-  #   hosts:
-  #     - mlflow.platform.local
+  # -----------------------------------------------------------------------
+  # Prometheus metrics (B.6.1.2.2)
+  # -----------------------------------------------------------------------
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
 
-# -----------------------------------------------------------------------------
-# Persistence — local cache for temporary files
-# -----------------------------------------------------------------------------
-persistence:
-  enabled: true
-  storageClass: local-path
-  size: 10Gi
-  accessMode: ReadWriteOnce
-
-# -----------------------------------------------------------------------------
-# Resources
-# -----------------------------------------------------------------------------
-resources:
-  requests:
-    cpu: "250m"
-    memory: "512Mi"
-  limits:
-    cpu: "1000m"
-    memory: "2Gi"
-
-# -----------------------------------------------------------------------------
-# Prometheus metrics (B.6.1.2.2)
-# -----------------------------------------------------------------------------
-serviceMonitor:
-  enabled: true
-  namespace: monitoring
-
-# -----------------------------------------------------------------------------
-# Node placement
-# -----------------------------------------------------------------------------
-nodeSelector:
-  node-role.kubernetes.io/platform: "true"
+  # -----------------------------------------------------------------------
+  # Node placement
+  # -----------------------------------------------------------------------
+  nodeSelector:
+    node-role.kubernetes.io/platform: "true"

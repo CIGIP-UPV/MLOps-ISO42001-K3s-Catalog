@@ -1,0 +1,22 @@
+# =============================================================================
+# FastAPI Model Storage
+# ISO/IEC 42001: B.6.1.2.2, B.6.1.3.4, B.6.2.6.1
+# =============================================================================
+{{- if .Values.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "edge-fastapi-model.fullname" . }}-storage
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "edge-fastapi-model.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.persistence.storageClass }}
+  storageClassName: {{ .Values.persistence.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.size }}
+{{- end }}

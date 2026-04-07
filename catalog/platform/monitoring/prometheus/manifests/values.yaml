@@ -5,213 +5,214 @@
 # ISO/IEC 42001: B.6.1.2.2, B.6.2.6.1, B.6.2.6.2
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Prometheus Server
-# -----------------------------------------------------------------------------
-prometheus:
-  prometheusSpec:
-    replicas: 1
-    retention: 30d
-    retentionSize: "20GB"
+kube-prometheus-stack:
+  # -----------------------------------------------------------------------
+  # Prometheus Server
+  # -----------------------------------------------------------------------
+  prometheus:
+    prometheusSpec:
+      replicas: 1
+      retention: 30d
+      retentionSize: "20GB"
 
-    # Enable remote write receiver (for edge Prometheus Agent)
-    enableRemoteWriteReceiver: true
+      # Enable remote write receiver (for edge Prometheus Agent)
+      enableRemoteWriteReceiver: true
 
-    # Storage
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: local-path
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 50Gi
+      # Storage
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: local-path
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 50Gi
 
-    resources:
-      requests:
-        cpu: "500m"
-        memory: "1Gi"
-      limits:
-        cpu: "2000m"
-        memory: "4Gi"
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "1Gi"
+        limits:
+          cpu: "2000m"
+          memory: "4Gi"
 
-    nodeSelector:
-      node-role.kubernetes.io/platform: "true"
+      nodeSelector:
+        node-role.kubernetes.io/platform: "true"
 
-    # Scrape configuration for AI workloads
-    additionalScrapeConfigs:
-      # FastAPI model server (edge — via ServiceMonitor or manual)
-      - job_name: 'fastapi-model-edge'
-        static_configs:
-          - targets: ['fastapi-model.edge.svc.cluster.local:8000']
-        metrics_path: /metrics
-        scrape_interval: 15s
+      # Scrape configuration for AI workloads
+      additionalScrapeConfigs:
+        # FastAPI model server (edge — via ServiceMonitor or manual)
+        - job_name: 'fastapi-model-edge'
+          static_configs:
+            - targets: ['fastapi-model.edge.svc.cluster.local:8000']
+          metrics_path: /metrics
+          scrape_interval: 15s
 
-      # MLflow metrics
-      - job_name: 'mlflow'
-        static_configs:
-          - targets: ['mlflow.mlops.svc.cluster.local:5000']
-        metrics_path: /metrics
-        scrape_interval: 30s
+        # MLflow metrics
+        - job_name: 'mlflow'
+          static_configs:
+            - targets: ['mlflow.mlops.svc.cluster.local:5000']
+          metrics_path: /metrics
+          scrape_interval: 30s
 
-  # Service
-  service:
-    type: ClusterIP
-    port: 9090
+    # Service
+    service:
+      type: ClusterIP
+      port: 9090
 
-  # Ingress
-  ingress:
+    # Ingress
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      annotations:
+        traefik.ingress.kubernetes.io/router.entrypoints: web
+      hosts:
+        - prometheus.platform.local
+      paths:
+        - /
+      tls: []
+
+  # -----------------------------------------------------------------------
+  # Alertmanager
+  # -----------------------------------------------------------------------
+  alertmanager:
     enabled: true
-    ingressClassName: traefik
-    annotations:
-      traefik.ingress.kubernetes.io/router.entrypoints: web
-    hosts:
-      - prometheus.platform.local
-    paths:
-      - /
-    tls: []
 
-# -----------------------------------------------------------------------------
-# Alertmanager
-# -----------------------------------------------------------------------------
-alertmanager:
-  enabled: true
+    alertmanagerSpec:
+      replicas: 1
+      storage:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: local-path
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
 
-  alertmanagerSpec:
-    replicas: 1
-    storage:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: local-path
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 5Gi
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "500m"
+          memory: "256Mi"
 
-    resources:
-      requests:
-        cpu: "100m"
-        memory: "128Mi"
-      limits:
-        cpu: "500m"
-        memory: "256Mi"
+      nodeSelector:
+        node-role.kubernetes.io/platform: "true"
 
-    nodeSelector:
-      node-role.kubernetes.io/platform: "true"
-
-  # Alert routing configuration
-  config:
-    global:
-      resolve_timeout: 5m
-    route:
-      group_by: ['alertname', 'tier']
-      group_wait: 30s
-      group_interval: 5m
-      repeat_interval: 4h
-      receiver: 'default'
-      routes:
-        # Critical AI alerts → Zammad helpdesk (B.8.0.5.1)
-        - match:
-            severity: critical
-          receiver: 'zammad-webhook'
-        # Model drift alerts → data science team
-        - match:
-            alertname: ModelDriftDetected
-          receiver: 'data-science-team'
-
-    receivers:
-      - name: 'default'
-        # webhook_configs:
-        #   - url: 'http://grafana.monitoring.svc:3000/api/alertmanager'
-      - name: 'zammad-webhook'
-        webhook_configs:
-          - url: 'http://zammad.helpdesk.svc.cluster.local:3000/api/v1/webhook'
-            send_resolved: true
-      - name: 'data-science-team'
-        # email_configs or slack_configs
-
-  ingress:
-    enabled: true
-    ingressClassName: traefik
-    hosts:
-      - alertmanager.platform.local
-    paths:
-      - /
-
-# -----------------------------------------------------------------------------
-# Grafana — bundled with kube-prometheus-stack
-# (See dedicated Grafana values for full config)
-# -----------------------------------------------------------------------------
-grafana:
-  enabled: false                    # Deployed separately — see grafana/manifests/
-
-# -----------------------------------------------------------------------------
-# Custom PrometheusRules for AI monitoring (B.6.2.6.1, B.6.2.6.2)
-# -----------------------------------------------------------------------------
-additionalPrometheusRulesMap:
-  ai-system-rules:
-    groups:
-      - name: ai.model.performance
-        rules:
-          # Model latency alert (B.6.2.6.2)
-          - alert: ModelInferenceLatencyHigh
-            expr: histogram_quantile(0.95, rate(model_inference_duration_seconds_bucket[5m])) > 0.5
-            for: 10m
-            labels:
-              severity: warning
-              tier: edge
-            annotations:
-              summary: "Model inference p95 latency exceeds 500ms"
-              description: "FastAPI model server latency is {{ $value }}s (threshold: 0.5s)"
-
-          # Model error rate alert (B.6.2.6.1)
-          - alert: ModelErrorRateHigh
-            expr: rate(model_inference_errors_total[5m]) / rate(model_inference_requests_total[5m]) > 0.01
-            for: 5m
-            labels:
+    # Alert routing configuration
+    config:
+      global:
+        resolve_timeout: 5m
+      route:
+        group_by: ['alertname', 'tier']
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
+        receiver: 'default'
+        routes:
+          # Critical AI alerts → Zammad helpdesk (B.8.0.5.1)
+          - match:
               severity: critical
-              tier: edge
-            annotations:
-              summary: "Model error rate exceeds 1%"
+            receiver: 'zammad-webhook'
+          # Model drift alerts → data science team
+          - match:
+              alertname: ModelDriftDetected
+            receiver: 'data-science-team'
 
-          # Model drift detection (B.6.2.6.4)
-          - alert: ModelDriftDetected
-            expr: abs(model_prediction_score_mean - model_prediction_score_baseline) > 2 * model_prediction_score_stddev
-            for: 30m
-            labels:
-              severity: warning
-              tier: platform
-            annotations:
-              summary: "Potential model drift detected"
-              description: "Mean prediction score has deviated >2σ from baseline for 30 minutes"
+      receivers:
+        - name: 'default'
+          # webhook_configs:
+          #   - url: 'http://grafana.monitoring.svc:3000/api/alertmanager'
+        - name: 'zammad-webhook'
+          webhook_configs:
+            - url: 'http://zammad.helpdesk.svc.cluster.local:3000/api/v1/webhook'
+              send_resolved: true
+        - name: 'data-science-team'
+          # email_configs or slack_configs
 
-      - name: ai.infrastructure
-        rules:
-          # Edge node resource exhaustion
-          - alert: EdgeNodeMemoryHigh
-            expr: node_memory_MemAvailable_bytes{node_role="edge"} / node_memory_MemTotal_bytes{node_role="edge"} < 0.15
-            for: 10m
-            labels:
-              severity: warning
-            annotations:
-              summary: "Edge node memory utilisation > 85%"
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      hosts:
+        - alertmanager.platform.local
+      paths:
+        - /
 
-          # AI container CPU throttling
-          - alert: AIContainerThrottled
-            expr: rate(container_cpu_cfs_throttled_seconds_total{container=~"fastapi-model|training"}[5m]) > 0.2
-            for: 10m
-            labels:
-              severity: warning
-            annotations:
-              summary: "AI container being CPU-throttled >20%"
+  # -----------------------------------------------------------------------
+  # Grafana — bundled with kube-prometheus-stack
+  # (See dedicated Grafana values for full config)
+  # -----------------------------------------------------------------------
+  grafana:
+    enabled: false                    # Deployed separately — see grafana/manifests/
 
-# -----------------------------------------------------------------------------
-# Node exporter & kube-state-metrics
-# -----------------------------------------------------------------------------
-prometheus-node-exporter:
-  enabled: true
+  # -----------------------------------------------------------------------
+  # Custom PrometheusRules for AI monitoring (B.6.2.6.1, B.6.2.6.2)
+  # -----------------------------------------------------------------------
+  additionalPrometheusRulesMap:
+    ai-system-rules:
+      groups:
+        - name: ai.model.performance
+          rules:
+            # Model latency alert (B.6.2.6.2)
+            - alert: ModelInferenceLatencyHigh
+              expr: histogram_quantile(0.95, rate(model_inference_duration_seconds_bucket[5m])) > 0.5
+              for: 10m
+              labels:
+                severity: warning
+                tier: edge
+              annotations:
+                summary: "Model inference p95 latency exceeds 500ms"
+                description: "FastAPI model server latency is {{ $value }}s (threshold: 0.5s)"
 
-kube-state-metrics:
-  enabled: true
+            # Model error rate alert (B.6.2.6.1)
+            - alert: ModelErrorRateHigh
+              expr: rate(model_inference_errors_total[5m]) / rate(model_inference_requests_total[5m]) > 0.01
+              for: 5m
+              labels:
+                severity: critical
+                tier: edge
+              annotations:
+                summary: "Model error rate exceeds 1%"
+
+            # Model drift detection (B.6.2.6.4)
+            - alert: ModelDriftDetected
+              expr: abs(model_prediction_score_mean - model_prediction_score_baseline) > 2 * model_prediction_score_stddev
+              for: 30m
+              labels:
+                severity: warning
+                tier: platform
+              annotations:
+                summary: "Potential model drift detected"
+                description: "Mean prediction score has deviated >2σ from baseline for 30 minutes"
+
+        - name: ai.infrastructure
+          rules:
+            # Edge node resource exhaustion
+            - alert: EdgeNodeMemoryHigh
+              expr: node_memory_MemAvailable_bytes{node_role="edge"} / node_memory_MemTotal_bytes{node_role="edge"} < 0.15
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Edge node memory utilisation > 85%"
+
+            # AI container CPU throttling
+            - alert: AIContainerThrottled
+              expr: rate(container_cpu_cfs_throttled_seconds_total{container=~"fastapi-model|training"}[5m]) > 0.2
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: "AI container being CPU-throttled >20%"
+
+  # -----------------------------------------------------------------------
+  # Node exporter & kube-state-metrics
+  # -----------------------------------------------------------------------
+  prometheus-node-exporter:
+    enabled: true
+
+  kube-state-metrics:
+    enabled: true

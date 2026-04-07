@@ -5,182 +5,183 @@
 # ISO/IEC 42001: B.6.2.3.1, B.6.2.5.1, B.6.2.6.5, B.6.2.8.1
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Mode — standalone for small deployments; distributed for production
-# -----------------------------------------------------------------------------
-mode: standalone                     # 'distributed' for HA (requires 4+ nodes)
+minio:
+  # -----------------------------------------------------------------------
+  # Mode — standalone for small deployments; distributed for production
+  # -----------------------------------------------------------------------
+  mode: standalone                     # 'distributed' for HA (requires 4+ nodes)
 
-# -----------------------------------------------------------------------------
-# Authentication
-# -----------------------------------------------------------------------------
-rootUser: "minioadmin"
-rootPassword: "CHANGE_ME"           # Use existingSecret in production
-# existingSecret: minio-credentials
+  # -----------------------------------------------------------------------
+  # Authentication
+  # -----------------------------------------------------------------------
+  rootUser: "minioadmin"
+  rootPassword: "CHANGE_ME"           # Use existingSecret in production
+  # existingSecret: minio-credentials
 
-# -----------------------------------------------------------------------------
-# Persistence
-# -----------------------------------------------------------------------------
-persistence:
-  enabled: true
-  storageClass: local-path
-  size: 100Gi
-  accessMode: ReadWriteOnce
-
-# -----------------------------------------------------------------------------
-# Service
-# -----------------------------------------------------------------------------
-service:
-  type: ClusterIP
-  port: 9000
-
-consoleService:
-  type: ClusterIP
-  port: 9001
-
-# -----------------------------------------------------------------------------
-# Ingress — API endpoint
-# -----------------------------------------------------------------------------
-ingress:
-  enabled: true
-  ingressClassName: traefik
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
-  hosts:
-    - minio-api.platform.local
-  path: /
-  tls: []
-
-# Console Ingress
-consoleIngress:
-  enabled: true
-  ingressClassName: traefik
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
-  hosts:
-    - minio.platform.local
-  path: /
-  tls: []
-
-# -----------------------------------------------------------------------------
-# Buckets — auto-provisioned on startup
-# -----------------------------------------------------------------------------
-buckets:
-  # MLflow model artefacts (B.6.1.3.2)
-  - name: mlflow-artifacts
-    policy: none
-    purge: false
-    versioning: true
-    objectlocking: false
-
-  # Training and validation datasets
-  - name: datasets
-    policy: none
-    purge: false
-    versioning: true
-
-  # ISO/IEC 42001 compliance documents (B.6.2.3.1, B.6.2.5.1, B.6.2.6.5)
-  - name: iso42001-docs
-    policy: none
-    purge: false
-    versioning: true
-    objectlocking: true             # Immutable for audit evidence
-
-  # Audit log archives (B.6.2.8.1)
-  - name: audit-logs
-    policy: none
-    purge: false
-    versioning: true
-
-  # Promoted edge model artefacts
-  - name: model-registry
-    policy: none
-    purge: false
-    versioning: true
-
-  # Loki log storage (optional — if Loki uses S3 backend)
-  - name: loki-logs
-    policy: none
-    purge: false
-    versioning: false
-
-# -----------------------------------------------------------------------------
-# Policies — service account access
-# -----------------------------------------------------------------------------
-policies:
-  - name: mlflow-policy
-    statements:
-      - resources:
-          - "arn:aws:s3:::mlflow-artifacts"
-          - "arn:aws:s3:::mlflow-artifacts/*"
-        actions:
-          - "s3:GetObject"
-          - "s3:PutObject"
-          - "s3:DeleteObject"
-          - "s3:ListBucket"
-
-  - name: readonly-docs
-    statements:
-      - resources:
-          - "arn:aws:s3:::iso42001-docs"
-          - "arn:aws:s3:::iso42001-docs/*"
-        actions:
-          - "s3:GetObject"
-          - "s3:ListBucket"
-
-# Service accounts
-users:
-  - accessKey: mlflow-sa
-    secretKey: "CHANGE_ME"
-    policy: mlflow-policy
-  - accessKey: grafana-sa
-    secretKey: "CHANGE_ME"
-    policy: readonly-docs
-
-# -----------------------------------------------------------------------------
-# Lifecycle rules — auto-cleanup of old data
-# -----------------------------------------------------------------------------
-lifecycle:
-  rules:
-    - id: audit-logs-retention
-      prefix: ""
-      status: Enabled
-      expiration:
-        days: 365                   # Keep audit logs for 1 year
-      filter:
-        prefix: ""
-      noncurrentVersionExpiration:
-        days: 30
-
-# -----------------------------------------------------------------------------
-# Metrics — Prometheus (B.6.1.2.2)
-# -----------------------------------------------------------------------------
-metrics:
-  serviceMonitor:
+  # -----------------------------------------------------------------------
+  # Persistence
+  # -----------------------------------------------------------------------
+  persistence:
     enabled: true
-    namespace: monitoring
+    storageClass: local-path
+    size: 100Gi
+    accessMode: ReadWriteOnce
 
-# -----------------------------------------------------------------------------
-# Resources
-# -----------------------------------------------------------------------------
-resources:
-  requests:
-    cpu: "250m"
-    memory: "512Mi"
-  limits:
-    cpu: "1000m"
-    memory: "2Gi"
+  # -----------------------------------------------------------------------
+  # Service
+  # -----------------------------------------------------------------------
+  service:
+    type: ClusterIP
+    port: 9000
 
-# -----------------------------------------------------------------------------
-# OIDC — Keycloak integration (B.6.1.3.1)
-# -----------------------------------------------------------------------------
-# Uncomment when Keycloak is deployed
-# environment:
-#   MINIO_IDENTITY_OPENID_CONFIG_URL: "https://keycloak.enterprise.local/realms/ai-system/.well-known/openid-configuration"
-#   MINIO_IDENTITY_OPENID_CLIENT_ID: "minio"
-#   MINIO_IDENTITY_OPENID_CLAIM_NAME: "policy"
+  consoleService:
+    type: ClusterIP
+    port: 9001
 
-# -----------------------------------------------------------------------------
-# Node placement
-# -----------------------------------------------------------------------------
-nodeSelector:
-  node-role.kubernetes.io/platform: "true"
+  # -----------------------------------------------------------------------
+  # Ingress — API endpoint
+  # -----------------------------------------------------------------------
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    hosts:
+      - minio-api.platform.local
+    path: /
+    tls: []
+
+  # Console Ingress
+  consoleIngress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    hosts:
+      - minio.platform.local
+    path: /
+    tls: []
+
+  # -----------------------------------------------------------------------
+  # Buckets — auto-provisioned on startup
+  # -----------------------------------------------------------------------
+  buckets:
+    # MLflow model artefacts (B.6.1.3.2)
+    - name: mlflow-artifacts
+      policy: none
+      purge: false
+      versioning: true
+      objectlocking: false
+
+    # Training and validation datasets
+    - name: datasets
+      policy: none
+      purge: false
+      versioning: true
+
+    # ISO/IEC 42001 compliance documents (B.6.2.3.1, B.6.2.5.1, B.6.2.6.5)
+    - name: iso42001-docs
+      policy: none
+      purge: false
+      versioning: true
+      objectlocking: true             # Immutable for audit evidence
+
+    # Audit log archives (B.6.2.8.1)
+    - name: audit-logs
+      policy: none
+      purge: false
+      versioning: true
+
+    # Promoted edge model artefacts
+    - name: model-registry
+      policy: none
+      purge: false
+      versioning: true
+
+    # Loki log storage (optional — if Loki uses S3 backend)
+    - name: loki-logs
+      policy: none
+      purge: false
+      versioning: false
+
+  # -----------------------------------------------------------------------
+  # Policies — service account access
+  # -----------------------------------------------------------------------
+  policies:
+    - name: mlflow-policy
+      statements:
+        - resources:
+            - "arn:aws:s3:::mlflow-artifacts"
+            - "arn:aws:s3:::mlflow-artifacts/*"
+          actions:
+            - "s3:GetObject"
+            - "s3:PutObject"
+            - "s3:DeleteObject"
+            - "s3:ListBucket"
+
+    - name: readonly-docs
+      statements:
+        - resources:
+            - "arn:aws:s3:::iso42001-docs"
+            - "arn:aws:s3:::iso42001-docs/*"
+          actions:
+            - "s3:GetObject"
+            - "s3:ListBucket"
+
+  # Service accounts
+  users:
+    - accessKey: mlflow-sa
+      secretKey: "CHANGE_ME"
+      policy: mlflow-policy
+    - accessKey: grafana-sa
+      secretKey: "CHANGE_ME"
+      policy: readonly-docs
+
+  # -----------------------------------------------------------------------
+  # Lifecycle rules — auto-cleanup of old data
+  # -----------------------------------------------------------------------
+  lifecycle:
+    rules:
+      - id: audit-logs-retention
+        prefix: ""
+        status: Enabled
+        expiration:
+          days: 365                   # Keep audit logs for 1 year
+        filter:
+          prefix: ""
+        noncurrentVersionExpiration:
+          days: 30
+
+  # -----------------------------------------------------------------------
+  # Metrics — Prometheus (B.6.1.2.2)
+  # -----------------------------------------------------------------------
+  metrics:
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
+
+  # -----------------------------------------------------------------------
+  # Resources
+  # -----------------------------------------------------------------------
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+
+  # -----------------------------------------------------------------------
+  # OIDC — Keycloak integration (B.6.1.3.1)
+  # -----------------------------------------------------------------------
+  # Uncomment when Keycloak is deployed
+  # environment:
+  #   MINIO_IDENTITY_OPENID_CONFIG_URL: "https://keycloak.enterprise.local/realms/ai-system/.well-known/openid-configuration"
+  #   MINIO_IDENTITY_OPENID_CLIENT_ID: "minio"
+  #   MINIO_IDENTITY_OPENID_CLAIM_NAME: "policy"
+
+  # -----------------------------------------------------------------------
+  # Node placement
+  # -----------------------------------------------------------------------
+  nodeSelector:
+    node-role.kubernetes.io/platform: "true"

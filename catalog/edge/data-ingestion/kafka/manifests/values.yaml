@@ -5,104 +5,105 @@
 # ISO/IEC 42001: B.6.2.6.4
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Kraft mode (no Zookeeper dependency — simpler for edge)
-# -----------------------------------------------------------------------------
-kraft:
-  enabled: true
-
-controller:
-  replicaCount: 1              # Single node for edge; 3 for HA
-  persistence:
+kafka:
+  # ---------------------------------------------------------------------------
+  # Kraft mode (no Zookeeper dependency — simpler for edge)
+  # ---------------------------------------------------------------------------
+  kraft:
     enabled: true
-    storageClass: local-path
-    size: 10Gi
-  resources:
-    requests:
-      cpu: "250m"
-      memory: "512Mi"
-    limits:
-      cpu: "1000m"
-      memory: "2Gi"
 
-broker:
-  replicaCount: 1              # Single node for edge; 3 for HA
-  persistence:
+  controller:
+    replicaCount: 1              # Single node for edge; 3 for HA
+    persistence:
+      enabled: true
+      storageClass: local-path
+      size: 10Gi
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "2Gi"
+
+  broker:
+    replicaCount: 1              # Single node for edge; 3 for HA
+    persistence:
+      enabled: true
+      storageClass: local-path
+      size: 20Gi
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "2Gi"
+
+  # ---------------------------------------------------------------------------
+  # Service
+  # ---------------------------------------------------------------------------
+  service:
+    type: ClusterIP
+    ports:
+      client: 9092
+      interbroker: 9093
+
+  # ---------------------------------------------------------------------------
+  # Ingress — Not typically exposed externally; use internal service DNS
+  # ---------------------------------------------------------------------------
+  # Kafka uses its own protocol, not HTTP. Access via:
+  #   kafka.edge.svc.cluster.local:9092
+
+  # ---------------------------------------------------------------------------
+  # Log retention — Edge storage is limited
+  # ---------------------------------------------------------------------------
+  logRetentionHours: 168           # 7 days retention at edge
+  logRetentionBytes: "5368709120"  # 5 GB max per partition
+
+  # ---------------------------------------------------------------------------
+  # Topics auto-creation
+  # ---------------------------------------------------------------------------
+  autoCreateTopicsEnable: true
+
+  # Default topics for reference architecture
+  provisioning:
     enabled: true
-    storageClass: local-path
-    size: 20Gi
-  resources:
-    requests:
-      cpu: "250m"
-      memory: "512Mi"
-    limits:
-      cpu: "1000m"
-      memory: "2Gi"
+    topics:
+      - name: sensor-raw
+        partitions: 3
+        replicationFactor: 1
+        config:
+          retention.ms: "604800000"    # 7 days
+      - name: sensor-validated
+        partitions: 3
+        replicationFactor: 1
+      - name: predictions
+        partitions: 3
+        replicationFactor: 1
+      - name: alerts
+        partitions: 1
+        replicationFactor: 1
 
-# -----------------------------------------------------------------------------
-# Service
-# -----------------------------------------------------------------------------
-service:
-  type: ClusterIP
-  ports:
-    client: 9092
-    interbroker: 9093
+  # ---------------------------------------------------------------------------
+  # Security — SASL/SCRAM for internal cluster communication
+  # ---------------------------------------------------------------------------
+  auth:
+    clientProtocol: plaintext       # Set to 'sasl' for production
+    interBrokerProtocol: plaintext
 
-# -----------------------------------------------------------------------------
-# Ingress — Not typically exposed externally; use internal service DNS
-# -----------------------------------------------------------------------------
-# Kafka uses its own protocol, not HTTP. Access via:
-#   kafka.edge.svc.cluster.local:9092
+  # ---------------------------------------------------------------------------
+  # Metrics — Prometheus JMX exporter (B.6.1.2.2)
+  # ---------------------------------------------------------------------------
+  metrics:
+    jmx:
+      enabled: true
+    serviceMonitor:
+      enabled: true                  # Requires Prometheus Operator
+      namespace: monitoring
 
-# -----------------------------------------------------------------------------
-# Log retention — Edge storage is limited
-# -----------------------------------------------------------------------------
-logRetentionHours: 168           # 7 days retention at edge
-logRetentionBytes: "5368709120"  # 5 GB max per partition
-
-# -----------------------------------------------------------------------------
-# Topics auto-creation
-# -----------------------------------------------------------------------------
-autoCreateTopicsEnable: true
-
-# Default topics for reference architecture
-provisioning:
-  enabled: true
-  topics:
-    - name: sensor-raw
-      partitions: 3
-      replicationFactor: 1
-      config:
-        retention.ms: "604800000"    # 7 days
-    - name: sensor-validated
-      partitions: 3
-      replicationFactor: 1
-    - name: predictions
-      partitions: 3
-      replicationFactor: 1
-    - name: alerts
-      partitions: 1
-      replicationFactor: 1
-
-# -----------------------------------------------------------------------------
-# Security — SASL/SCRAM for internal cluster communication
-# -----------------------------------------------------------------------------
-auth:
-  clientProtocol: plaintext       # Set to 'sasl' for production
-  interBrokerProtocol: plaintext
-
-# -----------------------------------------------------------------------------
-# Metrics — Prometheus JMX exporter (B.6.1.2.2)
-# -----------------------------------------------------------------------------
-metrics:
-  jmx:
-    enabled: true
-  serviceMonitor:
-    enabled: true                  # Requires Prometheus Operator
-    namespace: monitoring
-
-# -----------------------------------------------------------------------------
-# Node placement
-# -----------------------------------------------------------------------------
-nodeSelector:
-  node-role.kubernetes.io/edge: "true"
+  # ---------------------------------------------------------------------------
+  # Node placement
+  # ---------------------------------------------------------------------------
+  nodeSelector:
+    node-role.kubernetes.io/edge: "true"

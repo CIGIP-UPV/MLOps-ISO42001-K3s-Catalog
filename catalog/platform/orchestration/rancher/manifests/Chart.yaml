@@ -1,0 +1,19 @@
+apiVersion: v2
+name: platform-rancher
+description: Rancher — Multi-Cluster Kubernetes Management
+type: application
+version: 0.1.0
+appVersion: "2.9.0"
+keywords:
+  - iso42001
+  - platform
+  - orchestration
+home: https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+sources:
+  - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+maintainers:
+  - name: CIGIP-UPV
+dependencies:
+  - name: rancher
+    version: "~2.9"
+    repository: "https://releases.rancher.com/server-charts/latest"

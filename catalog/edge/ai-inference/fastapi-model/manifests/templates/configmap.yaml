@@ -1,0 +1,19 @@
+# =============================================================================
+# FastAPI Model Configuration
+# ISO/IEC 42001: B.6.1.2.2, B.6.1.3.4, B.6.2.6.1
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "edge-fastapi-model.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "edge-fastapi-model.labels" . | nindent 4 }}
+data:
+  MODEL_PATH: {{ .Values.config.modelPath | quote }}
+  MODEL_VERSION: {{ .Values.config.modelVersion | quote }}
+  LOG_PREDICTIONS: {{ .Values.config.logPredictions | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  DB_HOST: {{ .Values.config.dbHost | quote }}
+  DB_PORT: {{ .Values.config.dbPort | quote }}
+  DB_NAME: {{ .Values.config.dbName | quote }}

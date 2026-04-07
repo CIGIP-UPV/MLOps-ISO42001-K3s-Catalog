@@ -1,10 +1,100 @@
 # =============================================================================
 # Eclipse Mosquitto — MQTT Broker (Edge)
-# Helm chart: Custom manifest (no official Helm chart)
+# Helm Chart Values
 # Tier: Edge | RA Component: Input Data Monitoring
 # ISO/IEC 42001: B.6.2.6.4
 # =============================================================================
 
-# This is a plain K3S manifest since Mosquitto has no official Helm chart.
-# Deploy with: kubectl apply -f mosquitto-deployment.yaml
-# See mosquitto-deployment.yaml in this directory.
+replicaCount: 1
+
+image:
+  repository: eclipse-mosquitto
+  pullPolicy: IfNotPresent
+  tag: "2.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "false"
+
+podSecurityContext:
+  runAsNonRoot: false
+
+securityContext: {}
+
+# Mosquitto configuration
+config:
+  mqttPort: 1883
+  websocketEnabled: true
+  websocketPort: 9001
+  allowAnonymous: false
+  messageSizeLimit: 1048576
+  persistence: true
+  persistenceLocation: /mosquitto/data/
+  logDest: stdout
+  logType: all
+  connectionMessages: true
+
+# Authentication credentials
+# Generate passwords with: mosquitto_passwd -c passwords.txt <username>
+auth:
+  # Base64-encoded password file content or multiline string
+  # Example entry: nodered:$7$101$<hash>
+  passwordFile: |
+    nodered:$7$101$placeholder_hash
+
+service:
+  type: ClusterIP
+  annotations: {}
+  ports:
+    mqtt: 1883
+    websocket: 9001
+
+# Optional Ingress (disabled by default)
+ingress:
+  enabled: false
+  className: traefik
+  annotations: {}
+  hostname: mosquitto.edge.local
+  tls: []
+
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 1Gi
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+# Node selector for edge nodes
+nodeSelector:
+  node-role.kubernetes.io/edge: "true"
+
+tolerations: []
+
+affinity: {}
+
+# Probes configuration
+livenessProbe:
+  tcpSocket:
+    port: 1883
+  initialDelaySeconds: 10
+  periodSeconds: 15
+
+readinessProbe:
+  tcpSocket:
+    port: 1883
+  initialDelaySeconds: 5
+  periodSeconds: 10

@@ -1,0 +1,19 @@
+apiVersion: v2
+name: platform-mlflow
+description: MLflow — AI Lifecycle & Version Control
+type: application
+version: 0.1.0
+appVersion: "2.14.0"
+keywords:
+  - iso42001
+  - platform
+  - ai-lifecycle
+home: https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+sources:
+  - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+maintainers:
+  - name: CIGIP-UPV
+dependencies:
+  - name: mlflow
+    version: "~0.7"
+    repository: "https://community-charts.github.io/helm-charts"

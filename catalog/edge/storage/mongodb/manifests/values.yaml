@@ -5,115 +5,116 @@
 # ISO/IEC 42001: B.6.2.6.1, B.6.2.8.1
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Architecture — standalone for edge (no replica set)
-# -----------------------------------------------------------------------------
-architecture: standalone
+mongodb:
+  # ---------------------------------------------------------------------------
+  # Architecture — standalone for edge (no replica set)
+  # ---------------------------------------------------------------------------
+  architecture: standalone
 
-# -----------------------------------------------------------------------------
-# Authentication
-# -----------------------------------------------------------------------------
-auth:
-  enabled: true
-  rootUser: root
-  rootPassword: "CHANGE_ME"          # Use Kubernetes Secret in production
-  usernames:
-    - nodered
-  passwords:
-    - "CHANGE_ME"
-  databases:
-    - edge_buffer
-
-# -----------------------------------------------------------------------------
-# Persistence
-# -----------------------------------------------------------------------------
-persistence:
-  enabled: true
-  storageClass: local-path
-  size: 10Gi
-  accessModes:
-    - ReadWriteOnce
-
-# -----------------------------------------------------------------------------
-# Resources
-# -----------------------------------------------------------------------------
-resources:
-  requests:
-    cpu: "250m"
-    memory: "256Mi"
-  limits:
-    cpu: "500m"
-    memory: "1Gi"
-
-# -----------------------------------------------------------------------------
-# Custom MongoDB config — optimised for edge buffering
-# -----------------------------------------------------------------------------
-configuration: |
-  storage:
-    wiredTiger:
-      engineConfig:
-        cacheSizeGB: 0.25
-  operationProfiling:
-    mode: slowOp
-    slowOpThresholdMs: 200
-  # TTL indexes handle automatic cleanup of old buffered data
-  # Create TTL indexes in initdbScripts
-
-# -----------------------------------------------------------------------------
-# Initialisation script — create collections and TTL indexes
-# -----------------------------------------------------------------------------
-initdbScripts:
-  init.js: |
-    db = db.getSiblingDB('edge_buffer');
-
-    // Sensor data buffer — auto-expire after 7 days
-    db.createCollection('sensor_buffer');
-    db.sensor_buffer.createIndex(
-      { "timestamp": 1 },
-      { expireAfterSeconds: 604800 }
-    );
-    db.sensor_buffer.createIndex({ "machine_id": 1, "timestamp": -1 });
-
-    // Raw events buffer — auto-expire after 3 days
-    db.createCollection('raw_events');
-    db.raw_events.createIndex(
-      { "timestamp": 1 },
-      { expireAfterSeconds: 259200 }
-    );
-
-    // Sync status tracking
-    db.createCollection('sync_status');
-    db.sync_status.createIndex({ "collection": 1 }, { unique: true });
-
-    print('Edge buffer collections and indexes created.');
-
-# -----------------------------------------------------------------------------
-# Service
-# -----------------------------------------------------------------------------
-service:
-  type: ClusterIP
-  portName: mongodb
-  ports:
-    mongodb: 27017
-
-# -----------------------------------------------------------------------------
-# Metrics — Prometheus exporter (B.6.1.2.2)
-# -----------------------------------------------------------------------------
-metrics:
-  enabled: true
-  serviceMonitor:
+  # ---------------------------------------------------------------------------
+  # Authentication
+  # ---------------------------------------------------------------------------
+  auth:
     enabled: true
-    namespace: monitoring
+    rootUser: root
+    rootPassword: "CHANGE_ME"          # Use Kubernetes Secret in production
+    usernames:
+      - nodered
+    passwords:
+      - "CHANGE_ME"
+    databases:
+      - edge_buffer
+
+  # ---------------------------------------------------------------------------
+  # Persistence
+  # ---------------------------------------------------------------------------
+  persistence:
+    enabled: true
+    storageClass: local-path
+    size: 10Gi
+    accessModes:
+      - ReadWriteOnce
+
+  # ---------------------------------------------------------------------------
+  # Resources
+  # ---------------------------------------------------------------------------
   resources:
     requests:
-      cpu: "50m"
-      memory: "32Mi"
+      cpu: "250m"
+      memory: "256Mi"
     limits:
-      cpu: "100m"
-      memory: "64Mi"
+      cpu: "500m"
+      memory: "1Gi"
 
-# -----------------------------------------------------------------------------
-# Node placement
-# -----------------------------------------------------------------------------
-nodeSelector:
-  node-role.kubernetes.io/edge: "true"
+  # ---------------------------------------------------------------------------
+  # Custom MongoDB config — optimised for edge buffering
+  # ---------------------------------------------------------------------------
+  configuration: |
+    storage:
+      wiredTiger:
+        engineConfig:
+          cacheSizeGB: 0.25
+    operationProfiling:
+      mode: slowOp
+      slowOpThresholdMs: 200
+    # TTL indexes handle automatic cleanup of old buffered data
+    # Create TTL indexes in initdbScripts
+
+  # ---------------------------------------------------------------------------
+  # Initialisation script — create collections and TTL indexes
+  # ---------------------------------------------------------------------------
+  initdbScripts:
+    init.js: |
+      db = db.getSiblingDB('edge_buffer');
+
+      // Sensor data buffer — auto-expire after 7 days
+      db.createCollection('sensor_buffer');
+      db.sensor_buffer.createIndex(
+        { "timestamp": 1 },
+        { expireAfterSeconds: 604800 }
+      );
+      db.sensor_buffer.createIndex({ "machine_id": 1, "timestamp": -1 });
+
+      // Raw events buffer — auto-expire after 3 days
+      db.createCollection('raw_events');
+      db.raw_events.createIndex(
+        { "timestamp": 1 },
+        { expireAfterSeconds: 259200 }
+      );
+
+      // Sync status tracking
+      db.createCollection('sync_status');
+      db.sync_status.createIndex({ "collection": 1 }, { unique: true });
+
+      print('Edge buffer collections and indexes created.');
+
+  # ---------------------------------------------------------------------------
+  # Service
+  # ---------------------------------------------------------------------------
+  service:
+    type: ClusterIP
+    portName: mongodb
+    ports:
+      mongodb: 27017
+
+  # ---------------------------------------------------------------------------
+  # Metrics — Prometheus exporter (B.6.1.2.2)
+  # ---------------------------------------------------------------------------
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "32Mi"
+      limits:
+        cpu: "100m"
+        memory: "64Mi"
+
+  # ---------------------------------------------------------------------------
+  # Node placement
+  # ---------------------------------------------------------------------------
+  nodeSelector:
+    node-role.kubernetes.io/edge: "true"

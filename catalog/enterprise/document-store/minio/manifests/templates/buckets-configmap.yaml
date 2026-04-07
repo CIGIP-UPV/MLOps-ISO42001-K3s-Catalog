@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "enterprise-minio-overlay.fullname" . }}-buckets
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "enterprise-minio-overlay.labels" . | nindent 4 }}
+data:
+  # ==========================================================================
+  # MinIO Bucket Definitions — Enterprise ISO/IEC 42001 Document Governance
+  # ==========================================================================
+  #
+  # These bucket definitions should be merged into or applied alongside the
+  # platform MinIO configuration. Each bucket is configured with ISO 42001
+  # compliance requirements:
+  #   - B.6.2.3.1: System architecture documentation
+  #   - B.6.2.5.1: Deployment plans
+  #   - B.6.2.6.5: Update and repair plans
+  #
+  # Apply this ConfigMap and use it as reference for creating buckets in MinIO.
+  # ==========================================================================
+
+  buckets-config.json: |
+    {
+      "buckets": [
+        {
+          "name": "iso42001-docs",
+          "description": "System architecture and ISO 42001 governance documentation (B.6.2.3.1, B.6.2.5.1, B.6.2.6.5)",
+          "versioning": true,
+          "objectLocking": true,
+          "policy": "none",
+          "purgeDisabled": true,
+          "folders": {
+            "architecture": {
+              "description": "Reference architecture diagrams and system design documents"
+            },
+            "deployment-plan": {
+              "description": "Deployment plans and deployment procedure documentation"
+            },
+            "update-repair-plan": {
+              "description": "Update and repair procedures, rollback procedures"
+            },
+            "risk-assessment": {
+              "description": "AI risk assessment documentation"
+            },
+            "compliance-review": {
+              "description": "Compliance review records and audit evidence"
+            },
+            "altai-assessment": {
+              "description": "ALTAI self-assessment documentation"
+            }
+          }
+        },
+        {
+          "name": "model-cards",
+          "description": "Model cards and model evaluation reports (B.6.1.2.2)",
+          "versioning": true,
+          "objectLocking": false,
+          "policy": "none",
+          "purgeDisabled": true
+        },
+        {
+          "name": "audit-evidence",
+          "description": "Audit evidence archive for compliance verification (B.6.2.8.1)",
+          "versioning": true,
+          "objectLocking": true,
+          "policy": "none",
+          "purgeDisabled": true
+        }
+      ]
+    }
+
+  # Recommended folder structure within iso42001-docs:
+  #
+  # iso42001-docs/
+  # ├── architecture/
+  # │   ├── reference-architecture-v1.pdf
+  # │   └── deployment-diagrams/
+  # ├── deployment-plan/
+  # │   ├── deployment-plan-v1.md
+  # │   └── questionnaires/
+  # ├── update-repair-plan/
+  # │   ├── update-plan-v1.md
+  # │   └── rollback-procedures.md
+  # ├── risk-assessment/
+  # │   └── ai-risk-assessment-v1.md
+  # ├── compliance-review/
+  # │   ├── 2026-01-15-review.md
+  # │   └── 2026-04-07-review.md
+  # └── altai-assessment/
+  #     └── altai-self-assessment-v1.md
+
+  bucket-policies.json: |
+    {
+      "policies": [
+        {
+          "bucket": "iso42001-docs",
+          "policy": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "AWS": "*"
+                },
+                "Action": [
+                  "s3:GetObject"
+                ],
+                "Resource": "arn:aws:s3:::iso42001-docs/*",
+                "Condition": {
+                  "IpAddress": {
+                    "aws:SourceIp": [
+                      "10.0.0.0/8",
+                      "172.16.0.0/12"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
