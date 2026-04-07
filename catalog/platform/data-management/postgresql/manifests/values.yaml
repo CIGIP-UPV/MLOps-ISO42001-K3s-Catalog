@@ -5,90 +5,91 @@
 # Purpose: Shared metadata backend for MLflow, Keycloak, Zammad, Grafana
 # =============================================================================
 
-architecture: standalone
+postgresql:
+  architecture: standalone
 
-# -----------------------------------------------------------------------------
-# Authentication
-# -----------------------------------------------------------------------------
-auth:
-  postgresPassword: "CHANGE_ME"
-  # existingSecret: platform-postgresql-credentials
+  # -----------------------------------------------------------------------
+  # Authentication
+  # -----------------------------------------------------------------------
+  auth:
+    postgresPassword: "CHANGE_ME"
+    # existingSecret: platform-postgresql-credentials
 
-# -----------------------------------------------------------------------------
-# Persistence
-# -----------------------------------------------------------------------------
-primary:
-  persistence:
+  # -----------------------------------------------------------------------
+  # Persistence
+  # -----------------------------------------------------------------------
+  primary:
+    persistence:
+      enabled: true
+      storageClass: local-path
+      size: 20Gi
+      accessModes:
+        - ReadWriteOnce
+
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "256Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+
+    nodeSelector:
+      node-role.kubernetes.io/platform: "true"
+
+    # Custom PostgreSQL config
+    configuration: |
+      max_connections = 200
+      shared_buffers = 512MB
+      work_mem = 8MB
+      wal_level = replica
+      max_wal_size = 1GB
+      log_statement = 'mod'
+      log_min_duration_statement = 1000
+
+    # Initialisation — create databases for all platform services
+    initdb:
+      scripts:
+        init.sql: |
+          -- MLflow metadata
+          CREATE DATABASE mlflow;
+          CREATE USER mlflow WITH PASSWORD 'CHANGE_ME';
+          GRANT ALL PRIVILEGES ON DATABASE mlflow TO mlflow;
+
+          -- Keycloak metadata
+          CREATE DATABASE keycloak;
+          CREATE USER keycloak WITH PASSWORD 'CHANGE_ME';
+          GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;
+
+          -- Zammad metadata
+          CREATE DATABASE zammad;
+          CREATE USER zammad WITH PASSWORD 'CHANGE_ME';
+          GRANT ALL PRIVILEGES ON DATABASE zammad TO zammad;
+
+          -- Grafana metadata
+          CREATE DATABASE grafana;
+          CREATE USER grafana WITH PASSWORD 'CHANGE_ME';
+          GRANT ALL PRIVILEGES ON DATABASE grafana TO grafana;
+
+  # -----------------------------------------------------------------------
+  # Service
+  # -----------------------------------------------------------------------
+  service:
+    type: ClusterIP
+    ports:
+      postgresql: 5432
+
+  # -----------------------------------------------------------------------
+  # Metrics
+  # -----------------------------------------------------------------------
+  metrics:
     enabled: true
-    storageClass: local-path
-    size: 20Gi
-    accessModes:
-      - ReadWriteOnce
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
 
-  resources:
-    requests:
-      cpu: "250m"
-      memory: "256Mi"
-    limits:
-      cpu: "1000m"
-      memory: "1Gi"
-
-  nodeSelector:
-    node-role.kubernetes.io/platform: "true"
-
-  # Custom PostgreSQL config
-  configuration: |
-    max_connections = 200
-    shared_buffers = 512MB
-    work_mem = 8MB
-    wal_level = replica
-    max_wal_size = 1GB
-    log_statement = 'mod'
-    log_min_duration_statement = 1000
-
-  # Initialisation — create databases for all platform services
-  initdb:
-    scripts:
-      init.sql: |
-        -- MLflow metadata
-        CREATE DATABASE mlflow;
-        CREATE USER mlflow WITH PASSWORD 'CHANGE_ME';
-        GRANT ALL PRIVILEGES ON DATABASE mlflow TO mlflow;
-
-        -- Keycloak metadata
-        CREATE DATABASE keycloak;
-        CREATE USER keycloak WITH PASSWORD 'CHANGE_ME';
-        GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;
-
-        -- Zammad metadata
-        CREATE DATABASE zammad;
-        CREATE USER zammad WITH PASSWORD 'CHANGE_ME';
-        GRANT ALL PRIVILEGES ON DATABASE zammad TO zammad;
-
-        -- Grafana metadata
-        CREATE DATABASE grafana;
-        CREATE USER grafana WITH PASSWORD 'CHANGE_ME';
-        GRANT ALL PRIVILEGES ON DATABASE grafana TO grafana;
-
-# -----------------------------------------------------------------------------
-# Service
-# -----------------------------------------------------------------------------
-service:
-  type: ClusterIP
-  ports:
-    postgresql: 5432
-
-# -----------------------------------------------------------------------------
-# Metrics
-# -----------------------------------------------------------------------------
-metrics:
-  enabled: true
-  serviceMonitor:
-    enabled: true
-    namespace: monitoring
-
-# -----------------------------------------------------------------------------
-# Backup
-# -----------------------------------------------------------------------------
-backup:
-  enabled: false
+  # -----------------------------------------------------------------------
+  # Backup
+  # -----------------------------------------------------------------------
+  backup:
+    enabled: false

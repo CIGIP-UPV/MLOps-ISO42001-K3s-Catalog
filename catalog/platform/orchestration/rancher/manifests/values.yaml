@@ -4,74 +4,75 @@
 # Tier: Platform | RA Component: Orchestration
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Hostname — must be resolvable
-# -----------------------------------------------------------------------------
-hostname: rancher.platform.local
+rancher:
+  # -----------------------------------------------------------------------
+  # Hostname — must be resolvable
+  # -----------------------------------------------------------------------
+  hostname: rancher.platform.local
 
-# -----------------------------------------------------------------------------
-# TLS — cert-manager (recommended for K3S)
-# -----------------------------------------------------------------------------
-ingress:
-  tls:
-    source: letsEncrypt             # Options: rancher, letsEncrypt, secret
-  extraAnnotations:
-    kubernetes.io/ingress.class: traefik
+  # -----------------------------------------------------------------------
+  # TLS — cert-manager (recommended for K3S)
+  # -----------------------------------------------------------------------
+  ingress:
+    tls:
+      source: letsEncrypt             # Options: rancher, letsEncrypt, secret
+    extraAnnotations:
+      kubernetes.io/ingress.class: traefik
 
-letsEncrypt:
-  email: admin@plant.local
-  environment: production           # 'staging' for testing
+  letsEncrypt:
+    email: admin@plant.local
+    environment: production           # 'staging' for testing
 
-# Use 'rancher' for self-signed certs (quick start):
-# ingress:
-#   tls:
-#     source: rancher
-# privateCA: true
+  # Use 'rancher' for self-signed certs (quick start):
+  # ingress:
+  #   tls:
+  #     source: rancher
+  # privateCA: true
 
-# -----------------------------------------------------------------------------
-# Replicas
-# -----------------------------------------------------------------------------
-replicas: 1                          # 3 for HA
+  # -----------------------------------------------------------------------
+  # Replicas
+  # -----------------------------------------------------------------------
+  replicas: 1                          # 3 for HA
 
-# -----------------------------------------------------------------------------
-# Bootstrap password
-# -----------------------------------------------------------------------------
-bootstrapPassword: "CHANGE_ME"
+  # -----------------------------------------------------------------------
+  # Bootstrap password
+  # -----------------------------------------------------------------------
+  bootstrapPassword: "CHANGE_ME"
 
-# -----------------------------------------------------------------------------
-# Audit logging (B.6.2.8.1)
-# -----------------------------------------------------------------------------
-auditLog:
-  level: 1                          # 0=off, 1=metadata, 2=request, 3=request+response
-  maxAge: 90                        # Days
-  maxBackup: 10
-  maxSize: 100                      # MB
+  # -----------------------------------------------------------------------
+  # Audit logging (B.6.2.8.1)
+  # -----------------------------------------------------------------------
+  auditLog:
+    level: 1                          # 0=off, 1=metadata, 2=request, 3=request+response
+    maxAge: 90                        # Days
+    maxBackup: 10
+    maxSize: 100                      # MB
 
-# -----------------------------------------------------------------------------
-# Resources
-# -----------------------------------------------------------------------------
-resources:
-  requests:
-    cpu: "250m"
-    memory: "512Mi"
-  limits:
-    cpu: "1000m"
-    memory: "2Gi"
+  # -----------------------------------------------------------------------
+  # Resources
+  # -----------------------------------------------------------------------
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
 
-# -----------------------------------------------------------------------------
-# Node placement
-# -----------------------------------------------------------------------------
-nodeSelector:
-  node-role.kubernetes.io/platform: "true"
+  # -----------------------------------------------------------------------
+  # Node placement
+  # -----------------------------------------------------------------------
+  nodeSelector:
+    node-role.kubernetes.io/platform: "true"
 
-# -----------------------------------------------------------------------------
-# Installation notes:
-# 1. Install cert-manager first:
-#    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.0/cert-manager.yaml
-# 2. Add Rancher Helm repo:
-#    helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
-# 3. Install:
-#    helm install rancher rancher-latest/rancher \
-#      --namespace cattle-system --create-namespace \
-#      -f values.yaml
-# -----------------------------------------------------------------------------
+  # -----------------------------------------------------------------------
+  # Installation notes:
+  # 1. Install cert-manager first:
+  #    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.0/cert-manager.yaml
+  # 2. Add Rancher Helm repo:
+  #    helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+  # 3. Install:
+  #    helm install rancher rancher-latest/rancher \
+  #      --namespace cattle-system --create-namespace \
+  #      -f values.yaml
+  # -----------------------------------------------------------------------

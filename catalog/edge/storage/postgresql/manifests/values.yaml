@@ -5,142 +5,143 @@
 # ISO/IEC 42001: B.6.2.6.1, B.6.2.6.3, B.6.2.8.1
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Architecture — standalone for edge (no replication)
-# -----------------------------------------------------------------------------
-architecture: standalone
+postgresql:
+  # ---------------------------------------------------------------------------
+  # Architecture — standalone for edge (no replication)
+  # ---------------------------------------------------------------------------
+  architecture: standalone
 
-# -----------------------------------------------------------------------------
-# Authentication
-# -----------------------------------------------------------------------------
-auth:
-  postgresPassword: "CHANGE_ME"     # Use Kubernetes Secret in production
-  database: predictions
-  username: fastapi
-  password: "CHANGE_ME"
+  # ---------------------------------------------------------------------------
+  # Authentication
+  # ---------------------------------------------------------------------------
+  auth:
+    postgresPassword: "CHANGE_ME"     # Use Kubernetes Secret in production
+    database: predictions
+    username: fastapi
+    password: "CHANGE_ME"
 
-# -----------------------------------------------------------------------------
-# Primary — main database instance
-# -----------------------------------------------------------------------------
-primary:
-  persistence:
+  # ---------------------------------------------------------------------------
+  # Primary — main database instance
+  # ---------------------------------------------------------------------------
+  primary:
+    persistence:
+      enabled: true
+      storageClass: local-path
+      size: 10Gi
+      accessModes:
+        - ReadWriteOnce
+
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "256Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+
+    nodeSelector:
+      node-role.kubernetes.io/edge: "true"
+
+    # Custom PostgreSQL config for edge optimisation
+    configuration: |
+      # Connection limits (constrained edge environment)
+      max_connections = 50
+      shared_buffers = 256MB
+      work_mem = 4MB
+
+      # WAL settings for data durability (B.6.2.8.1)
+      wal_level = replica
+      max_wal_size = 1GB
+      min_wal_size = 80MB
+
+      # Logging (B.6.2.8.1)
+      log_statement = 'mod'
+      log_min_duration_statement = 500
+      log_connections = on
+      log_disconnections = on
+
+    # Initialisation scripts — create tables for RA
+    initdb:
+      scripts:
+        init.sql: |
+          -- Prediction log table (B.6.2.6.3, B.6.2.8.1)
+          CREATE TABLE IF NOT EXISTS predictions (
+            id            BIGSERIAL PRIMARY KEY,
+            timestamp     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            machine_id    TEXT NOT NULL,
+            model_version TEXT NOT NULL,
+            input_hash    TEXT,
+            score         DOUBLE PRECISION,
+            label         TEXT,
+            acknowledged  BOOLEAN DEFAULT FALSE
+          );
+          CREATE INDEX idx_predictions_time ON predictions (timestamp DESC);
+          CREATE INDEX idx_predictions_machine ON predictions (machine_id);
+
+          -- Sensor feature cache
+          CREATE TABLE IF NOT EXISTS sensor_features (
+            id            BIGSERIAL PRIMARY KEY,
+            timestamp     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            machine_id    TEXT NOT NULL,
+            feature_name  TEXT NOT NULL,
+            value         DOUBLE PRECISION
+          );
+          CREATE INDEX idx_features_time ON sensor_features (timestamp DESC);
+
+          -- Operator feedback (B.6.1.3.3)
+          CREATE TABLE IF NOT EXISTS operator_feedback (
+            id              BIGSERIAL PRIMARY KEY,
+            prediction_id   BIGINT REFERENCES predictions(id),
+            timestamp       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            operator_id     TEXT NOT NULL,
+            feedback_type   TEXT NOT NULL CHECK (feedback_type IN ('correct', 'incorrect', 'uncertain')),
+            comment         TEXT
+          );
+
+          -- System events log (B.6.2.8.1)
+          CREATE TABLE IF NOT EXISTS system_events (
+            id          BIGSERIAL PRIMARY KEY,
+            timestamp   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            source      TEXT NOT NULL,
+            event_type  TEXT NOT NULL,
+            severity    TEXT DEFAULT 'INFO',
+            message     TEXT,
+            metadata    JSONB
+          );
+          CREATE INDEX idx_events_time ON system_events (timestamp DESC);
+          CREATE INDEX idx_events_type ON system_events (event_type);
+
+  # ---------------------------------------------------------------------------
+  # Service
+  # ---------------------------------------------------------------------------
+  service:
+    type: ClusterIP
+    ports:
+      postgresql: 5432
+
+  # ---------------------------------------------------------------------------
+  # Metrics — Prometheus exporter (B.6.1.2.2)
+  # ---------------------------------------------------------------------------
+  metrics:
     enabled: true
-    storageClass: local-path
-    size: 10Gi
-    accessModes:
-      - ReadWriteOnce
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "32Mi"
+      limits:
+        cpu: "100m"
+        memory: "64Mi"
 
-  resources:
-    requests:
-      cpu: "250m"
-      memory: "256Mi"
-    limits:
-      cpu: "1000m"
-      memory: "1Gi"
-
-  nodeSelector:
-    node-role.kubernetes.io/edge: "true"
-
-  # Custom PostgreSQL config for edge optimisation
-  configuration: |
-    # Connection limits (constrained edge environment)
-    max_connections = 50
-    shared_buffers = 256MB
-    work_mem = 4MB
-
-    # WAL settings for data durability (B.6.2.8.1)
-    wal_level = replica
-    max_wal_size = 1GB
-    min_wal_size = 80MB
-
-    # Logging (B.6.2.8.1)
-    log_statement = 'mod'
-    log_min_duration_statement = 500
-    log_connections = on
-    log_disconnections = on
-
-  # Initialisation scripts — create tables for RA
-  initdb:
-    scripts:
-      init.sql: |
-        -- Prediction log table (B.6.2.6.3, B.6.2.8.1)
-        CREATE TABLE IF NOT EXISTS predictions (
-          id            BIGSERIAL PRIMARY KEY,
-          timestamp     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          machine_id    TEXT NOT NULL,
-          model_version TEXT NOT NULL,
-          input_hash    TEXT,
-          score         DOUBLE PRECISION,
-          label         TEXT,
-          acknowledged  BOOLEAN DEFAULT FALSE
-        );
-        CREATE INDEX idx_predictions_time ON predictions (timestamp DESC);
-        CREATE INDEX idx_predictions_machine ON predictions (machine_id);
-
-        -- Sensor feature cache
-        CREATE TABLE IF NOT EXISTS sensor_features (
-          id            BIGSERIAL PRIMARY KEY,
-          timestamp     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          machine_id    TEXT NOT NULL,
-          feature_name  TEXT NOT NULL,
-          value         DOUBLE PRECISION
-        );
-        CREATE INDEX idx_features_time ON sensor_features (timestamp DESC);
-
-        -- Operator feedback (B.6.1.3.3)
-        CREATE TABLE IF NOT EXISTS operator_feedback (
-          id              BIGSERIAL PRIMARY KEY,
-          prediction_id   BIGINT REFERENCES predictions(id),
-          timestamp       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          operator_id     TEXT NOT NULL,
-          feedback_type   TEXT NOT NULL CHECK (feedback_type IN ('correct', 'incorrect', 'uncertain')),
-          comment         TEXT
-        );
-
-        -- System events log (B.6.2.8.1)
-        CREATE TABLE IF NOT EXISTS system_events (
-          id          BIGSERIAL PRIMARY KEY,
-          timestamp   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          source      TEXT NOT NULL,
-          event_type  TEXT NOT NULL,
-          severity    TEXT DEFAULT 'INFO',
-          message     TEXT,
-          metadata    JSONB
-        );
-        CREATE INDEX idx_events_time ON system_events (timestamp DESC);
-        CREATE INDEX idx_events_type ON system_events (event_type);
-
-# -----------------------------------------------------------------------------
-# Service
-# -----------------------------------------------------------------------------
-service:
-  type: ClusterIP
-  ports:
-    postgresql: 5432
-
-# -----------------------------------------------------------------------------
-# Metrics — Prometheus exporter (B.6.1.2.2)
-# -----------------------------------------------------------------------------
-metrics:
-  enabled: true
-  serviceMonitor:
-    enabled: true
-    namespace: monitoring
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "32Mi"
-    limits:
-      cpu: "100m"
-      memory: "64Mi"
-
-# -----------------------------------------------------------------------------
-# Backup — CronJob for scheduled dumps
-# -----------------------------------------------------------------------------
-backup:
-  enabled: false                   # Enable for production
-  # cronjob:
-  #   schedule: "0 2 * * *"       # Daily at 2 AM
-  #   storage:
-  #     storageClass: local-path
-  #     size: 5Gi
+  # ---------------------------------------------------------------------------
+  # Backup — CronJob for scheduled dumps
+  # ---------------------------------------------------------------------------
+  backup:
+    enabled: false                   # Enable for production
+    # cronjob:
+    #   schedule: "0 2 * * *"       # Daily at 2 AM
+    #   storage:
+    #     storageClass: local-path
+    #     size: 5Gi

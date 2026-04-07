@@ -1,0 +1,69 @@
+{{- if .Values.cronJob.enabled }}
+# =============================================================================
+# CronJob — Scheduled Model Retraining
+# ISO/IEC 42001: B.6.2.6.4
+# =============================================================================
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.cronJob.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "platform-training-jobs.labels" . | nindent 4 }}
+    {{- with .Values.labels }}
+    app: {{ .app }}
+    tier: {{ .tier }}
+    ra-component: {{ .ra-component }}
+    {{- end }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  schedule: {{ .Values.cronJob.schedule | quote }}
+  concurrencyPolicy: {{ .Values.cronJob.concurrencyPolicy }}
+  successfulJobsHistoryLimit: {{ .Values.cronJob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cronJob.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ .Values.cronJob.backoffLimit }}
+      activeDeadlineSeconds: {{ .Values.cronJob.activeDeadlineSeconds }}
+      template:
+        metadata:
+          labels:
+            {{- with .Values.labels }}
+            app: {{ .app }}
+            {{- end }}
+            {{- include "platform-training-jobs.selectorLabels" . | nindent 12 }}
+        spec:
+          nodeSelector:
+            {{- toYaml .Values.nodeSelector | nindent 12 }}
+          restartPolicy: {{ .Values.restartPolicy }}
+          containers:
+            - name: training
+              image: {{ .Values.container.image }}
+              imagePullPolicy: {{ .Values.container.imagePullPolicy }}
+              envFrom:
+                - configMapRef:
+                    name: {{ .Values.configMap.name }}
+                - secretRef:
+                    name: {{ .Values.secret.name }}
+              volumeMounts:
+                - name: training-workspace
+                  mountPath: /workspace
+              {{- with .Values.container.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- if .Values.container.gpuRequests }}
+              # GPU support
+              # resources:
+              #   limits:
+              #     nvidia.com/gpu: {{ .Values.container.gpuRequests }}
+              {{- end }}
+          volumes:
+            - name: training-workspace
+              persistentVolumeClaim:
+                claimName: {{ .Values.pvc.name }}
+{{- end }}

@@ -5,121 +5,122 @@
 # ISO/IEC 42001: B.6.2.8.1
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Deployment mode — single binary for small/medium deployments
-# -----------------------------------------------------------------------------
-deploymentMode: SingleBinary
-
-singleBinary:
-  replicas: 1
-  resources:
-    requests:
-      cpu: "250m"
-      memory: "512Mi"
-    limits:
-      cpu: "1000m"
-      memory: "2Gi"
-
-  persistence:
-    enabled: true
-    storageClass: local-path
-    size: 50Gi
-
-  nodeSelector:
-    node-role.kubernetes.io/platform: "true"
-
-# -----------------------------------------------------------------------------
-# Loki configuration
-# -----------------------------------------------------------------------------
 loki:
-  auth_enabled: false               # Single-tenant mode
+  # -----------------------------------------------------------------------
+  # Deployment mode — single binary for small/medium deployments
+  # -----------------------------------------------------------------------
+  deploymentMode: SingleBinary
 
-  commonConfig:
-    replication_factor: 1
+  singleBinary:
+    replicas: 1
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "2Gi"
 
-  # Storage — filesystem for single-node; MinIO for production
-  storage:
-    type: filesystem
-    # For MinIO backend (production recommended):
-    # type: s3
-    # s3:
-    #   endpoint: http://minio.minio.svc.cluster.local:9000
-    #   bucketnames: loki-logs
-    #   access_key_id: "${MINIO_ACCESS_KEY}"
-    #   secret_access_key: "${MINIO_SECRET_KEY}"
-    #   s3forcepathstyle: true
-    #   insecure: true
+    persistence:
+      enabled: true
+      storageClass: local-path
+      size: 50Gi
 
-  # Schema configuration
-  schemaConfig:
-    configs:
-      - from: "2024-01-01"
-        store: tsdb
-        object_store: filesystem
-        schema: v13
-        index:
-          prefix: index_
-          period: 24h
+    nodeSelector:
+      node-role.kubernetes.io/platform: "true"
 
-  # Retention — 90+ days for ISO/IEC 42001 audit readiness (B.6.2.8.1)
-  limits_config:
-    retention_period: 2160h          # 90 days
-    max_query_length: 720h
-    max_query_series: 5000
-    ingestion_rate_mb: 10
-    ingestion_burst_size_mb: 20
+  # -----------------------------------------------------------------------
+  # Loki configuration
+  # -----------------------------------------------------------------------
+  loki:
+    auth_enabled: false               # Single-tenant mode
 
-  compactor:
-    retention_enabled: true
+    commonConfig:
+      replication_factor: 1
 
-# -----------------------------------------------------------------------------
-# Service
-# -----------------------------------------------------------------------------
-service:
-  type: ClusterIP
-  port: 3100
+    # Storage — filesystem for single-node; MinIO for production
+    storage:
+      type: filesystem
+      # For MinIO backend (production recommended):
+      # type: s3
+      # s3:
+      #   endpoint: http://minio.minio.svc.cluster.local:9000
+      #   bucketnames: loki-logs
+      #   access_key_id: "${MINIO_ACCESS_KEY}"
+      #   secret_access_key: "${MINIO_SECRET_KEY}"
+      #   s3forcepathstyle: true
+      #   insecure: true
 
-# -----------------------------------------------------------------------------
-# Ingress — internal access only (query via Grafana)
-# -----------------------------------------------------------------------------
-ingress:
-  enabled: false                     # Access via Grafana data source
+    # Schema configuration
+    schemaConfig:
+      configs:
+        - from: "2024-01-01"
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
 
-# -----------------------------------------------------------------------------
-# Gateway
-# -----------------------------------------------------------------------------
-gateway:
-  enabled: true
-  replicas: 1
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "64Mi"
-    limits:
-      cpu: "200m"
-      memory: "128Mi"
+    # Retention — 90+ days for ISO/IEC 42001 audit readiness (B.6.2.8.1)
+    limits_config:
+      retention_period: 2160h          # 90 days
+      max_query_length: 720h
+      max_query_series: 5000
+      ingestion_rate_mb: 10
+      ingestion_burst_size_mb: 20
 
-# -----------------------------------------------------------------------------
-# Monitoring — self-monitoring
-# -----------------------------------------------------------------------------
-monitoring:
-  selfMonitoring:
-    enabled: false
-  serviceMonitor:
+    compactor:
+      retention_enabled: true
+
+  # -----------------------------------------------------------------------
+  # Service
+  # -----------------------------------------------------------------------
+  service:
+    type: ClusterIP
+    port: 3100
+
+  # -----------------------------------------------------------------------
+  # Ingress — internal access only (query via Grafana)
+  # -----------------------------------------------------------------------
+  ingress:
+    enabled: false                     # Access via Grafana data source
+
+  # -----------------------------------------------------------------------
+  # Gateway
+  # -----------------------------------------------------------------------
+  gateway:
     enabled: true
-    namespace: monitoring
+    replicas: 1
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "64Mi"
+      limits:
+        cpu: "200m"
+        memory: "128Mi"
 
-# -----------------------------------------------------------------------------
-# Disable unused components
-# -----------------------------------------------------------------------------
-read:
-  replicas: 0
-write:
-  replicas: 0
-backend:
-  replicas: 0
+  # -----------------------------------------------------------------------
+  # Monitoring — self-monitoring
+  # -----------------------------------------------------------------------
+  monitoring:
+    selfMonitoring:
+      enabled: false
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
 
-chunksCache:
-  enabled: false
-resultsCache:
-  enabled: false
+  # -----------------------------------------------------------------------
+  # Disable unused components
+  # -----------------------------------------------------------------------
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  backend:
+    replicas: 0
+
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false

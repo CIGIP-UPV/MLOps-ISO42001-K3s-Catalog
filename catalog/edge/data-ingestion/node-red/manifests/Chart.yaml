@@ -1,0 +1,19 @@
+apiVersion: v2
+name: edge-node-red
+description: Node-RED — Edge Data Ingestion & Orchestration
+type: application
+version: 0.1.0
+appVersion: "3.1"
+keywords:
+  - iso42001
+  - edge
+  - data-ingestion
+home: https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+sources:
+  - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+maintainers:
+  - name: CIGIP-UPV
+dependencies:
+  - name: node-red
+    version: "~0.30"
+    repository: "https://node-red-chart.github.io/node-red-chart/"

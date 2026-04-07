@@ -1,0 +1,195 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "enterprise-grafana-dashboards.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "enterprise-grafana-dashboards.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+data:
+  # ==========================================================================
+  # Enterprise Dashboard Definitions — ISO/IEC 42001 Monitoring
+  # ==========================================================================
+  #
+  # This ConfigMap contains references and guidelines for enterprise dashboards
+  # that should be created in the Grafana instance running at the platform tier.
+  #
+  # Dashboard Provider Configuration:
+  # These dashboards should be provisioned by Grafana's dashboard provider
+  # pointing to /etc/grafana/provisioning/dashboards/ or a similar path.
+  #
+  # Data Sources (configure in platform Grafana):
+  #   - Prometheus: metrics
+  #   - Loki: logs
+  #   - TimescaleDB: KPI timeseries
+  #   - EdgePostgreSQL: model predictions
+  # ==========================================================================
+
+  dashboard-provider-config.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'Enterprise Dashboards'
+        orgId: 1
+        folder: 'Enterprise'
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        allowUiUpdates: true
+        options:
+          path: /etc/grafana/provisioning/dashboards/enterprise
+
+  # Dashboard Definition Guidelines
+  # ================================
+
+  dashboard-oee-kpi.json: |
+    {
+      "_comment": "OEE & Maintenance KPIs Dashboard (B.6.2.6.3)",
+      "title": "OEE & Maintenance KPIs",
+      "description": "Overall Equipment Effectiveness trend, machine downtime, predictive vs corrective maintenance ratio",
+      "metrics": [
+        "oee_trend",
+        "machine_downtime_hours_month",
+        "predictive_maintenance_ratio",
+        "corrective_maintenance_ratio"
+      ],
+      "alerts": [
+        {
+          "name": "OEE Below Threshold",
+          "query": "oee < 0.75",
+          "severity": "warning"
+        }
+      ]
+    }
+
+  dashboard-model-health.json: |
+    {
+      "_comment": "Model Inference Health Dashboard (B.6.1.2.2, B.6.2.6.2)",
+      "title": "Model Inference Health",
+      "description": "Inference latency (p50, p95, p99), error rate, prediction score distribution, active model version",
+      "metrics": [
+        "inference_latency_p50_ms",
+        "inference_latency_p95_ms",
+        "inference_latency_p99_ms",
+        "model_error_rate",
+        "prediction_score_distribution",
+        "active_model_version"
+      ],
+      "alerts": [
+        {
+          "name": "High Inference Latency",
+          "query": "inference_latency_p99_ms > 1000",
+          "severity": "warning"
+        },
+        {
+          "name": "Model Error Rate Threshold",
+          "query": "model_error_rate > 0.05",
+          "severity": "critical"
+        }
+      ]
+    }
+
+  dashboard-infrastructure.json: |
+    {
+      "_comment": "Infrastructure Overview Dashboard (B.6.2.6.1)",
+      "title": "Infrastructure Overview",
+      "description": "Node CPU/memory/disk per tier, pod restart counts, container CPU throttling, storage utilization",
+      "metrics": [
+        "node_cpu_percent_by_tier",
+        "node_memory_percent_by_tier",
+        "node_disk_percent_by_tier",
+        "pod_restart_count",
+        "container_cpu_throttle_percent",
+        "storage_utilization_percent"
+      ]
+    }
+
+  dashboard-security-events.json: |
+    {
+      "_comment": "Security Events Dashboard (B.6.2.6.7)",
+      "title": "Security Events",
+      "description": "Falco alerts timeline, alert severity breakdown, top alert rules",
+      "datasources": [
+        "Loki"
+      ],
+      "queries": [
+        {
+          "name": "Falco Alerts Timeline",
+          "loki_query": "{job=\"falco\"} | json"
+        },
+        {
+          "name": "Alert Severity Distribution",
+          "loki_query": "{job=\"falco\"} | json | stats count by severity"
+        }
+      ]
+    }
+
+  dashboard-audit-logs.json: |
+    {
+      "_comment": "Audit Log Explorer Dashboard (B.6.2.8.1)",
+      "title": "Audit Log Explorer",
+      "description": "Loki log stream by tier and namespace, Keycloak auth events, model version change events",
+      "datasources": [
+        "Loki"
+      ],
+      "queries": [
+        {
+          "name": "Logs by Tier",
+          "loki_query": "{ tier=~\"platform|enterprise\" }"
+        },
+        {
+          "name": "Keycloak Auth Events",
+          "loki_query": "{ job=\"keycloak\" } | json | event_type=~\"LOGIN|LOGOUT|TOKEN_EXCHANGE\""
+        },
+        {
+          "name": "Model Version Changes",
+          "loki_query": "{ app=\"model-registry\" } | json | event_type=\"MODEL_VERSION_UPDATE\""
+        }
+      ]
+    }
+
+  dashboard-operator-feedback.json: |
+    {
+      "_comment": "Operator Feedback Panel Dashboard (B.6.1.3.3)",
+      "title": "Operator Feedback Panel",
+      "description": "Recent predictions table with feedback buttons, feedback rate over time, correct vs incorrect ratio, links to Zammad tickets",
+      "datasources": [
+        "EdgePostgreSQL",
+        "Prometheus"
+      ],
+      "panels": [
+        {
+          "name": "Recent Predictions",
+          "type": "table",
+          "query": "SELECT prediction_id, timestamp, score, operator_feedback FROM predictions ORDER BY timestamp DESC LIMIT 100",
+          "columns": [
+            "prediction_id",
+            "timestamp",
+            "score",
+            "feedback",
+            "zammad_ticket_link"
+          ]
+        },
+        {
+          "name": "Feedback Rate Over Time",
+          "type": "timeseries",
+          "metric": "operator_feedback_rate"
+        },
+        {
+          "name": "Prediction Accuracy",
+          "type": "stat",
+          "metric": "prediction_correct_ratio"
+        }
+      ]
+    }
+
+  # Integration Notes:
+  # ==================
+  # 1. Copy these dashboard JSON definitions into Grafana's provisioning directory
+  # 2. Update datasource references to match your Grafana setup
+  # 3. Ensure all required data sources are configured:
+  #    - Prometheus for metrics
+  #    - Loki for logs
+  #    - TimescaleDB for KPIs
+  #    - EdgePostgreSQL for predictions
+  # 4. Update alert notification channels as needed
+  # 5. Create dashboard variables for filtering by namespace, tier, etc.
