@@ -52,7 +52,7 @@ kube-prometheus-stack:
         # MLflow metrics
         - job_name: 'mlflow'
           static_configs:
-            - targets: ['mlflow.mlops.svc.cluster.local:5000']
+            - targets: ['mlflow.platform.svc.cluster.local:5000']
           metrics_path: /metrics
           scrape_interval: 30s
 
@@ -68,9 +68,9 @@ kube-prometheus-stack:
       annotations:
         traefik.ingress.kubernetes.io/router.entrypoints: web
       hosts:
-        - prometheus.platform.local
-      paths:
-        - /
+        - host: prometheus.platform.local
+          paths:
+            - /
       tls: []
 
   # -----------------------------------------------------------------------
@@ -137,9 +137,9 @@ kube-prometheus-stack:
       enabled: true
       ingressClassName: traefik
       hosts:
-        - alertmanager.platform.local
-      paths:
-        - /
+        - host: alertmanager.platform.local
+          paths:
+            - /
 
   # -----------------------------------------------------------------------
   # Grafana — bundled with kube-prometheus-stack

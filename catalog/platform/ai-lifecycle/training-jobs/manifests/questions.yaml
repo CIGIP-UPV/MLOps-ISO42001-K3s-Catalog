@@ -54,7 +54,7 @@ questions:
   - variable: config.MLFLOW_TRACKING_URI
     label: "MLflow Tracking URI"
     type: string
-    default: "http://mlflow.mlops.svc.cluster.local:5000"
+    default: "http://mlflow.platform.svc.cluster.local:5000"
     group: "MLflow"
 
   - variable: config.EXPERIMENT_NAME
