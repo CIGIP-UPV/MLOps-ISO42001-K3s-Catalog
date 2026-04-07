@@ -1,0 +1,48 @@
+# Node-RED Helm values for K3S Edge deployment
+# Reference: ISO/IEC 42001 components: Input Data Monitoring, Data Stock
+# Fill in values based on questionnaire.md answers
+
+image:
+  tag: "3.1"
+
+service:
+  type: ClusterIP
+  port: 1880
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: traefik   # K3S default ingress
+  hosts:
+    - host: node-red.edge.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+persistence:
+  enabled: true             # Q5: set to true if connectivity is intermittent
+  storageClass: local-path  # K3S default StorageClass
+  size: 2Gi
+
+env:
+  - name: NODE_RED_ENABLE_PROJECTS
+    value: "true"           # Enables Git-based flow version control (Q9)
+  - name: TZ
+    value: "Europe/Madrid"
+
+# Authentication (Q8): enable if admin UI is exposed
+settings:
+  adminAuth:
+    enabled: false          # Set to true and configure users for external access
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "512Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"
+
+# Node affinity: pin to edge nodes if using mixed cluster
+# nodeSelector:
+#   node-role: edge
