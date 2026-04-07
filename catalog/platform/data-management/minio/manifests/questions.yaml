@@ -1,0 +1,132 @@
+# =============================================================================
+# Rancher Questions — MinIO (S3-Compatible Object Storage)
+# ISO/IEC 42001: B.6.2.3.1, B.6.2.5.1, B.6.2.6.5, B.6.2.8.1
+# =============================================================================
+categories:
+  - "Platform"
+  - "Data Management"
+
+questions:
+
+  # ---- Architecture ----
+  - variable: mode
+    label: "Deployment Mode"
+    description: "Standalone for single-node; distributed for HA (4+ nodes)"
+    type: enum
+    default: "standalone"
+    options:
+      - "standalone"
+      - "distributed"
+    group: "Architecture"
+
+  # ---- Authentication ----
+  - variable: rootUser
+    label: "Root User"
+    type: string
+    default: "minioadmin"
+    group: "Authentication"
+
+  - variable: rootPassword
+    label: "Root Password"
+    type: password
+    default: ""
+    required: true
+    group: "Authentication"
+
+  # ---- Persistence ----
+  - variable: persistence.storageClass
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: persistence.size
+    label: "Volume Size"
+    description: "Total object storage capacity"
+    type: string
+    default: "100Gi"
+    group: "Storage"
+
+  # ---- API Networking ----
+  - variable: service.type
+    label: "API Service Type"
+    type: enum
+    default: "ClusterIP"
+    options:
+      - "ClusterIP"
+      - "NodePort"
+      - "LoadBalancer"
+    group: "Networking"
+
+  - variable: service.port
+    label: "API Port"
+    type: int
+    default: 9000
+    group: "Networking"
+
+  - variable: ingress.enabled
+    label: "Enable API Ingress"
+    type: boolean
+    default: true
+    group: "Networking"
+
+  - variable: ingress.hosts[0]
+    label: "API Ingress Hostname"
+    type: hostname
+    default: "minio-api.platform.local"
+    show_if: "ingress.enabled=true"
+    group: "Networking"
+
+  # ---- Console Networking ----
+  - variable: consoleIngress.enabled
+    label: "Enable Console Ingress"
+    type: boolean
+    default: true
+    group: "Console"
+
+  - variable: consoleIngress.hosts[0]
+    label: "Console Hostname"
+    type: hostname
+    default: "minio.platform.local"
+    show_if: "consoleIngress.enabled=true"
+    group: "Console"
+
+  # ---- Monitoring ----
+  - variable: metrics.serviceMonitor.enabled
+    label: "Enable Prometheus ServiceMonitor"
+    description: "Expose MinIO metrics (ISO 42001: B.6.1.2.2)"
+    type: boolean
+    default: true
+    group: "Monitoring"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "250m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "512Mi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "1000m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "2Gi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/platform
+    label: "Pin to Platform Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

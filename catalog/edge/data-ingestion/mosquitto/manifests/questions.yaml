@@ -1,0 +1,121 @@
+# =============================================================================
+# Rancher Questions — Eclipse Mosquitto (Edge MQTT Broker)
+# ISO/IEC 42001: B.6.2.6.4
+# =============================================================================
+categories:
+  - "Edge"
+  - "Data Ingestion"
+
+questions:
+
+  # ---- Container Image ----
+  - variable: image.tag
+    label: "Mosquitto Version"
+    type: string
+    default: "2.0"
+    group: "Container Image"
+
+  # ---- MQTT Configuration ----
+  - variable: config.mqttPort
+    label: "MQTT Port"
+    type: int
+    default: 1883
+    group: "MQTT Configuration"
+
+  - variable: config.websocketEnabled
+    label: "Enable WebSocket Listener"
+    description: "WebSocket transport on port 9001"
+    type: boolean
+    default: true
+    group: "MQTT Configuration"
+
+  - variable: config.websocketPort
+    label: "WebSocket Port"
+    type: int
+    default: 9001
+    show_if: "config.websocketEnabled=true"
+    group: "MQTT Configuration"
+
+  - variable: config.allowAnonymous
+    label: "Allow Anonymous Connections"
+    description: "Disable for production environments (ISO 42001: B.6.1.3.1)"
+    type: boolean
+    default: false
+    group: "MQTT Configuration"
+
+  - variable: config.messageSizeLimit
+    label: "Max Message Size (bytes)"
+    description: "Prevent oversized payloads from sensors"
+    type: int
+    default: 1048576
+    group: "MQTT Configuration"
+
+  # ---- Service ----
+  - variable: service.type
+    label: "Service Type"
+    type: enum
+    default: "ClusterIP"
+    options:
+      - "ClusterIP"
+      - "NodePort"
+      - "LoadBalancer"
+    group: "Networking"
+
+  - variable: service.nodePorts.mqtt
+    label: "MQTT NodePort"
+    type: int
+    default: 31883
+    show_if: "service.type=NodePort"
+    group: "Networking"
+
+  - variable: service.nodePorts.websocket
+    label: "WebSocket NodePort"
+    type: int
+    default: 31901
+    show_if: "service.type=NodePort"
+    group: "Networking"
+
+  # ---- Persistence ----
+  - variable: persistence.storageClass
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: persistence.size
+    label: "Volume Size"
+    type: string
+    default: "1Gi"
+    group: "Storage"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "50m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "64Mi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "200m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "128Mi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/edge
+    label: "Pin to Edge Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

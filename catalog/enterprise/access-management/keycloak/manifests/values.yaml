@@ -1,0 +1,207 @@
+# =============================================================================
+# Keycloak — Identity & Access Management
+# Helm chart: bitnami/keycloak
+# Tier: Enterprise | RA Component: User Access and Oversight
+# ISO/IEC 42001: B.6.1.3.1, B.6.1.3.3, B.8.0.2.1
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Image
+# -----------------------------------------------------------------------------
+image:
+  registry: docker.io
+  repository: bitnami/keycloak
+  tag: "24.0.0"
+
+# -----------------------------------------------------------------------------
+# Admin credentials
+# -----------------------------------------------------------------------------
+auth:
+  adminUser: admin
+  adminPassword: "CHANGE_ME"
+  # existingSecret: keycloak-admin-credentials
+
+# -----------------------------------------------------------------------------
+# Production mode
+# -----------------------------------------------------------------------------
+production: true
+proxy: edge                          # Behind Traefik ingress
+
+# -----------------------------------------------------------------------------
+# Service
+# -----------------------------------------------------------------------------
+service:
+  type: ClusterIP
+  ports:
+    http: 8080
+    https: 8443
+
+# -----------------------------------------------------------------------------
+# Ingress — Traefik (K3S default)
+# -----------------------------------------------------------------------------
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  hostname: keycloak.enterprise.local
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+  tls: true
+  # extraTls:
+  #   - secretName: keycloak-tls
+  #     hosts:
+  #       - keycloak.enterprise.local
+
+# -----------------------------------------------------------------------------
+# Database — external PostgreSQL (platform tier)
+# -----------------------------------------------------------------------------
+postgresql:
+  enabled: false                     # Use external PostgreSQL
+
+externalDatabase:
+  host: postgresql.platform.svc.cluster.local
+  port: 5432
+  database: keycloak
+  user: keycloak
+  password: "CHANGE_ME"
+  # existingSecret: keycloak-db-credentials
+  # existingSecretPasswordKey: password
+
+# -----------------------------------------------------------------------------
+# Persistence — themes and providers
+# -----------------------------------------------------------------------------
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 2Gi
+
+# -----------------------------------------------------------------------------
+# Keycloak configuration (B.6.1.3.1)
+# -----------------------------------------------------------------------------
+extraEnvVars:
+  # Enable token exchange for service-to-service auth
+  - name: KC_FEATURES
+    value: "token-exchange,admin-fine-grained-authz"
+  # Event logging (B.6.2.8.1)
+  - name: KC_SPI_EVENTS_LISTENER_JBOSS_LOGGING_SUCCESS_LEVEL
+    value: "info"
+  - name: KC_SPI_EVENTS_LISTENER_JBOSS_LOGGING_ERROR_LEVEL
+    value: "warn"
+
+# -----------------------------------------------------------------------------
+# Realm import — auto-configure AI system realm
+# -----------------------------------------------------------------------------
+keycloakConfigCli:
+  enabled: true
+  configuration:
+    ai-system-realm.json: |
+      {
+        "realm": "ai-system",
+        "enabled": true,
+        "sslRequired": "external",
+        "registrationAllowed": false,
+        "eventsEnabled": true,
+        "eventsExpiration": 7776000,
+        "adminEventsEnabled": true,
+        "adminEventsDetailsEnabled": true,
+        "roles": {
+          "realm": [
+            {
+              "name": "operator",
+              "description": "Machine operators — view predictions, provide feedback"
+            },
+            {
+              "name": "data-scientist",
+              "description": "Model training, evaluation, MLflow access"
+            },
+            {
+              "name": "compliance-officer",
+              "description": "Audit log access, model approval, ISO documentation"
+            },
+            {
+              "name": "production-manager",
+              "description": "KPI dashboards, model promotion approval"
+            },
+            {
+              "name": "admin",
+              "description": "Full platform administration"
+            }
+          ]
+        },
+        "clients": [
+          {
+            "clientId": "grafana",
+            "enabled": true,
+            "protocol": "openid-connect",
+            "publicClient": false,
+            "redirectUris": ["http://grafana.platform.local/*"],
+            "webOrigins": ["http://grafana.platform.local"],
+            "defaultClientScopes": ["openid", "profile", "email"]
+          },
+          {
+            "clientId": "mlflow",
+            "enabled": true,
+            "protocol": "openid-connect",
+            "publicClient": false,
+            "redirectUris": ["http://mlflow.platform.local/*"],
+            "webOrigins": ["http://mlflow.platform.local"]
+          },
+          {
+            "clientId": "minio",
+            "enabled": true,
+            "protocol": "openid-connect",
+            "publicClient": false,
+            "redirectUris": ["http://minio.platform.local/*"],
+            "webOrigins": ["http://minio.platform.local"]
+          },
+          {
+            "clientId": "zammad",
+            "enabled": true,
+            "protocol": "openid-connect",
+            "publicClient": false,
+            "redirectUris": ["http://helpdesk.enterprise.local/*"],
+            "webOrigins": ["http://helpdesk.enterprise.local"]
+          }
+        ],
+        "browserSecurityHeaders": {
+          "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';"
+        }
+      }
+
+# -----------------------------------------------------------------------------
+# Resources
+# -----------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: "500m"
+    memory: "512Mi"
+  limits:
+    cpu: "1500m"
+    memory: "2Gi"
+
+# -----------------------------------------------------------------------------
+# Liveness / Readiness
+# -----------------------------------------------------------------------------
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 120
+  periodSeconds: 20
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 60
+  periodSeconds: 10
+
+# -----------------------------------------------------------------------------
+# Metrics — Prometheus (B.6.1.2.2)
+# -----------------------------------------------------------------------------
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+
+# -----------------------------------------------------------------------------
+# Node placement
+# -----------------------------------------------------------------------------
+nodeSelector:
+  node-role.kubernetes.io/platform: "true"

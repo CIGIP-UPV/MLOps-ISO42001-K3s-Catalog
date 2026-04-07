@@ -1,0 +1,174 @@
+# =============================================================================
+# TimescaleDB — Time-Series Data Warehouse
+# Helm chart: timescale/timescaledb-single
+# Tier: Platform | RA Component: Data Stock (Platform)
+# ISO/IEC 42001: B.6.2.6.3, B.6.2.8.1
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Image
+# -----------------------------------------------------------------------------
+image:
+  repository: timescale/timescaledb-ha
+  tag: "pg16"
+
+# -----------------------------------------------------------------------------
+# Replicas
+# -----------------------------------------------------------------------------
+replicaCount: 1                      # Increase for HA
+
+# -----------------------------------------------------------------------------
+# Authentication
+# -----------------------------------------------------------------------------
+credentials:
+  superuser: "CHANGE_ME"
+  admin: "CHANGE_ME"
+  # Additional users provisioned via init scripts
+
+# -----------------------------------------------------------------------------
+# Persistence
+# -----------------------------------------------------------------------------
+persistentVolumes:
+  data:
+    enabled: true
+    storageClass: local-path
+    size: 100Gi
+    accessModes:
+      - ReadWriteOnce
+  wal:
+    enabled: true
+    storageClass: local-path
+    size: 10Gi
+    accessModes:
+      - ReadWriteOnce
+
+# -----------------------------------------------------------------------------
+# Service
+# -----------------------------------------------------------------------------
+service:
+  primary:
+    type: ClusterIP
+    port: 5432
+
+# -----------------------------------------------------------------------------
+# PostgreSQL & TimescaleDB configuration
+# -----------------------------------------------------------------------------
+postgresql:
+  parameters:
+    # Memory
+    shared_buffers: "1GB"
+    effective_cache_size: "3GB"
+    work_mem: "16MB"
+    maintenance_work_mem: "256MB"
+
+    # Connections
+    max_connections: "100"
+
+    # WAL
+    wal_level: "replica"
+    max_wal_size: "2GB"
+
+    # TimescaleDB specific
+    timescaledb.max_background_workers: "8"
+
+    # Logging (B.6.2.8.1)
+    log_statement: "mod"
+    log_min_duration_statement: "1000"
+    log_connections: "on"
+    log_disconnections: "on"
+
+# -----------------------------------------------------------------------------
+# Initialisation — create databases and hypertables
+# -----------------------------------------------------------------------------
+postInit:
+  - configMap:
+      name: timescaledb-init
+
+# Create the init ConfigMap separately:
+# kubectl create configmap timescaledb-init --from-file=init.sql -n platform
+
+# init.sql content reference:
+# CREATE DATABASE ai_platform;
+# \c ai_platform
+#
+# CREATE EXTENSION IF NOT EXISTS timescaledb;
+#
+# -- Sensor readings (compressed after 7 days)
+# CREATE TABLE sensor_readings (
+#   time        TIMESTAMPTZ NOT NULL,
+#   machine_id  TEXT NOT NULL,
+#   signal_name TEXT NOT NULL,
+#   value       DOUBLE PRECISION
+# );
+# SELECT create_hypertable('sensor_readings', 'time');
+# ALTER TABLE sensor_readings SET (
+#   timescaledb.compress,
+#   timescaledb.compress_segmentby = 'machine_id,signal_name'
+# );
+# SELECT add_compression_policy('sensor_readings', INTERVAL '7 days');
+#
+# -- Model predictions
+# CREATE TABLE predictions (
+#   time          TIMESTAMPTZ NOT NULL,
+#   machine_id    TEXT NOT NULL,
+#   model_version TEXT NOT NULL,
+#   score         DOUBLE PRECISION,
+#   label         TEXT,
+#   acknowledged  BOOLEAN DEFAULT FALSE
+# );
+# SELECT create_hypertable('predictions', 'time');
+#
+# -- OEE KPIs (B.6.2.6.3)
+# CREATE TABLE oee_kpis (
+#   time         TIMESTAMPTZ NOT NULL,
+#   machine_id   TEXT NOT NULL,
+#   oee          DOUBLE PRECISION,
+#   availability DOUBLE PRECISION,
+#   performance  DOUBLE PRECISION,
+#   quality      DOUBLE PRECISION
+# );
+# SELECT create_hypertable('oee_kpis', 'time');
+#
+# -- Continuous aggregates for dashboards
+# CREATE MATERIALIZED VIEW oee_hourly
+# WITH (timescaledb.continuous) AS
+# SELECT
+#   time_bucket('1 hour', time) AS bucket,
+#   machine_id,
+#   avg(oee) as avg_oee,
+#   avg(availability) as avg_availability
+# FROM oee_kpis
+# GROUP BY bucket, machine_id;
+#
+# -- Users
+# CREATE USER grafana WITH PASSWORD 'CHANGE_ME';
+# GRANT SELECT ON ALL TABLES IN SCHEMA public TO grafana;
+# CREATE USER training WITH PASSWORD 'CHANGE_ME';
+# GRANT SELECT ON ALL TABLES IN SCHEMA public TO training;
+
+# -----------------------------------------------------------------------------
+# Backup — pgBackRest
+# -----------------------------------------------------------------------------
+backup:
+  enabled: false
+  # pgBackRest:
+  #   repo1-type: s3
+  #   repo1-s3-endpoint: minio.minio.svc.cluster.local:9000
+  #   repo1-s3-bucket: timescaledb-backups
+
+# -----------------------------------------------------------------------------
+# Resources
+# -----------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: "500m"
+    memory: "2Gi"
+  limits:
+    cpu: "2000m"
+    memory: "4Gi"
+
+# -----------------------------------------------------------------------------
+# Node placement
+# -----------------------------------------------------------------------------
+nodeSelector:
+  node-role.kubernetes.io/platform: "true"

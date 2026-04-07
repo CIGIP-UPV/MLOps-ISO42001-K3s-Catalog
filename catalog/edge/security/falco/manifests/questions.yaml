@@ -1,0 +1,108 @@
+# =============================================================================
+# Rancher Questions — Falco (Edge Security Monitoring)
+# ISO/IEC 42001: B.6.2.6.7
+# =============================================================================
+categories:
+  - "Edge"
+  - "Security"
+
+questions:
+
+  # ---- Driver ----
+  - variable: driver.kind
+    label: "Falco Driver"
+    description: "eBPF for kernels ≥5.8; module for older kernels"
+    type: enum
+    default: "ebpf"
+    options:
+      - "ebpf"
+      - "module"
+    group: "Driver"
+
+  # ---- K3S Runtime ----
+  - variable: collectors.containerd.socket
+    label: "Containerd Socket Path"
+    description: "K3S uses a non-standard containerd path"
+    type: string
+    default: "/run/k3s/containerd/containerd.sock"
+    group: "Runtime"
+
+  # ---- Alert Routing ----
+  - variable: falcosidekick.enabled
+    label: "Enable Falcosidekick"
+    description: "Route alerts to Loki, Slack, Zammad, etc."
+    type: boolean
+    default: true
+    group: "Alert Routing"
+
+  - variable: falcosidekick.config.loki.hostport
+    label: "Loki Endpoint"
+    description: "Forward security alerts to Loki for centralised logging"
+    type: string
+    default: "http://loki.monitoring.svc.cluster.local:3100"
+    show_if: "falcosidekick.enabled=true"
+    group: "Alert Routing"
+
+  - variable: falcosidekick.config.loki.minimumpriority
+    label: "Minimum Alert Priority for Loki"
+    type: enum
+    default: "warning"
+    options:
+      - "emergency"
+      - "alert"
+      - "critical"
+      - "error"
+      - "warning"
+      - "notice"
+      - "informational"
+      - "debug"
+    show_if: "falcosidekick.enabled=true"
+    group: "Alert Routing"
+
+  - variable: falcosidekick.config.webhook.address
+    label: "Zammad Webhook URL (Optional)"
+    description: "Auto-create helpdesk tickets for critical alerts (ISO 42001: B.8.0.5.1)"
+    type: string
+    default: ""
+    show_if: "falcosidekick.enabled=true"
+    group: "Alert Routing"
+
+  # ---- Custom AI Rules ----
+  - variable: customRules.enabled
+    label: "Enable AI Workload Security Rules"
+    description: "Custom rules for model file access, shell spawn, and exfiltration detection"
+    type: boolean
+    default: true
+    group: "AI Security Rules"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "100m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "256Mi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "500m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "512Mi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/edge
+    label: "Pin to Edge Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

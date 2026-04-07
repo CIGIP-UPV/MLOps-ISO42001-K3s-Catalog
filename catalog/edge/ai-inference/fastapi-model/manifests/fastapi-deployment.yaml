@@ -1,0 +1,170 @@
+# =============================================================================
+# FastAPI Model Server — Edge AI Inference
+# Plain K3S manifest (custom container — no Helm chart)
+# Tier: Edge | RA Component: Edge AI Model
+# ISO/IEC 42001: B.6.1.2.2, B.6.1.3.4, B.6.2.6.1
+# =============================================================================
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: edge
+  labels:
+    tier: edge
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fastapi-model-config
+  namespace: edge
+data:
+  MODEL_PATH: "/models/model.onnx"
+  MODEL_VERSION: "1.0.0"
+  LOG_PREDICTIONS: "true"
+  LOG_LEVEL: "INFO"
+  # PostgreSQL connection for prediction logging (B.6.2.8.1)
+  DB_HOST: "postgresql.edge.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "predictions"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fastapi-model-secrets
+  namespace: edge
+type: Opaque
+stringData:
+  DB_USER: "fastapi"
+  DB_PASSWORD: "CHANGE_ME"         # Replace with actual password
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-model
+  namespace: edge
+  labels:
+    app: fastapi-model
+    tier: edge
+    ra-component: edge-ai-model
+spec:
+  replicas: 1                       # Scale to 2 for HA
+  selector:
+    matchLabels:
+      app: fastapi-model
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: fastapi-model
+        tier: edge
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/edge: "true"
+      containers:
+        - name: fastapi-model
+          image: your-registry/fastapi-model:1.0.0  # Replace with your image
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: fastapi-model-config
+            - secretRef:
+                name: fastapi-model-secrets
+          volumeMounts:
+            - name: model-storage
+              mountPath: /models
+              readOnly: true
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+              # Uncomment for GPU inference:
+              # nvidia.com/gpu: "1"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+      volumes:
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: model-storage
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: model-storage
+  namespace: edge
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-model
+  namespace: edge
+  labels:
+    app: fastapi-model
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+  selector:
+    app: fastapi-model
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fastapi-model
+  namespace: edge
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: model.edge.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: fastapi-model
+                port:
+                  number: 8000
+  # TLS — uncomment for HTTPS
+  # tls:
+  #   - secretName: fastapi-model-tls
+  #     hosts:
+  #       - model.edge.local

@@ -1,0 +1,136 @@
+# =============================================================================
+# Rancher Questions — Node-RED (Edge Data Ingestion)
+# ISO/IEC 42001: B.6.2.6.4, B.6.2.6.7
+# =============================================================================
+categories:
+  - "Edge"
+  - "Data Ingestion"
+
+questions:
+
+  # ---- Networking ----
+  - variable: service.type
+    label: "Service Type"
+    description: "How to expose Node-RED"
+    type: enum
+    default: "ClusterIP"
+    options:
+      - "ClusterIP"
+      - "NodePort"
+      - "LoadBalancer"
+    group: "Networking"
+
+  - variable: service.port
+    label: "Service Port"
+    type: int
+    default: 1880
+    group: "Networking"
+
+  - variable: service.nodePort
+    label: "NodePort"
+    description: "Port to expose when Service Type is NodePort (30000-32767)"
+    type: int
+    default: 31880
+    show_if: "service.type=NodePort"
+    group: "Networking"
+
+  - variable: ingress.enabled
+    label: "Enable Ingress"
+    type: boolean
+    default: true
+    group: "Networking"
+
+  - variable: ingress.hosts[0].host
+    label: "Ingress Hostname"
+    description: "FQDN for Node-RED web UI"
+    type: hostname
+    default: "node-red.edge.local"
+    show_if: "ingress.enabled=true"
+    group: "Networking"
+
+  - variable: ingress.tls[0].secretName
+    label: "TLS Secret Name"
+    description: "Leave empty to disable HTTPS"
+    type: string
+    default: ""
+    show_if: "ingress.enabled=true"
+    group: "Networking"
+
+  # ---- Persistence ----
+  - variable: persistence.enabled
+    label: "Enable Persistent Storage"
+    description: "Required for flow storage and buffering during connectivity outages"
+    type: boolean
+    default: true
+    group: "Storage"
+
+  - variable: persistence.storageClass
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    show_if: "persistence.enabled=true"
+    group: "Storage"
+
+  - variable: persistence.size
+    label: "Volume Size"
+    type: string
+    default: "5Gi"
+    show_if: "persistence.enabled=true"
+    group: "Storage"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "250m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "256Mi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "1000m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "1Gi"
+    group: "Resources"
+
+  # ---- Node-RED Configuration ----
+  - variable: env[0].value
+    label: "Enable Git Projects"
+    description: "Enable flow version control via Git (ISO 42001: B.6.1.3.2)"
+    type: enum
+    default: "true"
+    options:
+      - "true"
+      - "false"
+    group: "Node-RED Configuration"
+
+  - variable: env[1].value
+    label: "Timezone"
+    type: string
+    default: "Europe/Madrid"
+    group: "Node-RED Configuration"
+
+  - variable: settings.adminAuth.enabled
+    label: "Enable Admin Authentication"
+    description: "Restrict access to the Node-RED editor (ISO 42001: B.6.1.3.1)"
+    type: boolean
+    default: true
+    group: "Node-RED Configuration"
+
+  # ---- Node Placement ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/edge
+    label: "Pin to Edge Nodes"
+    description: "Schedule only on nodes labelled as edge"
+    type: string
+    default: "true"
+    group: "Scheduling"

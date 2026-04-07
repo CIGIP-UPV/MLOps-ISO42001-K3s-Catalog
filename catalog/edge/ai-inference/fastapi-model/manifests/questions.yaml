@@ -1,0 +1,198 @@
+# =============================================================================
+# Rancher Questions — FastAPI Model Server (Edge AI Inference)
+# ISO/IEC 42001: B.6.1.2.2, B.6.1.3.4, B.6.2.6.1
+# =============================================================================
+categories:
+  - "Edge"
+  - "AI Inference"
+
+questions:
+
+  # ---- Container Image ----
+  - variable: image.repository
+    label: "Container Image"
+    description: "Docker registry/image for your FastAPI model server"
+    type: string
+    default: "your-registry/fastapi-model"
+    required: true
+    group: "Container Image"
+
+  - variable: image.tag
+    label: "Image Tag"
+    type: string
+    default: "1.0.0"
+    required: true
+    group: "Container Image"
+
+  # ---- Model Configuration ----
+  - variable: env.MODEL_PATH
+    label: "Model File Path"
+    description: "Path inside the container where the model artefact is mounted"
+    type: string
+    default: "/models/model.onnx"
+    group: "Model Configuration"
+
+  - variable: env.MODEL_VERSION
+    label: "Model Version"
+    description: "Must match the MLflow registry version (ISO 42001: B.6.1.3.2)"
+    type: string
+    default: "1.0.0"
+    group: "Model Configuration"
+
+  - variable: env.LOG_PREDICTIONS
+    label: "Log All Predictions"
+    description: "Write every inference to PostgreSQL for audit (ISO 42001: B.6.2.8.1)"
+    type: boolean
+    default: true
+    group: "Model Configuration"
+
+  # ---- Networking ----
+  - variable: service.type
+    label: "Service Type"
+    type: enum
+    default: "ClusterIP"
+    options:
+      - "ClusterIP"
+      - "NodePort"
+      - "LoadBalancer"
+    group: "Networking"
+
+  - variable: service.port
+    label: "Service Port"
+    type: int
+    default: 8000
+    group: "Networking"
+
+  - variable: service.nodePort
+    label: "NodePort"
+    type: int
+    default: 31800
+    show_if: "service.type=NodePort"
+    group: "Networking"
+
+  - variable: ingress.enabled
+    label: "Enable Ingress"
+    type: boolean
+    default: true
+    group: "Networking"
+
+  - variable: ingress.hostname
+    label: "Ingress Hostname"
+    type: hostname
+    default: "model.edge.local"
+    show_if: "ingress.enabled=true"
+    group: "Networking"
+
+  - variable: ingress.tls.secretName
+    label: "TLS Secret Name"
+    description: "Leave empty for HTTP only"
+    type: string
+    default: ""
+    show_if: "ingress.enabled=true"
+    group: "Networking"
+
+  # ---- Database Connection ----
+  - variable: env.DB_HOST
+    label: "PostgreSQL Host"
+    description: "Edge PostgreSQL for prediction logging"
+    type: string
+    default: "postgresql.edge.svc.cluster.local"
+    group: "Database"
+
+  - variable: env.DB_PORT
+    label: "PostgreSQL Port"
+    type: int
+    default: 5432
+    group: "Database"
+
+  - variable: env.DB_NAME
+    label: "Database Name"
+    type: string
+    default: "predictions"
+    group: "Database"
+
+  - variable: secrets.DB_USER
+    label: "Database User"
+    type: string
+    default: "fastapi"
+    group: "Database"
+
+  - variable: secrets.DB_PASSWORD
+    label: "Database Password"
+    type: password
+    default: ""
+    required: true
+    group: "Database"
+
+  # ---- Persistence (Model Storage) ----
+  - variable: persistence.enabled
+    label: "Enable Model Storage Volume"
+    description: "PVC for model artefact files"
+    type: boolean
+    default: true
+    group: "Storage"
+
+  - variable: persistence.storageClass
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    show_if: "persistence.enabled=true"
+    group: "Storage"
+
+  - variable: persistence.size
+    label: "Volume Size"
+    type: string
+    default: "5Gi"
+    show_if: "persistence.enabled=true"
+    group: "Storage"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "500m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "512Mi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "2000m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "2Gi"
+    group: "Resources"
+
+  - variable: resources.limits.nvidia\.com/gpu
+    label: "GPU (NVIDIA)"
+    description: "Set to 1 to enable GPU inference; 0 for CPU only"
+    type: int
+    default: 0
+    min: 0
+    max: 4
+    group: "Resources"
+
+  # ---- Replicas ----
+  - variable: replicaCount
+    label: "Replicas"
+    description: "1 for standard edge; 2 for high availability"
+    type: int
+    default: 1
+    min: 1
+    max: 4
+    group: "Scaling"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/edge
+    label: "Pin to Edge Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

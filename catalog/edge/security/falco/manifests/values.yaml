@@ -1,0 +1,106 @@
+# =============================================================================
+# Falco — Runtime Security Monitoring (Edge)
+# Helm chart: falcosecurity/falco
+# Tier: Edge | RA Component: Security Monitoring
+# ISO/IEC 42001: B.6.2.6.7
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Driver — eBPF preferred for modern kernels (≥ 5.8)
+# -----------------------------------------------------------------------------
+driver:
+  kind: ebpf
+  ebpf:
+    hostNetwork: true
+
+# -----------------------------------------------------------------------------
+# K3S containerd socket path
+# -----------------------------------------------------------------------------
+collectors:
+  containerd:
+    enabled: true
+    socket: /run/k3s/containerd/containerd.sock
+
+# -----------------------------------------------------------------------------
+# Custom rules for AI workload protection (B.6.2.6.7)
+# -----------------------------------------------------------------------------
+customRules:
+  ai-workload-rules.yaml: |-
+    - rule: Unexpected Model File Access
+      desc: Detect read access to AI model files from non-inference containers
+      condition: >
+        open_read and
+        fd.name startswith /models/ and
+        not container.name = "fastapi-model"
+      output: >
+        Unexpected read of model file
+        (user=%user.name container=%container.name file=%fd.name)
+      priority: WARNING
+      tags: [ai-security, model-stealing]
+
+    - rule: AI Container Shell Spawn
+      desc: Detect shell spawning inside AI inference containers
+      condition: >
+        spawned_process and
+        container.name = "fastapi-model" and
+        proc.name in (bash, sh, zsh)
+      output: >
+        Shell spawned in AI container
+        (user=%user.name container=%container.name command=%proc.cmdline)
+      priority: CRITICAL
+      tags: [ai-security, container-escape]
+
+    - rule: Unexpected Outbound Connection from AI
+      desc: Detect outbound network from AI containers to unexpected destinations
+      condition: >
+        outbound and
+        container.name = "fastapi-model" and
+        not fd.sip in (postgresql.edge.svc, prometheus-agent.monitoring.svc)
+      output: >
+        Unexpected outbound connection from AI container
+        (container=%container.name dest=%fd.sip:%fd.sport)
+      priority: WARNING
+      tags: [ai-security, exfiltration]
+
+# -----------------------------------------------------------------------------
+# Falcosidekick — alert routing
+# -----------------------------------------------------------------------------
+falcosidekick:
+  enabled: true
+  replicaCount: 1
+  config:
+    loki:
+      hostport: "http://loki.monitoring.svc.cluster.local:3100"
+      minimumpriority: warning
+    # Webhook to Zammad helpdesk (optional)
+    # webhook:
+    #   address: "https://zammad.enterprise.local/api/v1/tickets"
+    #   minimumpriority: critical
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
+
+# -----------------------------------------------------------------------------
+# Resources
+# -----------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+# -----------------------------------------------------------------------------
+# Node placement
+# -----------------------------------------------------------------------------
+nodeSelector:
+  node-role.kubernetes.io/edge: "true"
+
+tolerations:
+  - operator: Exists
+    effect: NoSchedule

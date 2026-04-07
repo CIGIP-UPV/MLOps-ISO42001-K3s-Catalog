@@ -1,0 +1,128 @@
+# =============================================================================
+# Rancher Questions — Loki (Centralised Log Aggregation)
+# ISO/IEC 42001: B.6.2.8.1
+# =============================================================================
+categories:
+  - "Platform"
+  - "Monitoring"
+
+questions:
+
+  # ---- Deployment Mode ----
+  - variable: deploymentMode
+    label: "Deployment Mode"
+    description: "SingleBinary for small/medium; Distributed for large scale"
+    type: enum
+    default: "SingleBinary"
+    options:
+      - "SingleBinary"
+      - "SimpleScalable"
+    group: "Architecture"
+
+  - variable: singleBinary.replicas
+    label: "Replicas"
+    type: int
+    default: 1
+    min: 1
+    max: 3
+    show_if: "deploymentMode=SingleBinary"
+    group: "Architecture"
+
+  # ---- Retention ----
+  - variable: loki.limits_config.retention_period
+    label: "Log Retention Period"
+    description: "90+ days recommended for ISO/IEC 42001 audit readiness (B.6.2.8.1)"
+    type: enum
+    default: "2160h"
+    options:
+      - "720h"
+      - "2160h"
+      - "4320h"
+      - "8760h"
+    group: "Retention"
+
+  # ---- Storage Backend ----
+  - variable: loki.storage.type
+    label: "Storage Backend"
+    description: "Filesystem for single-node; S3 (MinIO) for production"
+    type: enum
+    default: "filesystem"
+    options:
+      - "filesystem"
+      - "s3"
+    group: "Storage Backend"
+
+  - variable: loki.storage.s3.endpoint
+    label: "MinIO Endpoint"
+    type: string
+    default: "http://minio.minio.svc.cluster.local:9000"
+    show_if: "loki.storage.type=s3"
+    group: "Storage Backend"
+
+  - variable: loki.storage.s3.bucketnames
+    label: "S3 Bucket Name"
+    type: string
+    default: "loki-logs"
+    show_if: "loki.storage.type=s3"
+    group: "Storage Backend"
+
+  # ---- Persistence (Filesystem Mode) ----
+  - variable: singleBinary.persistence.storageClass
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    show_if: "loki.storage.type=filesystem"
+    group: "Storage"
+
+  - variable: singleBinary.persistence.size
+    label: "Volume Size"
+    type: string
+    default: "50Gi"
+    show_if: "loki.storage.type=filesystem"
+    group: "Storage"
+
+  # ---- Gateway ----
+  - variable: gateway.enabled
+    label: "Enable Gateway"
+    type: boolean
+    default: true
+    group: "Gateway"
+
+  # ---- Monitoring ----
+  - variable: monitoring.serviceMonitor.enabled
+    label: "Enable Prometheus ServiceMonitor"
+    type: boolean
+    default: true
+    group: "Monitoring"
+
+  # ---- Resources ----
+  - variable: singleBinary.resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "250m"
+    group: "Resources"
+
+  - variable: singleBinary.resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "512Mi"
+    group: "Resources"
+
+  - variable: singleBinary.resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "1000m"
+    group: "Resources"
+
+  - variable: singleBinary.resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "2Gi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: singleBinary.nodeSelector.node-role\.kubernetes\.io/platform
+    label: "Pin to Platform Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

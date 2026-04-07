@@ -1,0 +1,63 @@
+# =============================================================================
+# MinIO — Document Store (Enterprise)
+# Helm chart: minio/minio
+# Tier: Enterprise | RA Component: Document Store
+# ISO/IEC 42001: B.6.2.3.1, B.6.2.5.1, B.6.2.6.5
+#
+# NOTE: This is the same MinIO instance as platform/data-management/minio
+# but with enterprise-specific bucket configuration. If running a single
+# MinIO instance, merge these buckets into the platform values.yaml.
+# Deploy as a separate instance only if enterprise and platform are
+# on different clusters.
+# =============================================================================
+
+# This values file is an OVERLAY for enterprise-specific document buckets.
+# Use it alongside or merged into platform/data-management/minio/values.yaml.
+
+# Additional buckets for ISO/IEC 42001 document governance:
+buckets:
+  # System architecture documentation (B.6.2.3.1)
+  - name: iso42001-docs
+    policy: none
+    purge: false
+    versioning: true
+    objectlocking: true              # Immutable for audit evidence
+
+  # Deployment plans (B.6.2.5.1)
+  # Stored in iso42001-docs/deployment-plan/
+
+  # Update and repair plans (B.6.2.6.5)
+  # Stored in iso42001-docs/update-repair-plan/
+
+  # Model cards and evaluation reports
+  - name: model-cards
+    policy: none
+    purge: false
+    versioning: true
+
+  # Audit evidence archive
+  - name: audit-evidence
+    policy: none
+    purge: false
+    versioning: true
+    objectlocking: true
+
+# Recommended folder structure inside iso42001-docs:
+#
+# iso42001-docs/
+# ├── architecture/
+# │   ├── reference-architecture-v1.pdf
+# │   └── deployment-diagrams/
+# ├── deployment-plan/
+# │   ├── deployment-plan-v1.md
+# │   └── questionnaires/
+# ├── update-repair-plan/
+# │   ├── update-plan-v1.md
+# │   └── rollback-procedures.md
+# ├── risk-assessment/
+# │   └── ai-risk-assessment-v1.md
+# ├── compliance-review/
+# │   ├── 2026-01-15-review.md
+# │   └── 2026-04-07-review.md
+# └── altai-assessment/
+#     └── altai-self-assessment-v1.md

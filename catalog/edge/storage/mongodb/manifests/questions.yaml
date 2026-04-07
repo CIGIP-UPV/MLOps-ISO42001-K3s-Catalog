@@ -1,0 +1,116 @@
+# =============================================================================
+# Rancher Questions — MongoDB (Edge Data Buffer)
+# ISO/IEC 42001: B.6.2.6.1, B.6.2.8.1
+# =============================================================================
+categories:
+  - "Edge"
+  - "Storage"
+
+questions:
+
+  # ---- Authentication ----
+  - variable: auth.rootPassword
+    label: "Root Password"
+    type: password
+    default: ""
+    required: true
+    group: "Authentication"
+
+  - variable: auth.usernames[0]
+    label: "Application User"
+    description: "User for Node-RED connections"
+    type: string
+    default: "nodered"
+    group: "Authentication"
+
+  - variable: auth.passwords[0]
+    label: "Application Password"
+    type: password
+    default: ""
+    required: true
+    group: "Authentication"
+
+  - variable: auth.databases[0]
+    label: "Default Database"
+    type: string
+    default: "edge_buffer"
+    group: "Authentication"
+
+  # ---- Persistence ----
+  - variable: persistence.storageClass
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: persistence.size
+    label: "Volume Size"
+    description: "Stores sensor buffers and raw events with TTL auto-cleanup"
+    type: string
+    default: "10Gi"
+    group: "Storage"
+
+  # ---- Service ----
+  - variable: service.type
+    label: "Service Type"
+    type: enum
+    default: "ClusterIP"
+    options:
+      - "ClusterIP"
+      - "NodePort"
+      - "LoadBalancer"
+    group: "Networking"
+
+  - variable: service.nodePorts.mongodb
+    label: "NodePort"
+    type: int
+    default: 31017
+    show_if: "service.type=NodePort"
+    group: "Networking"
+
+  # ---- Metrics ----
+  - variable: metrics.enabled
+    label: "Enable Prometheus Exporter"
+    description: "Expose MongoDB metrics for monitoring (ISO 42001: B.6.1.2.2)"
+    type: boolean
+    default: true
+    group: "Monitoring"
+
+  - variable: metrics.serviceMonitor.enabled
+    label: "Enable Prometheus ServiceMonitor"
+    type: boolean
+    default: true
+    show_if: "metrics.enabled=true"
+    group: "Monitoring"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "250m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "256Mi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "500m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "1Gi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/edge
+    label: "Pin to Edge Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

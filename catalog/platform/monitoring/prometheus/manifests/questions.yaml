@@ -1,0 +1,144 @@
+# =============================================================================
+# Rancher Questions — Prometheus + Alertmanager (kube-prometheus-stack)
+# ISO/IEC 42001: B.6.1.2.2, B.6.2.6.1, B.6.2.6.2
+# =============================================================================
+categories:
+  - "Platform"
+  - "Monitoring"
+
+questions:
+
+  # ---- Prometheus Server ----
+  - variable: prometheus.prometheusSpec.retention
+    label: "Data Retention"
+    description: "How long to keep metrics"
+    type: enum
+    default: "30d"
+    options:
+      - "15d"
+      - "30d"
+      - "60d"
+      - "90d"
+    group: "Prometheus"
+
+  - variable: prometheus.prometheusSpec.retentionSize
+    label: "Max Retention Size"
+    type: string
+    default: "20GB"
+    group: "Prometheus"
+
+  - variable: prometheus.prometheusSpec.enableRemoteWriteReceiver
+    label: "Enable Remote Write Receiver"
+    description: "Required for edge Prometheus Agent to forward metrics"
+    type: boolean
+    default: true
+    group: "Prometheus"
+
+  # ---- Prometheus Storage ----
+  - variable: prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    group: "Prometheus Storage"
+
+  - variable: prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage
+    label: "Volume Size"
+    type: string
+    default: "50Gi"
+    group: "Prometheus Storage"
+
+  # ---- Prometheus Ingress ----
+  - variable: prometheus.ingress.enabled
+    label: "Enable Prometheus Ingress"
+    type: boolean
+    default: true
+    group: "Networking"
+
+  - variable: prometheus.ingress.hosts[0]
+    label: "Prometheus Hostname"
+    type: hostname
+    default: "prometheus.platform.local"
+    show_if: "prometheus.ingress.enabled=true"
+    group: "Networking"
+
+  # ---- Alertmanager ----
+  - variable: alertmanager.enabled
+    label: "Enable Alertmanager"
+    description: "Route alerts to Zammad, Slack, email, etc."
+    type: boolean
+    default: true
+    group: "Alertmanager"
+
+  - variable: alertmanager.ingress.enabled
+    label: "Enable Alertmanager Ingress"
+    type: boolean
+    default: true
+    show_if: "alertmanager.enabled=true"
+    group: "Alertmanager"
+
+  - variable: alertmanager.ingress.hosts[0]
+    label: "Alertmanager Hostname"
+    type: hostname
+    default: "alertmanager.platform.local"
+    show_if: "alertmanager.ingress.enabled=true"
+    group: "Alertmanager"
+
+  - variable: alertmanager.config.receivers[1].webhook_configs[0].url
+    label: "Zammad Webhook URL"
+    description: "Auto-create helpdesk tickets for critical alerts (ISO 42001: B.8.0.5.1)"
+    type: string
+    default: "http://zammad.helpdesk.svc.cluster.local:3000/api/v1/webhook"
+    show_if: "alertmanager.enabled=true"
+    group: "Alertmanager"
+
+  # ---- Components ----
+  - variable: prometheus-node-exporter.enabled
+    label: "Enable Node Exporter"
+    type: boolean
+    default: true
+    group: "Components"
+
+  - variable: kube-state-metrics.enabled
+    label: "Enable Kube State Metrics"
+    type: boolean
+    default: true
+    group: "Components"
+
+  - variable: grafana.enabled
+    label: "Enable Bundled Grafana"
+    description: "Disable if deploying Grafana separately"
+    type: boolean
+    default: false
+    group: "Components"
+
+  # ---- Prometheus Resources ----
+  - variable: prometheus.prometheusSpec.resources.requests.cpu
+    label: "Prometheus CPU Request"
+    type: string
+    default: "500m"
+    group: "Resources"
+
+  - variable: prometheus.prometheusSpec.resources.requests.memory
+    label: "Prometheus Memory Request"
+    type: string
+    default: "1Gi"
+    group: "Resources"
+
+  - variable: prometheus.prometheusSpec.resources.limits.cpu
+    label: "Prometheus CPU Limit"
+    type: string
+    default: "2000m"
+    group: "Resources"
+
+  - variable: prometheus.prometheusSpec.resources.limits.memory
+    label: "Prometheus Memory Limit"
+    type: string
+    default: "4Gi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: prometheus.prometheusSpec.nodeSelector.node-role\.kubernetes\.io/platform
+    label: "Pin to Platform Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

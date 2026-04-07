@@ -1,0 +1,176 @@
+# =============================================================================
+# Rancher Questions — Zammad (AI Helpdesk & Incident Management)
+# ISO/IEC 42001: B.6.2.6.6, B.8.0.4.1, B.8.0.5.1
+# =============================================================================
+categories:
+  - "Enterprise"
+  - "Helpdesk"
+
+questions:
+
+  # ---- Networking ----
+  - variable: ingress.enabled
+    label: "Enable Ingress"
+    type: boolean
+    default: true
+    group: "Networking"
+
+  - variable: ingress.hosts[0].host
+    label: "Ingress Hostname"
+    type: hostname
+    default: "helpdesk.enterprise.local"
+    show_if: "ingress.enabled=true"
+    group: "Networking"
+
+  - variable: ingress.tls[0].secretName
+    label: "TLS Secret Name"
+    description: "Leave empty for HTTP only"
+    type: string
+    default: ""
+    show_if: "ingress.enabled=true"
+    group: "Networking"
+
+  # ---- External Database ----
+  - variable: externalDatabase.host
+    label: "PostgreSQL Host"
+    description: "Platform PostgreSQL for Zammad metadata"
+    type: string
+    default: "postgresql.platform.svc.cluster.local"
+    group: "Database"
+
+  - variable: externalDatabase.port
+    label: "PostgreSQL Port"
+    type: int
+    default: 5432
+    group: "Database"
+
+  - variable: externalDatabase.database
+    label: "Database Name"
+    type: string
+    default: "zammad"
+    group: "Database"
+
+  - variable: externalDatabase.username
+    label: "Database User"
+    type: string
+    default: "zammad"
+    group: "Database"
+
+  - variable: externalDatabase.password
+    label: "Database Password"
+    type: password
+    default: ""
+    required: true
+    group: "Database"
+
+  # ---- SMTP (B.8.0.5.1) ----
+  - variable: zammadConfig.smtp.enabled
+    label: "Enable SMTP"
+    description: "Email notifications for incidents and tickets"
+    type: boolean
+    default: true
+    group: "Email"
+
+  - variable: zammadConfig.smtp.host
+    label: "SMTP Host"
+    type: string
+    default: "smtp.plant.local"
+    show_if: "zammadConfig.smtp.enabled=true"
+    group: "Email"
+
+  - variable: zammadConfig.smtp.port
+    label: "SMTP Port"
+    type: int
+    default: 587
+    show_if: "zammadConfig.smtp.enabled=true"
+    group: "Email"
+
+  - variable: zammadConfig.smtp.user
+    label: "SMTP User"
+    type: string
+    default: "zammad@plant.local"
+    show_if: "zammadConfig.smtp.enabled=true"
+    group: "Email"
+
+  - variable: zammadConfig.smtp.password
+    label: "SMTP Password"
+    type: password
+    default: ""
+    show_if: "zammadConfig.smtp.enabled=true"
+    group: "Email"
+
+  # ---- Elasticsearch ----
+  - variable: elasticsearch.enabled
+    label: "Enable Built-in Elasticsearch"
+    description: "Full-text search for tickets and knowledge base"
+    type: boolean
+    default: true
+    group: "Elasticsearch"
+
+  - variable: elasticsearch.persistence.storageClass
+    label: "Elasticsearch Storage Class"
+    type: storageclass
+    default: "local-path"
+    show_if: "elasticsearch.enabled=true"
+    group: "Elasticsearch"
+
+  - variable: elasticsearch.persistence.size
+    label: "Elasticsearch Volume Size"
+    type: string
+    default: "10Gi"
+    show_if: "elasticsearch.enabled=true"
+    group: "Elasticsearch"
+
+  # ---- Redis ----
+  - variable: redis.enabled
+    label: "Enable Built-in Redis"
+    description: "Session cache and background jobs"
+    type: boolean
+    default: true
+    group: "Redis"
+
+  # ---- Persistence ----
+  - variable: persistence.storageClass
+    label: "Storage Class"
+    description: "For attachments and uploads"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: persistence.size
+    label: "Volume Size"
+    type: string
+    default: "20Gi"
+    group: "Storage"
+
+  # ---- Resources (Rails Server) ----
+  - variable: resources.railsserver.requests.cpu
+    label: "Rails CPU Request"
+    type: string
+    default: "250m"
+    group: "Resources"
+
+  - variable: resources.railsserver.requests.memory
+    label: "Rails Memory Request"
+    type: string
+    default: "512Mi"
+    group: "Resources"
+
+  - variable: resources.railsserver.limits.cpu
+    label: "Rails CPU Limit"
+    type: string
+    default: "1000m"
+    group: "Resources"
+
+  - variable: resources.railsserver.limits.memory
+    label: "Rails Memory Limit"
+    type: string
+    default: "2Gi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/platform
+    label: "Pin to Platform Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

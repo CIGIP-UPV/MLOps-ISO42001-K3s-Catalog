@@ -1,0 +1,92 @@
+# =============================================================================
+# Namespaces — Tier-based separation for ISO/IEC 42001 zone segmentation
+# ISA/IEC 62443: Zone segmentation and access control
+# =============================================================================
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: edge
+  labels:
+    tier: edge
+    iso42001: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    tier: platform
+    function: monitoring
+    iso42001: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mlops
+  labels:
+    tier: platform
+    function: ai-lifecycle
+    iso42001: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: platform
+  labels:
+    tier: platform
+    function: data-management
+    iso42001: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: minio
+  labels:
+    tier: platform
+    function: storage
+    iso42001: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: security
+  labels:
+    tier: enterprise
+    function: access-management
+    iso42001: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: helpdesk
+  labels:
+    tier: enterprise
+    function: helpdesk
+    iso42001: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: falco
+  labels:
+    tier: edge
+    function: security
+    iso42001: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: logging
+  labels:
+    tier: edge
+    function: logging
+    iso42001: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cattle-system
+  labels:
+    tier: platform
+    function: orchestration

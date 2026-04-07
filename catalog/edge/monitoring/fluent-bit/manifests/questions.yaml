@@ -1,0 +1,76 @@
+# =============================================================================
+# Rancher Questions — Fluent Bit (Edge Log Collector)
+# ISO/IEC 42001: B.6.2.8.1
+# =============================================================================
+categories:
+  - "Edge"
+  - "Monitoring"
+
+questions:
+
+  # ---- Log Output Destination ----
+  - variable: loki.host
+    label: "Loki Host"
+    description: "Platform Loki endpoint for centralised log storage"
+    type: string
+    default: "loki.monitoring.svc.cluster.local"
+    group: "Log Output"
+
+  - variable: loki.port
+    label: "Loki Port"
+    type: int
+    default: 3100
+    group: "Log Output"
+
+  - variable: config.outputs.fallbackFile
+    label: "Enable Fallback File Buffer"
+    description: "Buffer logs locally when Loki is unreachable"
+    type: boolean
+    default: true
+    group: "Log Output"
+
+  # ---- Filtering ----
+  - variable: config.filters.tierLabel
+    label: "Tier Label"
+    description: "Label added to all log records"
+    type: string
+    default: "edge"
+    group: "Filtering"
+
+  - variable: config.filters.clusterName
+    label: "Cluster Name Label"
+    type: string
+    default: "edge-cluster"
+    group: "Filtering"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "50m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "64Mi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "200m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "256Mi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/edge
+    label: "Pin to Edge Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

@@ -1,0 +1,99 @@
+# =============================================================================
+# Rancher Questions — Prometheus Agent (Edge Metrics)
+# ISO/IEC 42001: B.6.1.2.2
+# =============================================================================
+categories:
+  - "Edge"
+  - "Monitoring"
+
+questions:
+
+  # ---- Remote Write ----
+  - variable: server.remoteWrite[0].url
+    label: "Remote Write URL"
+    description: "Platform Prometheus endpoint to forward edge metrics"
+    type: string
+    default: "http://prometheus-server.monitoring.svc.cluster.local:9090/api/v1/write"
+    required: true
+    group: "Remote Write"
+
+  # ---- Scrape Configuration ----
+  - variable: server.global.scrape_interval
+    label: "Scrape Interval"
+    description: "How often to collect metrics from targets"
+    type: enum
+    default: "30s"
+    options:
+      - "15s"
+      - "30s"
+      - "60s"
+    group: "Scrape Configuration"
+
+  # ---- Persistence ----
+  - variable: server.persistence.enabled
+    label: "Enable WAL Persistence"
+    description: "Persist write-ahead log for metric buffering"
+    type: boolean
+    default: true
+    group: "Storage"
+
+  - variable: server.persistence.storageClass
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    show_if: "server.persistence.enabled=true"
+    group: "Storage"
+
+  - variable: server.persistence.size
+    label: "WAL Volume Size"
+    type: string
+    default: "5Gi"
+    show_if: "server.persistence.enabled=true"
+    group: "Storage"
+
+  # ---- Components ----
+  - variable: prometheus-node-exporter.enabled
+    label: "Enable Node Exporter"
+    description: "Collect hardware and OS metrics"
+    type: boolean
+    default: true
+    group: "Components"
+
+  - variable: kube-state-metrics.enabled
+    label: "Enable Kube State Metrics"
+    description: "Collect Kubernetes object metrics"
+    type: boolean
+    default: true
+    group: "Components"
+
+  # ---- Resources ----
+  - variable: server.resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "100m"
+    group: "Resources"
+
+  - variable: server.resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "128Mi"
+    group: "Resources"
+
+  - variable: server.resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "500m"
+    group: "Resources"
+
+  - variable: server.resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "512Mi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: server.nodeSelector.node-role\.kubernetes\.io/edge
+    label: "Pin to Edge Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"
