@@ -1,0 +1,65 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+
+# Claude / AI tools
+.claude/
+.claude_history
+.cursorrules
+.cursor/
+
+# Node modules (if using Node-RED locally)
+node_modules/
+package-lock.json
+
+# Python (if running MLflow/training scripts locally)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# Helm
+*.tgz
+charts/
+
+# Kubernetes secrets (never commit)
+*secret*.yaml
+*secret*.yml
+!templates/*
+
+# Terraform (if used for infrastructure)
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+
+# Logs
+*.log
+
+# Environment files (may contain credentials)
+.env
+.env.*
