@@ -68,27 +68,8 @@ k3s-iso42001-catalog/
 │       ├── helpdesk/          # Zammad
 │       ├── document-store/    # MinIO
 │       └── dashboards/        # Grafana
-├── questionnaires/            # Deployment decision guides
-│   ├── 01-deployment-scope.md
-│   ├── 02-edge-requirements.md
-│   ├── 03-platform-requirements.md
-│   ├── 04-enterprise-requirements.md
-│   └── 05-iso42001-compliance.md
-├── compliance/
-│   └── iso42001-mapping.md    # Full component → clause matrix
-└── templates/
-    ├── solution-template/     # Template for new solution entries
-    └── k3s-manifests/         # Reusable base manifests
+
 ```
-
----
-
-## Quick Start: Where Do I Begin?
-
-1. **Start with the deployment questionnaires** in [`questionnaires/`](./questionnaires/01-deployment-scope.md). Answer the scope questions to determine which tiers and components you need.
-2. **Browse the catalog** by tier in [`catalog/`](./catalog/README.md) or use the [compliance matrix](./compliance/iso42001-mapping.md) to select components by ISO/IEC 42001 clause.
-3. **Follow the installation guide** in each solution's `README.md` and answer its embedded questionnaire.
-4. **Apply the K3S manifests** provided in each solution's `manifests/` directory.
 
 ---
 
@@ -114,12 +95,6 @@ k3s-iso42001-catalog/
 | B.8.0.2.1 | User Information | Keycloak, Grafana |
 | B.8.0.4.1 | Adverse Treatment | Zammad |
 | B.8.0.5.1 | Incident Communication | Zammad, Grafana Alerting |
-
----
-
-## Contributing
-
-See [`CONTRIBUTING.md`](./CONTRIBUTING.md) and the [`templates/solution-template/`](./templates/solution-template/README.md) directory to add new solutions following the catalog's standard format.
 
 ---
 
