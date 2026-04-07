@@ -1,0 +1,59 @@
+# =============================================================================
+# Grafana — Enterprise Dashboards
+# NOTE: This is a supplementary configuration for enterprise-specific
+# dashboards provisioned on the same Grafana instance deployed at platform tier.
+# See platform/monitoring/grafana/manifests/values.yaml for the main config.
+# =============================================================================
+
+# This file contains dashboard JSON definitions to be imported
+# as a ConfigMap for Grafana's dashboard provider.
+#
+# Apply with:
+#   kubectl create configmap grafana-dashboards \
+#     --from-file=oee-dashboard.json \
+#     --from-file=model-health.json \
+#     --from-file=feedback-panel.json \
+#     -n monitoring
+
+# The dashboards reference data sources defined in the main Grafana values:
+#   - Prometheus (metrics)
+#   - Loki (logs)
+#   - TimescaleDB (KPIs)
+#   - EdgePostgreSQL (predictions)
+
+# Recommended dashboards to create:
+#
+# 1. OEE & Maintenance KPIs (B.6.2.6.3)
+#    - OEE trend (availability × performance × quality)
+#    - Machine downtime (hours/month)
+#    - Predictive vs corrective maintenance ratio
+#    - Alert: OEE below threshold
+#
+# 2. Model Inference Health (B.6.1.2.2, B.6.2.6.2)
+#    - Inference latency (p50, p95, p99)
+#    - Error rate
+#    - Prediction score distribution
+#    - Active model version
+#    - Alert: latency or error rate threshold
+#
+# 3. Infrastructure Overview (B.6.2.6.1)
+#    - Node CPU/memory/disk per tier
+#    - Pod restart counts
+#    - Container CPU throttling
+#    - Storage utilisation
+#
+# 4. Security Events (B.6.2.6.7)
+#    - Falco alerts timeline (from Loki)
+#    - Alert severity breakdown
+#    - Top alert rules
+#
+# 5. Audit Log Explorer (B.6.2.8.1)
+#    - Loki log stream by tier and namespace
+#    - Keycloak auth events
+#    - Model version change events
+#
+# 6. Operator Feedback Panel (B.6.1.3.3)
+#    - Recent predictions table with feedback buttons
+#    - Feedback rate over time
+#    - Correct vs incorrect prediction ratio
+#    - Links to Zammad tickets for disputed predictions

@@ -1,0 +1,162 @@
+# =============================================================================
+# Rancher Questions — Training Jobs (Scheduled Model Retraining)
+# ISO/IEC 42001: B.6.2.6.4
+# =============================================================================
+categories:
+  - "Platform"
+  - "AI Lifecycle"
+
+questions:
+
+  # ---- Container Image ----
+  - variable: image.repository
+    label: "Training Image"
+    description: "Docker registry/image for your training pipeline"
+    type: string
+    default: "your-registry/model-training"
+    required: true
+    group: "Container Image"
+
+  - variable: image.tag
+    label: "Image Tag"
+    type: string
+    default: "1.0.0"
+    required: true
+    group: "Container Image"
+
+  # ---- Schedule ----
+  - variable: schedule
+    label: "Cron Schedule"
+    description: "When to run scheduled retraining (cron format)"
+    type: string
+    default: "0 3 * * 0"
+    group: "Schedule"
+
+  - variable: activeDeadlineSeconds
+    label: "Job Timeout (seconds)"
+    description: "Maximum time a training job can run before termination"
+    type: int
+    default: 14400
+    group: "Schedule"
+
+  - variable: concurrencyPolicy
+    label: "Concurrency Policy"
+    description: "Forbid prevents overlapping training runs"
+    type: enum
+    default: "Forbid"
+    options:
+      - "Forbid"
+      - "Allow"
+      - "Replace"
+    group: "Schedule"
+
+  # ---- MLflow Connection ----
+  - variable: config.MLFLOW_TRACKING_URI
+    label: "MLflow Tracking URI"
+    type: string
+    default: "http://mlflow.mlops.svc.cluster.local:5000"
+    group: "MLflow"
+
+  - variable: config.EXPERIMENT_NAME
+    label: "MLflow Experiment Name"
+    type: string
+    default: "predictive-maintenance"
+    group: "MLflow"
+
+  # ---- Data Source ----
+  - variable: config.TIMESCALEDB_HOST
+    label: "TimescaleDB Host"
+    type: string
+    default: "timescaledb.platform.svc.cluster.local"
+    group: "Data Source"
+
+  - variable: config.TRAINING_WINDOW_DAYS
+    label: "Training Window (days)"
+    description: "How many days of historical data to use for training"
+    type: int
+    default: 90
+    group: "Data Source"
+
+  - variable: config.MIN_SAMPLES
+    label: "Minimum Samples"
+    description: "Minimum number of data points required to start training"
+    type: int
+    default: 10000
+    group: "Data Source"
+
+  - variable: secrets.TIMESCALEDB_PASSWORD
+    label: "TimescaleDB Password"
+    type: password
+    default: ""
+    required: true
+    group: "Data Source"
+
+  # ---- MinIO (Artifact Storage) ----
+  - variable: secrets.AWS_ACCESS_KEY_ID
+    label: "MinIO Access Key"
+    type: string
+    default: ""
+    required: true
+    group: "Artifact Store"
+
+  - variable: secrets.AWS_SECRET_ACCESS_KEY
+    label: "MinIO Secret Key"
+    type: password
+    default: ""
+    required: true
+    group: "Artifact Store"
+
+  # ---- Persistence ----
+  - variable: persistence.storageClass
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: persistence.size
+    label: "Workspace Volume Size"
+    description: "Temporary storage for training data and checkpoints"
+    type: string
+    default: "20Gi"
+    group: "Storage"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "2000m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "4Gi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "4000m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "8Gi"
+    group: "Resources"
+
+  - variable: resources.limits.nvidia\.com/gpu
+    label: "GPU (NVIDIA)"
+    description: "Set to 1 to enable GPU training; 0 for CPU only"
+    type: int
+    default: 0
+    min: 0
+    max: 4
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/platform
+    label: "Pin to Platform Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

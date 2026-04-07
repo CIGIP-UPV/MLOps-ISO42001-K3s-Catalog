@@ -1,0 +1,120 @@
+# =============================================================================
+# Rancher Questions — Rancher (Multi-Cluster Kubernetes Management)
+# =============================================================================
+categories:
+  - "Platform"
+  - "Orchestration"
+
+questions:
+
+  # ---- Hostname ----
+  - variable: hostname
+    label: "Rancher Hostname"
+    description: "Must be resolvable via DNS"
+    type: hostname
+    default: "rancher.platform.local"
+    required: true
+    group: "General"
+
+  - variable: replicas
+    label: "Replicas"
+    description: "1 for standard; 3 for high availability"
+    type: int
+    default: 1
+    min: 1
+    max: 3
+    group: "General"
+
+  - variable: bootstrapPassword
+    label: "Bootstrap Password"
+    description: "Initial admin password (change after first login)"
+    type: password
+    default: ""
+    required: true
+    group: "General"
+
+  # ---- TLS ----
+  - variable: ingress.tls.source
+    label: "TLS Certificate Source"
+    description: "How to provision the TLS certificate"
+    type: enum
+    default: "letsEncrypt"
+    options:
+      - "rancher"
+      - "letsEncrypt"
+      - "secret"
+    group: "TLS"
+
+  - variable: letsEncrypt.email
+    label: "Let's Encrypt Email"
+    type: string
+    default: "admin@plant.local"
+    show_if: "ingress.tls.source=letsEncrypt"
+    group: "TLS"
+
+  - variable: letsEncrypt.environment
+    label: "Let's Encrypt Environment"
+    type: enum
+    default: "production"
+    options:
+      - "staging"
+      - "production"
+    show_if: "ingress.tls.source=letsEncrypt"
+    group: "TLS"
+
+  # ---- Audit Logging (B.6.2.8.1) ----
+  - variable: auditLog.level
+    label: "Audit Log Level"
+    description: "0=off, 1=metadata, 2=request, 3=request+response"
+    type: enum
+    default: "1"
+    options:
+      - "0"
+      - "1"
+      - "2"
+      - "3"
+    group: "Audit Logging"
+
+  - variable: auditLog.maxAge
+    label: "Audit Log Max Age (days)"
+    type: int
+    default: 90
+    group: "Audit Logging"
+
+  - variable: auditLog.maxSize
+    label: "Audit Log Max Size (MB)"
+    type: int
+    default: 100
+    group: "Audit Logging"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "250m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "512Mi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "1000m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "2Gi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/platform
+    label: "Pin to Platform Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

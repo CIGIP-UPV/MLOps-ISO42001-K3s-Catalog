@@ -1,0 +1,138 @@
+# =============================================================================
+# Rancher Questions — TimescaleDB (Time-Series Data Warehouse)
+# ISO/IEC 42001: B.6.2.6.3, B.6.2.8.1
+# =============================================================================
+categories:
+  - "Platform"
+  - "Data Management"
+
+questions:
+
+  # ---- Replicas ----
+  - variable: replicaCount
+    label: "Replicas"
+    description: "1 for standard; increase for HA"
+    type: int
+    default: 1
+    min: 1
+    max: 3
+    group: "Architecture"
+
+  # ---- Authentication ----
+  - variable: credentials.superuser
+    label: "Superuser Password"
+    type: password
+    default: ""
+    required: true
+    group: "Authentication"
+
+  - variable: credentials.admin
+    label: "Admin Password"
+    type: password
+    default: ""
+    required: true
+    group: "Authentication"
+
+  # ---- Persistence ----
+  - variable: persistentVolumes.data.storageClass
+    label: "Data Storage Class"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: persistentVolumes.data.size
+    label: "Data Volume Size"
+    description: "Stores sensor readings, predictions, and OEE KPIs"
+    type: string
+    default: "100Gi"
+    group: "Storage"
+
+  - variable: persistentVolumes.wal.enabled
+    label: "Enable WAL Volume"
+    description: "Separate volume for write-ahead log (recommended)"
+    type: boolean
+    default: true
+    group: "Storage"
+
+  - variable: persistentVolumes.wal.storageClass
+    label: "WAL Storage Class"
+    type: storageclass
+    default: "local-path"
+    show_if: "persistentVolumes.wal.enabled=true"
+    group: "Storage"
+
+  - variable: persistentVolumes.wal.size
+    label: "WAL Volume Size"
+    type: string
+    default: "10Gi"
+    show_if: "persistentVolumes.wal.enabled=true"
+    group: "Storage"
+
+  # ---- Service ----
+  - variable: service.primary.type
+    label: "Service Type"
+    type: enum
+    default: "ClusterIP"
+    options:
+      - "ClusterIP"
+      - "NodePort"
+      - "LoadBalancer"
+    group: "Networking"
+
+  - variable: service.primary.port
+    label: "Service Port"
+    type: int
+    default: 5432
+    group: "Networking"
+
+  # ---- PostgreSQL Tuning ----
+  - variable: postgresql.parameters.max_connections
+    label: "Max Connections"
+    type: string
+    default: "100"
+    group: "Database Tuning"
+
+  - variable: postgresql.parameters.shared_buffers
+    label: "Shared Buffers"
+    type: string
+    default: "1GB"
+    group: "Database Tuning"
+
+  # ---- Backup ----
+  - variable: backup.enabled
+    label: "Enable Backup (pgBackRest)"
+    type: boolean
+    default: false
+    group: "Backup"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "500m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "2Gi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "2000m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "4Gi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/platform
+    label: "Pin to Platform Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

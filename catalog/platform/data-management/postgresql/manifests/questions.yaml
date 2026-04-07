@@ -1,0 +1,102 @@
+# =============================================================================
+# Rancher Questions — PostgreSQL (Platform Metadata Store)
+# Shared backend for MLflow, Keycloak, Zammad, Grafana
+# =============================================================================
+categories:
+  - "Platform"
+  - "Data Management"
+
+questions:
+
+  # ---- Authentication ----
+  - variable: auth.postgresPassword
+    label: "Admin (postgres) Password"
+    type: password
+    default: ""
+    required: true
+    group: "Authentication"
+
+  # ---- Persistence ----
+  - variable: primary.persistence.storageClass
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: primary.persistence.size
+    label: "Volume Size"
+    description: "Stores metadata for MLflow, Keycloak, Zammad, and Grafana"
+    type: string
+    default: "20Gi"
+    group: "Storage"
+
+  # ---- Service ----
+  - variable: service.type
+    label: "Service Type"
+    type: enum
+    default: "ClusterIP"
+    options:
+      - "ClusterIP"
+      - "NodePort"
+      - "LoadBalancer"
+    group: "Networking"
+
+  - variable: service.nodePorts.postgresql
+    label: "NodePort"
+    type: int
+    default: 31432
+    show_if: "service.type=NodePort"
+    group: "Networking"
+
+  # ---- Metrics ----
+  - variable: metrics.enabled
+    label: "Enable Prometheus Exporter"
+    type: boolean
+    default: true
+    group: "Monitoring"
+
+  - variable: metrics.serviceMonitor.enabled
+    label: "Enable Prometheus ServiceMonitor"
+    type: boolean
+    default: true
+    show_if: "metrics.enabled=true"
+    group: "Monitoring"
+
+  # ---- Backup ----
+  - variable: backup.enabled
+    label: "Enable Scheduled Backups"
+    type: boolean
+    default: false
+    group: "Backup"
+
+  # ---- Resources ----
+  - variable: primary.resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "250m"
+    group: "Resources"
+
+  - variable: primary.resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "256Mi"
+    group: "Resources"
+
+  - variable: primary.resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "1000m"
+    group: "Resources"
+
+  - variable: primary.resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "1Gi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: primary.nodeSelector.node-role\.kubernetes\.io/platform
+    label: "Pin to Platform Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

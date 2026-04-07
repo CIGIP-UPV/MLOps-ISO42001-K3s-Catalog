@@ -1,0 +1,38 @@
+# =============================================================================
+# Rancher Questions — MinIO Document Store (Enterprise Overlay)
+# ISO/IEC 42001: B.6.2.3.1, B.6.2.5.1, B.6.2.6.5
+# =============================================================================
+categories:
+  - "Enterprise"
+  - "Document Store"
+
+questions:
+
+  # ---- Bucket Configuration ----
+  - variable: buckets.iso42001Docs.objectlocking
+    label: "Enable Object Locking (iso42001-docs)"
+    description: "Immutable storage for ISO audit evidence — cannot be disabled after creation"
+    type: boolean
+    default: true
+    group: "Document Governance"
+
+  - variable: buckets.modelCards.versioning
+    label: "Enable Versioning (model-cards)"
+    description: "Track all model card revisions (ISO 42001: B.6.1.3.2)"
+    type: boolean
+    default: true
+    group: "Document Governance"
+
+  - variable: buckets.auditEvidence.objectlocking
+    label: "Enable Object Locking (audit-evidence)"
+    description: "Immutable storage for compliance evidence"
+    type: boolean
+    default: true
+    group: "Document Governance"
+
+  # ---- Note ----
+  # This is an overlay for the platform MinIO instance.
+  # If running a single MinIO instance, merge these buckets into
+  # platform/data-management/minio/values.yaml.
+  # Deploy as separate instance only if enterprise and platform
+  # are on different clusters.

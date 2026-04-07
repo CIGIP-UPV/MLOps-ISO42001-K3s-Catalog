@@ -1,0 +1,125 @@
+# =============================================================================
+# Rancher Questions — PostgreSQL (Edge Feature Cache & Prediction Store)
+# ISO/IEC 42001: B.6.2.6.1, B.6.2.6.3, B.6.2.8.1
+# =============================================================================
+categories:
+  - "Edge"
+  - "Storage"
+
+questions:
+
+  # ---- Authentication ----
+  - variable: auth.database
+    label: "Default Database"
+    description: "Primary database for AI predictions and features"
+    type: string
+    default: "predictions"
+    group: "Authentication"
+
+  - variable: auth.username
+    label: "Application User"
+    description: "User for FastAPI model server connections"
+    type: string
+    default: "fastapi"
+    group: "Authentication"
+
+  - variable: auth.password
+    label: "Application Password"
+    type: password
+    default: ""
+    required: true
+    group: "Authentication"
+
+  - variable: auth.postgresPassword
+    label: "Admin (postgres) Password"
+    type: password
+    default: ""
+    required: true
+    group: "Authentication"
+
+  # ---- Persistence ----
+  - variable: primary.persistence.storageClass
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: primary.persistence.size
+    label: "Volume Size"
+    description: "Stores predictions, features, and operator feedback"
+    type: string
+    default: "10Gi"
+    group: "Storage"
+
+  # ---- Service ----
+  - variable: service.type
+    label: "Service Type"
+    type: enum
+    default: "ClusterIP"
+    options:
+      - "ClusterIP"
+      - "NodePort"
+      - "LoadBalancer"
+    group: "Networking"
+
+  - variable: service.nodePorts.postgresql
+    label: "NodePort"
+    type: int
+    default: 31543
+    show_if: "service.type=NodePort"
+    group: "Networking"
+
+  # ---- Metrics ----
+  - variable: metrics.enabled
+    label: "Enable Prometheus Exporter"
+    description: "Expose PostgreSQL metrics for monitoring (ISO 42001: B.6.1.2.2)"
+    type: boolean
+    default: true
+    group: "Monitoring"
+
+  - variable: metrics.serviceMonitor.enabled
+    label: "Enable Prometheus ServiceMonitor"
+    type: boolean
+    default: true
+    show_if: "metrics.enabled=true"
+    group: "Monitoring"
+
+  # ---- Backup ----
+  - variable: backup.enabled
+    label: "Enable Scheduled Backups"
+    description: "CronJob for daily database dumps"
+    type: boolean
+    default: false
+    group: "Backup"
+
+  # ---- Resources ----
+  - variable: primary.resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "250m"
+    group: "Resources"
+
+  - variable: primary.resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "256Mi"
+    group: "Resources"
+
+  - variable: primary.resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "1000m"
+    group: "Resources"
+
+  - variable: primary.resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "1Gi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: primary.nodeSelector.node-role\.kubernetes\.io/edge
+    label: "Pin to Edge Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

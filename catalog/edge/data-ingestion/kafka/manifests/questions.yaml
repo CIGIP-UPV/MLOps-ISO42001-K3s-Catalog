@@ -1,0 +1,157 @@
+# =============================================================================
+# Rancher Questions — Kafka (Edge Event Streaming)
+# ISO/IEC 42001: B.6.2.6.4
+# =============================================================================
+categories:
+  - "Edge"
+  - "Data Ingestion"
+
+questions:
+
+  # ---- Architecture ----
+  - variable: kraft.enabled
+    label: "Enable KRaft Mode (no Zookeeper)"
+    description: "Recommended for edge — removes Zookeeper dependency"
+    type: boolean
+    default: true
+    group: "Architecture"
+
+  - variable: controller.replicaCount
+    label: "Controller Replicas"
+    description: "1 for edge; 3 for high-availability"
+    type: int
+    default: 1
+    min: 1
+    max: 5
+    group: "Architecture"
+
+  - variable: broker.replicaCount
+    label: "Broker Replicas"
+    type: int
+    default: 1
+    min: 1
+    max: 5
+    group: "Architecture"
+
+  # ---- Networking ----
+  - variable: service.type
+    label: "Service Type"
+    type: enum
+    default: "ClusterIP"
+    options:
+      - "ClusterIP"
+      - "NodePort"
+      - "LoadBalancer"
+    group: "Networking"
+
+  - variable: service.ports.client
+    label: "Client Port"
+    type: int
+    default: 9092
+    group: "Networking"
+
+  - variable: service.nodePorts.client
+    label: "Client NodePort"
+    type: int
+    default: 31092
+    show_if: "service.type=NodePort"
+    group: "Networking"
+
+  # ---- Persistence ----
+  - variable: controller.persistence.storageClass
+    label: "Storage Class (Controller)"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: controller.persistence.size
+    label: "Controller Volume Size"
+    type: string
+    default: "10Gi"
+    group: "Storage"
+
+  - variable: broker.persistence.storageClass
+    label: "Storage Class (Broker)"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: broker.persistence.size
+    label: "Broker Volume Size"
+    type: string
+    default: "20Gi"
+    group: "Storage"
+
+  # ---- Data Retention ----
+  - variable: logRetentionHours
+    label: "Log Retention (hours)"
+    description: "How long to keep messages — edge storage is limited"
+    type: int
+    default: 168
+    group: "Data Retention"
+
+  - variable: logRetentionBytes
+    label: "Max Retention Size (bytes)"
+    description: "Max per-partition size before oldest messages are deleted"
+    type: string
+    default: "5368709120"
+    group: "Data Retention"
+
+  # ---- Security ----
+  - variable: auth.clientProtocol
+    label: "Client Authentication Protocol"
+    description: "Use 'sasl' for production environments"
+    type: enum
+    default: "plaintext"
+    options:
+      - "plaintext"
+      - "sasl"
+      - "tls"
+      - "sasl_tls"
+    group: "Security"
+
+  # ---- Monitoring ----
+  - variable: metrics.jmx.enabled
+    label: "Enable JMX Metrics"
+    description: "Expose Kafka metrics for Prometheus (ISO 42001: B.6.1.2.2)"
+    type: boolean
+    default: true
+    group: "Monitoring"
+
+  - variable: metrics.serviceMonitor.enabled
+    label: "Enable Prometheus ServiceMonitor"
+    type: boolean
+    default: true
+    group: "Monitoring"
+
+  # ---- Resources ----
+  - variable: broker.resources.requests.cpu
+    label: "Broker CPU Request"
+    type: string
+    default: "250m"
+    group: "Resources"
+
+  - variable: broker.resources.requests.memory
+    label: "Broker Memory Request"
+    type: string
+    default: "512Mi"
+    group: "Resources"
+
+  - variable: broker.resources.limits.cpu
+    label: "Broker CPU Limit"
+    type: string
+    default: "1000m"
+    group: "Resources"
+
+  - variable: broker.resources.limits.memory
+    label: "Broker Memory Limit"
+    type: string
+    default: "2Gi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/edge
+    label: "Pin to Edge Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

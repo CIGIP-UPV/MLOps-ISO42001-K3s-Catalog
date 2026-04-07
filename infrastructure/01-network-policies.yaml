@@ -1,0 +1,208 @@
+# =============================================================================
+# Network Policies — Tier isolation and controlled inter-tier communication
+# ISA/IEC 62443: Zone segmentation and intrusion prevention
+# ISO/IEC 42001: B.6.2.6.7 (Threat Detection support)
+# =============================================================================
+
+# ---- EDGE NAMESPACE ----
+# Allow: intra-edge, edge→platform (monitoring, data sync), deny all else
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: edge-default-deny
+  namespace: edge
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: edge-allow-intra
+  namespace: edge
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              tier: edge
+  egress:
+    # Intra-edge
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              tier: edge
+    # Edge → Monitoring (Prometheus remote-write, Loki log shipping)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              function: monitoring
+      ports:
+        - port: 9090
+          protocol: TCP
+        - port: 3100
+          protocol: TCP
+    # Edge → Platform (data sync to TimescaleDB, MinIO)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              tier: platform
+      ports:
+        - port: 5432
+          protocol: TCP
+        - port: 9000
+          protocol: TCP
+    # DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+
+# ---- MONITORING NAMESPACE ----
+# Allow: all tiers → monitoring (scraping, log shipping)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: monitoring-allow-ingress
+  namespace: monitoring
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    # From all ISO 42001 namespaces (metrics and logs)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              iso42001: "true"
+    # From Traefik ingress (Grafana, Prometheus UI)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+
+# ---- MLOPS NAMESPACE ----
+# Allow: platform↔mlops, enterprise→mlops (MLflow UI)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mlops-default-deny
+  namespace: mlops
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mlops-allow
+  namespace: mlops
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # From platform and enterprise tiers
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              tier: platform
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              tier: enterprise
+    # Traefik ingress
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+  egress:
+    # To MinIO (artefact storage)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              function: storage
+      ports:
+        - port: 9000
+          protocol: TCP
+    # To PostgreSQL (metadata)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              function: data-management
+      ports:
+        - port: 5432
+          protocol: TCP
+    # DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - port: 53
+          protocol: UDP
+
+# ---- SECURITY NAMESPACE (Keycloak) ----
+# Allow: all ISO 42001 namespaces → Keycloak (authentication)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: security-allow-auth
+  namespace: security
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              iso42001: "true"
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+
+# ---- HELPDESK NAMESPACE ----
+# Allow: enterprise access, monitoring alerts
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: helpdesk-allow
+  namespace: helpdesk
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              tier: enterprise
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              function: monitoring
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system

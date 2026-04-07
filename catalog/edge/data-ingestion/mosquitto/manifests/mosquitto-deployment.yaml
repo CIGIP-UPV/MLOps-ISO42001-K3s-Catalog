@@ -1,0 +1,161 @@
+# =============================================================================
+# Eclipse Mosquitto — MQTT Broker (Edge)
+# Plain K3S manifest
+# Tier: Edge | RA Component: Input Data Monitoring
+# ISO/IEC 42001: B.6.2.6.4
+# =============================================================================
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: edge
+  labels:
+    tier: edge
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto-config
+  namespace: edge
+data:
+  mosquitto.conf: |
+    # Listener
+    listener 1883
+    protocol mqtt
+
+    # WebSocket listener (optional)
+    listener 9001
+    protocol websockets
+
+    # Persistence
+    persistence true
+    persistence_location /mosquitto/data/
+
+    # Logging
+    log_dest stdout
+    log_type all
+    connection_messages true
+
+    # Authentication — enable for production (B.6.1.3.1)
+    allow_anonymous false
+    password_file /mosquitto/config/passwords.txt
+
+    # Max message size (prevent oversized payloads)
+    message_size_limit 1048576
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mosquitto-passwords
+  namespace: edge
+type: Opaque
+stringData:
+  # Generate with: mosquitto_passwd -c passwords.txt <username>
+  # Replace with actual hashed password file content
+  passwords.txt: |
+    nodered:$7$101$placeholder_hash
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+  namespace: edge
+  labels:
+    app: mosquitto
+    tier: edge
+    ra-component: input-data-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mosquitto
+  template:
+    metadata:
+      labels:
+        app: mosquitto
+        tier: edge
+      annotations:
+        prometheus.io/scrape: "false"
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/edge: "true"
+      containers:
+        - name: mosquitto
+          image: eclipse-mosquitto:2.0
+          ports:
+            - name: mqtt
+              containerPort: 1883
+              protocol: TCP
+            - name: websocket
+              containerPort: 9001
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /mosquitto/config/mosquitto.conf
+              subPath: mosquitto.conf
+            - name: passwords
+              mountPath: /mosquitto/config/passwords.txt
+              subPath: passwords.txt
+            - name: data
+              mountPath: /mosquitto/data
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          livenessProbe:
+            tcpSocket:
+              port: 1883
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            tcpSocket:
+              port: 1883
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: mosquitto-config
+        - name: passwords
+          secret:
+            secretName: mosquitto-passwords
+        - name: data
+          persistentVolumeClaim:
+            claimName: mosquitto-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mosquitto-data
+  namespace: edge
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto
+  namespace: edge
+  labels:
+    app: mosquitto
+spec:
+  type: ClusterIP
+  ports:
+    - name: mqtt
+      port: 1883
+      targetPort: 1883
+      protocol: TCP
+    - name: websocket
+      port: 9001
+      targetPort: 9001
+      protocol: TCP
+  selector:
+    app: mosquitto

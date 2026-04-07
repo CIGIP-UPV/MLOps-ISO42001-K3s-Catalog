@@ -1,0 +1,57 @@
+# =============================================================================
+# Rancher Questions — Grafana Enterprise Dashboards (Supplementary)
+# ISO/IEC 42001: B.6.1.2.2, B.6.1.3.3, B.6.2.6.2, B.6.2.6.3, B.6.2.6.7
+# =============================================================================
+categories:
+  - "Enterprise"
+  - "Dashboards"
+
+questions:
+
+  # ---- Dashboard Selection ----
+  - variable: dashboards.oee.enabled
+    label: "OEE & Maintenance KPIs Dashboard"
+    description: "OEE trend, machine downtime, predictive vs corrective ratio (B.6.2.6.3)"
+    type: boolean
+    default: true
+    group: "Dashboards"
+
+  - variable: dashboards.modelHealth.enabled
+    label: "Model Inference Health Dashboard"
+    description: "Latency, error rate, prediction distribution, model version (B.6.2.6.2)"
+    type: boolean
+    default: true
+    group: "Dashboards"
+
+  - variable: dashboards.infrastructure.enabled
+    label: "Infrastructure Overview Dashboard"
+    description: "Node CPU/memory/disk per tier, pod restarts, throttling (B.6.2.6.1)"
+    type: boolean
+    default: true
+    group: "Dashboards"
+
+  - variable: dashboards.security.enabled
+    label: "Security Events Dashboard"
+    description: "Falco alerts timeline, severity breakdown (B.6.2.6.7)"
+    type: boolean
+    default: true
+    group: "Dashboards"
+
+  - variable: dashboards.auditLog.enabled
+    label: "Audit Log Explorer Dashboard"
+    description: "Loki log stream, Keycloak auth events, model changes (B.6.2.8.1)"
+    type: boolean
+    default: true
+    group: "Dashboards"
+
+  - variable: dashboards.operatorFeedback.enabled
+    label: "Operator Feedback Panel"
+    description: "Predictions table, feedback rate, correct/incorrect ratio (B.6.1.3.3)"
+    type: boolean
+    default: true
+    group: "Dashboards"
+
+  # ---- Note ----
+  # These dashboards are provisioned as ConfigMaps on the
+  # platform Grafana instance. See platform/monitoring/grafana
+  # for the main Grafana deployment configuration.

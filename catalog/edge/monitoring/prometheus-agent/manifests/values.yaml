@@ -1,0 +1,99 @@
+# =============================================================================
+# Prometheus Agent — Edge Metrics Collector
+# Helm chart: prometheus-community/prometheus (agent mode)
+# Tier: Edge | RA Component: Infrastructural Technical Performance Monitoring
+# ISO/IEC 42001: B.6.1.2.2
+# =============================================================================
+
+# Run Prometheus in Agent mode — lightweight, no local TSDB, remote-write only
+server:
+  enabled: true
+  global:
+    scrape_interval: 30s
+    evaluation_interval: 30s
+
+  # Agent mode — no local storage, forward everything to platform Prometheus
+  extraArgs:
+    enable-feature: agent
+
+  # Remote write to platform Prometheus
+  remoteWrite:
+    - url: "http://prometheus-server.monitoring.svc.cluster.local:9090/api/v1/write"
+      writeRelabelConfigs:
+        - sourceLabels: [__name__]
+          action: keep
+          regex: "(node_.*|container_.*|kube_.*|fastapi_.*|up)"
+
+  persistence:
+    enabled: true
+    storageClass: local-path
+    size: 5Gi                       # WAL storage for buffering
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  nodeSelector:
+    node-role.kubernetes.io/edge: "true"
+
+# -----------------------------------------------------------------------------
+# Service discovery — scrape edge workloads
+# -----------------------------------------------------------------------------
+  extraScrapeConfigs: |
+    # FastAPI model server metrics
+    - job_name: 'fastapi-model'
+      kubernetes_sd_configs:
+        - role: pod
+          namespaces:
+            names:
+              - edge
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          action: keep
+          regex: true
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+          action: replace
+          target_label: __address__
+          regex: (.+)
+          replacement: ${1}:${2}
+        - action: labelmap
+          regex: __meta_kubernetes_pod_label_(.+)
+
+    # Node-RED metrics (if exposed)
+    - job_name: 'node-red'
+      static_configs:
+        - targets: ['node-red.edge.svc:1880']
+      metrics_path: /metrics
+
+# -----------------------------------------------------------------------------
+# Disable components not needed in agent mode
+# -----------------------------------------------------------------------------
+alertmanager:
+  enabled: false
+
+kube-state-metrics:
+  enabled: true
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "100m"
+      memory: "128Mi"
+
+prometheus-node-exporter:
+  enabled: true
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "32Mi"
+    limits:
+      cpu: "100m"
+      memory: "64Mi"
+
+prometheus-pushgateway:
+  enabled: false

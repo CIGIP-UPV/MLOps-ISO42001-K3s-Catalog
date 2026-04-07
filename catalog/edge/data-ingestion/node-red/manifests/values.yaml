@@ -1,48 +1,105 @@
-# Node-RED Helm values for K3S Edge deployment
-# Reference: ISO/IEC 42001 components: Input Data Monitoring, Data Stock
-# Fill in values based on questionnaire.md answers
+# =============================================================================
+# Node-RED — Edge Data Ingestion & Orchestration
+# Helm chart: https://github.com/node-red/node-red-chart (community)
+# Tier: Edge | RA Component: Input Data Monitoring, Data Stock
+# ISO/IEC 42001: B.6.2.6.4, B.6.2.6.7
+# =============================================================================
+
+replicaCount: 1
 
 image:
+  repository: nodered/node-red
   tag: "3.1"
+  pullPolicy: IfNotPresent
 
+# -----------------------------------------------------------------------------
+# Service
+# -----------------------------------------------------------------------------
 service:
   type: ClusterIP
   port: 1880
 
+# -----------------------------------------------------------------------------
+# Ingress — Traefik (K3S default)
+# -----------------------------------------------------------------------------
 ingress:
   enabled: true
+  className: traefik
   annotations:
-    kubernetes.io/ingress.class: traefik   # K3S default ingress
+    traefik.ingress.kubernetes.io/router.entrypoints: web
   hosts:
     - host: node-red.edge.local
       paths:
         - path: /
           pathType: Prefix
+  tls: []
+  # - secretName: node-red-tls
+  #   hosts:
+  #     - node-red.edge.local
 
+# -----------------------------------------------------------------------------
+# Persistence — Required for flow storage and buffering during outages
+# -----------------------------------------------------------------------------
 persistence:
-  enabled: true             # Q5: set to true if connectivity is intermittent
-  storageClass: local-path  # K3S default StorageClass
-  size: 2Gi
+  enabled: true
+  storageClass: local-path          # K3S default StorageClass
+  accessMode: ReadWriteOnce
+  size: 5Gi
 
+# -----------------------------------------------------------------------------
+# Environment variables
+# -----------------------------------------------------------------------------
 env:
   - name: NODE_RED_ENABLE_PROJECTS
-    value: "true"           # Enables Git-based flow version control (Q9)
+    value: "true"                    # Git-based flow version control
   - name: TZ
     value: "Europe/Madrid"
 
-# Authentication (Q8): enable if admin UI is exposed
+# -----------------------------------------------------------------------------
+# Settings — Authentication (B.6.1.3.1: access control)
+# -----------------------------------------------------------------------------
 settings:
+  # Enable admin auth if exposing externally
   adminAuth:
-    enabled: false          # Set to true and configure users for external access
+    enabled: true
+    # Users are configured via Kubernetes Secret
+    # secretName: node-red-admin-auth
 
+# -----------------------------------------------------------------------------
+# Resources
+# -----------------------------------------------------------------------------
 resources:
   requests:
-    cpu: "500m"
-    memory: "512Mi"
+    cpu: "250m"
+    memory: "256Mi"
   limits:
     cpu: "1000m"
     memory: "1Gi"
 
-# Node affinity: pin to edge nodes if using mixed cluster
-# nodeSelector:
-#   node-role: edge
+# -----------------------------------------------------------------------------
+# Node placement — Pin to edge nodes
+# -----------------------------------------------------------------------------
+nodeSelector:
+  node-role.kubernetes.io/edge: "true"
+
+tolerations: []
+affinity: {}
+
+# -----------------------------------------------------------------------------
+# Liveness / Readiness probes
+# -----------------------------------------------------------------------------
+livenessProbe:
+  httpGet:
+    path: /
+    port: 1880
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 1880
+  initialDelaySeconds: 15
+  periodSeconds: 5
+  timeoutSeconds: 3

@@ -1,0 +1,166 @@
+# =============================================================================
+# Rancher Questions — Keycloak (Identity & Access Management)
+# ISO/IEC 42001: B.6.1.3.1, B.6.1.3.3, B.8.0.2.1
+# =============================================================================
+categories:
+  - "Enterprise"
+  - "Access Management"
+
+questions:
+
+  # ---- Admin Credentials ----
+  - variable: auth.adminUser
+    label: "Admin Username"
+    type: string
+    default: "admin"
+    group: "Admin"
+
+  - variable: auth.adminPassword
+    label: "Admin Password"
+    type: password
+    default: ""
+    required: true
+    group: "Admin"
+
+  # ---- Production Mode ----
+  - variable: production
+    label: "Production Mode"
+    description: "Enable for TLS, secure cookies, and production optimisations"
+    type: boolean
+    default: true
+    group: "General"
+
+  - variable: proxy
+    label: "Proxy Mode"
+    description: "Set to 'edge' when behind a reverse proxy (Traefik)"
+    type: enum
+    default: "edge"
+    options:
+      - "edge"
+      - "reencrypt"
+      - "passthrough"
+    group: "General"
+
+  # ---- Networking ----
+  - variable: ingress.enabled
+    label: "Enable Ingress"
+    type: boolean
+    default: true
+    group: "Networking"
+
+  - variable: ingress.hostname
+    label: "Ingress Hostname"
+    type: hostname
+    default: "keycloak.enterprise.local"
+    show_if: "ingress.enabled=true"
+    group: "Networking"
+
+  - variable: ingress.tls
+    label: "Enable TLS"
+    description: "Recommended for production (ISO 42001: B.6.1.3.1)"
+    type: boolean
+    default: true
+    show_if: "ingress.enabled=true"
+    group: "Networking"
+
+  # ---- External Database ----
+  - variable: externalDatabase.host
+    label: "PostgreSQL Host"
+    description: "Platform PostgreSQL for Keycloak metadata"
+    type: string
+    default: "postgresql.platform.svc.cluster.local"
+    group: "Database"
+
+  - variable: externalDatabase.port
+    label: "PostgreSQL Port"
+    type: int
+    default: 5432
+    group: "Database"
+
+  - variable: externalDatabase.database
+    label: "Database Name"
+    type: string
+    default: "keycloak"
+    group: "Database"
+
+  - variable: externalDatabase.user
+    label: "Database User"
+    type: string
+    default: "keycloak"
+    group: "Database"
+
+  - variable: externalDatabase.password
+    label: "Database Password"
+    type: password
+    default: ""
+    required: true
+    group: "Database"
+
+  # ---- Persistence ----
+  - variable: persistence.storageClass
+    label: "Storage Class"
+    description: "For themes and providers"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: persistence.size
+    label: "Volume Size"
+    type: string
+    default: "2Gi"
+    group: "Storage"
+
+  # ---- Realm Configuration ----
+  - variable: keycloakConfigCli.enabled
+    label: "Auto-Import AI System Realm"
+    description: "Creates realm with roles (operator, data-scientist, compliance-officer, production-manager, admin) and OIDC clients"
+    type: boolean
+    default: true
+    group: "Realm"
+
+  # ---- Metrics ----
+  - variable: metrics.enabled
+    label: "Enable Prometheus Metrics"
+    description: "Expose Keycloak metrics (ISO 42001: B.6.1.2.2)"
+    type: boolean
+    default: true
+    group: "Monitoring"
+
+  - variable: metrics.serviceMonitor.enabled
+    label: "Enable Prometheus ServiceMonitor"
+    type: boolean
+    default: true
+    show_if: "metrics.enabled=true"
+    group: "Monitoring"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "500m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "512Mi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "1500m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "2Gi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/platform
+    label: "Pin to Platform Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

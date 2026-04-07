@@ -1,0 +1,10 @@
+# =============================================================================
+# Eclipse Mosquitto — MQTT Broker (Edge)
+# Helm chart: Custom manifest (no official Helm chart)
+# Tier: Edge | RA Component: Input Data Monitoring
+# ISO/IEC 42001: B.6.2.6.4
+# =============================================================================
+
+# This is a plain K3S manifest since Mosquitto has no official Helm chart.
+# Deploy with: kubectl apply -f mosquitto-deployment.yaml
+# See mosquitto-deployment.yaml in this directory.
