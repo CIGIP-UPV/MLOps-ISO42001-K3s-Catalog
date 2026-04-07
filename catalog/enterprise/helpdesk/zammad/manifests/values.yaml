@@ -26,10 +26,10 @@ zammad:
         paths:
           - path: /
             pathType: Prefix
-    tls: []
-    # - secretName: zammad-tls
-    #   hosts:
-    #     - helpdesk.enterprise.local
+    tls:
+      - secretName: ""                  # Set secret name to enable TLS
+        hosts:
+          - helpdesk.enterprise.local
 
   # ---------------------------------------------------------------------------
   # Zammad application config

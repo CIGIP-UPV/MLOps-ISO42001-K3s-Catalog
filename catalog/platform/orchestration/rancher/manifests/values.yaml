@@ -17,7 +17,8 @@ rancher:
     tls:
       source: letsEncrypt             # Options: rancher, letsEncrypt, secret
     extraAnnotations:
-      kubernetes.io/ingress.class: traefik
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    ingressClassName: traefik
 
   letsEncrypt:
     email: admin@plant.local
