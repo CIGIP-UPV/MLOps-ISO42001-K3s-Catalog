@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLOps ISO 42001 K3s Catalog — CIGIP-UPV</title>
+  <meta name="description" content="Reference architecture catalog for AI systems in manufacturing in conformity to ISO/IEC 42001. Helm charts, K3S manifests, and Rancher questionnaires.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset ────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1a1a2e;
+      background: #fff;
+      line-height: 1.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; }
+
+    /* ── Navbar ───────────────────────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 56px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #1a1a2e;
+    }
+    .navbar-brand svg { height: 22px; width: auto; }
+    .navbar-links { display: flex; gap: 1.8rem; }
+    .navbar-links a {
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #6b7280;
+      transition: color .2s;
+    }
+    .navbar-links a:hover { color: #991b1b; }
+    .navbar-links a.active { color: #991b1b; }
+
+    /* ── Hero ─────────────────────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #5c1a1a 100%);
+      color: #fff;
+      padding: 4rem 2rem 3.5rem;
+    }
+    .hero-inner { max-width: 960px; margin: 0 auto; }
+    .hero h1 {
+      font-size: 2.4rem;
+      font-weight: 400;
+      line-height: 1.15;
+      margin-bottom: .25rem;
+    }
+    .hero h1 strong { font-weight: 700; display: block; }
+    .hero-badge {
+      display: inline-block;
+      margin: 1rem 0 1.5rem;
+      padding: .35rem .9rem;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 4px;
+      color: rgba(255,255,255,.85);
+    }
+    .hero-buttons { display: flex; gap: .8rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .6rem 1.2rem;
+      font-size: .85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+    .btn-primary { background: #b91c1c; color: #fff; }
+    .btn-outline { background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.3); }
+    .btn svg { width: 16px; height: 16px; }
+
+    /* ── Sections ─────────────────────────────────────────────────────── */
+    .section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 3.5rem 2rem;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: .3rem;
+    }
+    .section-bar {
+      width: 48px;
+      height: 3px;
+      background: #b91c1c;
+      margin-bottom: 2rem;
+      border-radius: 2px;
+    }
+
+    /* ── Tier Tabs ────────────────────────────────────────────────────── */
+    .tier-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .tier-tab {
+      padding: .6rem 1.5rem;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #6b7280;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color .2s, border-color .2s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: inherit;
+    }
+    .tier-tab:hover { color: #1a1a2e; }
+    .tier-tab.active { color: #b91c1c; border-bottom-color: #b91c1c; }
+    .tier-tab .tab-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
+      margin-left: 6px;
+      font-size: .7rem;
+      font-weight: 700;
+      border-radius: 10px;
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+    .tier-tab.active .tab-count { background: #fef2f2; color: #b91c1c; }
+
+    .tier-panel { display: none; }
+    .tier-panel.active { display: block; }
+
+    /* ── Chart Cards ──────────────────────────────────────────────────── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 1.3rem 1.4rem;
+      transition: border-color .2s, box-shadow .2s;
+      cursor: default;
+    }
+    .card:hover { border-color: #b91c1c; box-shadow: 0 2px 8px rgba(185,28,28,.08); }
+    .card-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .9rem;
+      font-weight: 500;
+      color: #b91c1c;
+      margin-bottom: .4rem;
+    }
+    .card-desc {
+      font-size: .82rem;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+    .card-tags {
+      display: flex;
+      gap: .4rem;
+      flex-wrap: wrap;
+      margin-top: .7rem;
+    }
+    .tag {
+      font-size: .65rem;
+      font-weight: 600;
+      padding: .2rem .55rem;
+      border-radius: 4px;
+      letter-spacing: .3px;
+    }
+    .tag-edge     { background: #ecfdf5; color: #065f46; }
+    .tag-platform { background: #eff6ff; color: #1e40af; }
+    .tag-enterprise { background: #fef3c7; color: #92400e; }
+    .tag-iso      { background: #f3f4f6; color: #6b7280; }
+
+    /* ── Dark band (Helm Repo) ────────────────────────────────────────── */
+    .dark-band {
+      background: linear-gradient(135deg, #1a1a2e 0%, #5c1a1a 100%);
+      color: #fff;
+      padding: 3.5rem 2rem;
+    }
+    .dark-band-inner {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .dark-band h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: .2rem;
+    }
+    .dark-band h2 + p {
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: rgba(255,255,255,.7);
+      margin-bottom: 1.8rem;
+    }
+    .dark-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+    }
+    .dark-cols p {
+      font-size: .88rem;
+      line-height: 1.65;
+      color: rgba(255,255,255,.8);
+    }
+    .dark-cols strong { color: #fff; }
+
+    /* ── ISO Coverage ─────────────────────────────────────────────────── */
+    .iso-table-wrap { overflow-x: auto; }
+    .iso-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem;
+    }
+    .iso-table th {
+      text-align: left;
+      padding: .65rem .8rem;
+      background: #f9fafb;
+      border-bottom: 2px solid #e5e7eb;
+      font-weight: 600;
+      color: #374151;
+      white-space: nowrap;
+    }
+    .iso-table td {
+      padding: .6rem .8rem;
+      border-bottom: 1px solid #f3f4f6;
+      color: #4b5563;
+    }
+    .iso-table tr:hover td { background: #fef2f2; }
+    .iso-clause {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      color: #b91c1c;
+    }
+
+    /* ── Terminal block ────────────────────────────────────────────────── */
+    .terminal {
+      background: #1a1a2e;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 1rem 0;
+      box-shadow: 0 4px 16px rgba(0,0,0,.15);
+    }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .6rem 1rem;
+      background: rgba(255,255,255,.06);
+    }
+    .terminal-bar span {
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.45);
+    }
+    .terminal-dots { display: flex; gap: 6px; }
+    .terminal-dots i {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .terminal-dots i:nth-child(1) { background: #ef4444; }
+    .terminal-dots i:nth-child(2) { background: #eab308; }
+    .terminal-dots i:nth-child(3) { background: #22c55e; }
+    .terminal-body {
+      padding: 1.2rem 1.4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      line-height: 1.8;
+      color: #d1d5db;
+      overflow-x: auto;
+    }
+    .terminal-body .comment { color: #6b7280; }
+    .terminal-body .cmd { color: #60a5fa; }
+    .terminal-body .url { color: #34d399; }
+    .terminal-body .flag { color: #f59e0b; }
+
+    /* ── Endpoint row ─────────────────────────────────────────────────── */
+    .endpoint-row {
+      display: flex;
+      align-items: center;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: .7rem 1rem;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .endpoint-label {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6b7280;
+      flex-shrink: 0;
+    }
+    .endpoint-url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .82rem;
+      color: #1a1a2e;
+      flex: 1;
+    }
+    .copy-btn {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      color: #6b7280;
+      transition: border-color .2s, color .2s;
+    }
+    .copy-btn:hover { border-color: #b91c1c; color: #b91c1c; }
+    .copy-btn svg { width: 16px; height: 16px; }
+
+    /* ── Architecture diagram ─────────────────────────────────────────── */
+    .arch-diagram {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: .8rem;
+      margin: 1.5rem 0;
+    }
+    .arch-tier {
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      border-left: 4px solid;
+    }
+    .arch-tier-enterprise { background: #fef3c7; border-color: #d97706; }
+    .arch-tier-platform   { background: #eff6ff; border-color: #2563eb; }
+    .arch-tier-edge       { background: #ecfdf5; border-color: #059669; }
+    .arch-tier h4 {
+      font-size: .85rem;
+      font-weight: 700;
+      margin-bottom: .4rem;
+    }
+    .arch-tier p {
+      font-size: .8rem;
+      color: #4b5563;
+      margin: 0;
+    }
+    .arch-components {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+      margin-top: .5rem;
+    }
+    .arch-comp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      padding: .2rem .5rem;
+      background: rgba(255,255,255,.7);
+      border-radius: 4px;
+      color: #374151;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────────────── */
+    .footer {
+      border-top: 1px solid #e5e7eb;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .78rem;
+      color: #6b7280;
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      font-weight: 600;
+      color: #b91c1c;
+      transition: color .2s;
+    }
+    .footer-links a:hover { color: #7f1d1d; }
+
+    /* ── Responsive ───────────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 1.7rem; }
+      .dark-cols { grid-template-columns: 1fr; gap: 1.2rem; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .tier-tabs { overflow-x: auto; }
+      .footer { flex-direction: column; gap: .8rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ Navbar ═══ -->
+<nav class="navbar">
+  <a href="#" class="navbar-brand">
+    <svg viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 4L2 14l6 10M16 4l6 10-6 10" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="30" y="20" fill="#1a1a2e" font-family="Inter,sans-serif" font-weight="700" font-size="16" letter-spacing="4">CIGIP</text>
+    </svg>
+  </a>
+  <div class="navbar-links">
+    <a href="#charts" class="active">HELM CHARTS</a>
+    <a href="https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog" target="_blank">GITHUB</a>
+  </div>
+</nav>
+
+<!-- ═══ Hero ═══ -->
+<header class="hero">
+  <div class="hero-inner">
+    <h1>MLOps ISO 42001<br><strong>K3s Solution Catalog</strong></h1>
+    <span class="hero-badge">Reference Architecture for AI Systems in Manufacturing</span>
+    <div class="hero-buttons">
+      <a href="https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog" class="btn btn-primary" target="_blank">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3.5A1.5 1.5 0 013.5 2h2.764a1.5 1.5 0 011.06.44l.436.435a1.5 1.5 0 001.06.44H12.5A1.5 1.5 0 0114 4.814V5H2V3.5zm0 3h12v6A1.5 1.5 0 0112.5 14h-9A1.5 1.5 0 012 12.5v-6z"/></svg>
+        View Source Repository
+      </a>
+      <a href="#quick-start" class="btn btn-outline">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M6.22 4.22a.75.75 0 011.06 0l3.25 3.25a.75.75 0 010 1.06l-3.25 3.25a.75.75 0 01-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 010-1.06z"/></svg>
+        Quick Start
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ Available Charts ═══ -->
+<section class="section" id="charts">
+  <h2 class="section-title">Available Charts</h2>
+  <div class="section-bar"></div>
+
+  <div class="tier-tabs">
+    <button class="tier-tab active" onclick="showTier('all')">All <span class="tab-count">22</span></button>
+    <button class="tier-tab" onclick="showTier('edge')">Edge <span class="tab-count">9</span></button>
+    <button class="tier-tab" onclick="showTier('platform')">Platform <span class="tab-count">9</span></button>
+    <button class="tier-tab" onclick="showTier('enterprise')">Enterprise <span class="tab-count">4</span></button>
+  </div>
+
+  <!-- All / Edge / Platform / Enterprise panels rendered via JS below -->
+  <div id="cards-container" class="cards-grid"></div>
+</section>
+
+<!-- ═══ Architecture ═══ -->
+<div class="dark-band">
+  <div class="dark-band-inner">
+    <h2>Helm Repository</h2>
+    <p>for AI Systems on K3s in Conformity to ISO/IEC 42001</p>
+    <div class="dark-cols">
+      <p><strong>Structured as a 4-tier reference architecture</strong> mapping Device, Edge, Platform, and Enterprise layers to 18 ISO/IEC 42001 Annex B requirements. Each solution includes a Helm chart, Rancher deployment questionnaire, and traceability to specific compliance clauses.</p>
+      <p><strong>Designed for Rancher and K3s</strong> with Traefik ingress, local-path storage, and lightweight resource profiles. Add this catalog to Rancher to deploy, configure, and manage each component via the UI with guided questionnaires for every deployment variable.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Architecture Overview ═══ -->
+<section class="section">
+  <h2 class="section-title">Architecture Overview</h2>
+  <div class="section-bar"></div>
+  <div class="arch-diagram">
+    <div class="arch-tier arch-tier-enterprise">
+      <h4>Enterprise Tier</h4>
+      <p>Governance, identity management, and incident response</p>
+      <div class="arch-components">
+        <span class="arch-comp">keycloak</span>
+        <span class="arch-comp">zammad</span>
+        <span class="arch-comp">minio-docs</span>
+        <span class="arch-comp">grafana-dashboards</span>
+      </div>
+    </div>
+    <div class="arch-tier arch-tier-platform">
+      <h4>Platform Tier</h4>
+      <p>AI lifecycle management, centralised monitoring, and data warehousing</p>
+      <div class="arch-components">
+        <span class="arch-comp">mlflow</span>
+        <span class="arch-comp">training-jobs</span>
+        <span class="arch-comp">prometheus</span>
+        <span class="arch-comp">grafana</span>
+        <span class="arch-comp">loki</span>
+        <span class="arch-comp">minio</span>
+        <span class="arch-comp">timescaledb</span>
+        <span class="arch-comp">postgresql</span>
+        <span class="arch-comp">rancher</span>
+      </div>
+    </div>
+    <div class="arch-tier arch-tier-edge">
+      <h4>Edge Tier</h4>
+      <p>Data ingestion, real-time inference, and local monitoring at the plant floor</p>
+      <div class="arch-components">
+        <span class="arch-comp">node-red</span>
+        <span class="arch-comp">kafka</span>
+        <span class="arch-comp">mosquitto</span>
+        <span class="arch-comp">fastapi-model</span>
+        <span class="arch-comp">fluent-bit</span>
+        <span class="arch-comp">prometheus-agent</span>
+        <span class="arch-comp">falco</span>
+        <span class="arch-comp">postgresql</span>
+        <span class="arch-comp">mongodb</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ISO 42001 Coverage ═══ -->
+<section class="section" id="iso">
+  <h2 class="section-title">ISO/IEC 42001 Annex B Coverage</h2>
+  <div class="section-bar"></div>
+  <div class="iso-table-wrap">
+    <table class="iso-table">
+      <thead>
+        <tr>
+          <th>Clause</th>
+          <th>Requirement</th>
+          <th>Solutions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="iso-clause">B.6.1.2.2</td><td>Resources, Monitoring Performance</td><td>Prometheus, Grafana, Prometheus Agent</td></tr>
+        <tr><td class="iso-clause">B.6.1.3.1</td><td>Resources, Access Control</td><td>Keycloak, Grafana, Mosquitto</td></tr>
+        <tr><td class="iso-clause">B.6.1.3.2</td><td>Resources, Version Control</td><td>MLflow, MinIO</td></tr>
+        <tr><td class="iso-clause">B.6.1.3.3</td><td>Resources, Human Oversight / Feedback</td><td>Grafana (Operator Feedback), Keycloak</td></tr>
+        <tr><td class="iso-clause">B.6.1.3.4</td><td>Resources, Inventory / Registry</td><td>MLflow</td></tr>
+        <tr><td class="iso-clause">B.6.2.3.1</td><td>Planning, System Documentation</td><td>MinIO (iso42001-docs bucket)</td></tr>
+        <tr><td class="iso-clause">B.6.2.5.1</td><td>Planning, Deployment Plan</td><td>MinIO, Rancher</td></tr>
+        <tr><td class="iso-clause">B.6.2.6.1</td><td>Operation, Infrastructure Monitoring</td><td>Prometheus, PostgreSQL, MongoDB</td></tr>
+        <tr><td class="iso-clause">B.6.2.6.2</td><td>Operation, Model Performance</td><td>Prometheus (AI rules), Grafana</td></tr>
+        <tr><td class="iso-clause">B.6.2.6.3</td><td>Operation, KPI Assessment (OEE)</td><td>TimescaleDB, Grafana, Edge PostgreSQL</td></tr>
+        <tr><td class="iso-clause">B.6.2.6.4</td><td>Operation, Retraining / Lifecycle</td><td>MLflow, Training Jobs, Kafka</td></tr>
+        <tr><td class="iso-clause">B.6.2.6.5</td><td>Operation, Update &amp; Repair Plan</td><td>MinIO (update-repair-plan)</td></tr>
+        <tr><td class="iso-clause">B.6.2.6.6</td><td>Operation, Incident Communication</td><td>Zammad</td></tr>
+        <tr><td class="iso-clause">B.6.2.6.7</td><td>Operation, Security Monitoring</td><td>Falco</td></tr>
+        <tr><td class="iso-clause">B.6.2.8.1</td><td>Operation, Logging / Audit Trail</td><td>Fluent Bit, Loki, PostgreSQL, Falco</td></tr>
+        <tr><td class="iso-clause">B.8.0.2.1</td><td>Continual Improvement, Roles</td><td>Keycloak (RBAC realm)</td></tr>
+        <tr><td class="iso-clause">B.8.0.4.1</td><td>Continual Improvement, Helpdesk</td><td>Zammad</td></tr>
+        <tr><td class="iso-clause">B.8.0.5.1</td><td>Continual Improvement, Alerts</td><td>Prometheus (Alertmanager), Grafana, Zammad</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ Quick Start ═══ -->
+<section class="section" id="quick-start">
+  <h2 class="section-title">Quick Start</h2>
+  <div class="section-bar"></div>
+
+  <div class="terminal">
+    <div class="terminal-bar">
+      <span>terminal</span>
+      <div class="terminal-dots"><i></i><i></i><i></i></div>
+    </div>
+    <div class="terminal-body">
+      <span class="comment"># Clone the catalog</span><br>
+      <span class="cmd">git clone</span> <span class="url">https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog.git</span><br>
+      <span class="cmd">cd</span> MLOps-ISO42001-K3s-Catalog<br><br>
+
+      <span class="comment"># Prepare Ubuntu 24.04 (installs K3s, Helm, Rancher CLI)</span><br>
+      <span class="cmd">sudo</span> ./infrastructure/setup-ubuntu.sh <span class="flag">--server</span><br><br>
+
+      <span class="comment"># Deploy the full stack</span><br>
+      <span class="cmd">./infrastructure/install.sh</span> <span class="flag">--all</span><br><br>
+
+      <span class="comment"># Or deploy a single tier</span><br>
+      <span class="cmd">./infrastructure/install.sh</span> <span class="flag">--edge-only</span><br>
+      <span class="cmd">./infrastructure/install.sh</span> <span class="flag">--platform-only</span><br>
+      <span class="cmd">./infrastructure/install.sh</span> <span class="flag">--enterprise-only</span><br><br>
+
+      <span class="comment"># Deploy an individual chart</span><br>
+      <span class="cmd">cd</span> catalog/edge/storage/postgresql/manifests<br>
+      <span class="cmd">helm dependency update</span> .<br>
+      <span class="cmd">helm install</span> postgresql-edge . <span class="flag">-n</span> edge <span class="flag">--create-namespace</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Repository Endpoint ═══ -->
+<section class="section">
+  <h2 class="section-title">Repository Endpoint</h2>
+  <div class="section-bar"></div>
+  <div class="endpoint-row">
+    <span class="endpoint-label">URL</span>
+    <span class="endpoint-url" id="repo-url">https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog</span>
+    <button class="copy-btn" onclick="copyUrl()" title="Copy URL">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/></svg>
+    </button>
+  </div>
+</section>
+
+<!-- ═══ Footer ═══ -->
+<footer class="footer">
+  <span><strong>CIGIP-UPV</strong> · Centro de Investigaci&oacute;n en Gesti&oacute;n e Ingenier&iacute;a de Producci&oacute;n</span>
+  <div class="footer-links">
+    <a href="https://github.com/CIGIP-UPV" target="_blank">GitHub</a>
+    <a href="https://cigip.webs.upv.es" target="_blank">M&aacute;s sobre nosotros</a>
+  </div>
+</footer>
+
+<!-- ═══ Data & Scripts ═══ -->
+<script>
+const charts = [
+  // Edge — Data Ingestion
+  { name: "node-red",         tier: "edge", category: "Data Ingestion",   desc: "Low-code flow editor for sensor data acquisition, MQTT routing, and OPC-UA integration.", iso: "B.6.2.6.4" },
+  { name: "kafka",            tier: "edge", category: "Data Ingestion",   desc: "Distributed event streaming with KRaft mode. Pre-configured topics for sensor data, predictions, and alerts.", iso: "B.6.2.6.4" },
+  { name: "mosquitto",        tier: "edge", category: "Data Ingestion",   desc: "Lightweight MQTT broker for plant-floor sensor telemetry with authentication and WebSocket support.", iso: "B.6.2.6.4" },
+  // Edge — AI Inference
+  { name: "fastapi-model",    tier: "edge", category: "AI Inference",     desc: "REST/gRPC inference server with Prometheus metrics, health probes, and rolling update strategy.", iso: "B.6.2.6.2" },
+  // Edge — Monitoring
+  { name: "fluent-bit",       tier: "edge", category: "Monitoring",       desc: "Lightweight log forwarder (DaemonSet) shipping container logs to Loki with Kubernetes metadata.", iso: "B.6.2.8.1" },
+  { name: "prometheus-agent", tier: "edge", category: "Monitoring",       desc: "Prometheus in agent mode forwarding edge metrics to the platform via remote-write.", iso: "B.6.1.2.2" },
+  // Edge — Security
+  { name: "falco",            tier: "edge", category: "Security",         desc: "Runtime threat detection with eBPF. Custom rules for AI model file access and container anomalies.", iso: "B.6.2.6.7" },
+  // Edge — Storage
+  { name: "postgresql",       tier: "edge", category: "Storage",          desc: "Feature cache and prediction store with init scripts for predictions, feedback, and audit tables.", iso: "B.6.2.6.1" },
+  { name: "mongodb",          tier: "edge", category: "Storage",          desc: "Document buffer with TTL indexes for automatic cleanup of sensor data and raw events.", iso: "B.6.2.6.1" },
+
+  // Platform — AI Lifecycle
+  { name: "mlflow",           tier: "platform", category: "AI Lifecycle",     desc: "Experiment tracking, model registry, and artefact storage backed by PostgreSQL and MinIO.", iso: "B.6.1.3.2" },
+  { name: "training-jobs",    tier: "platform", category: "AI Lifecycle",     desc: "CronJob for scheduled retraining and drift-triggered Job template with MLflow integration.", iso: "B.6.2.6.4" },
+  // Platform — Monitoring
+  { name: "prometheus",       tier: "platform", category: "Monitoring",       desc: "kube-prometheus-stack with custom AI alert rules for latency, error rate, and model drift.", iso: "B.6.1.2.2" },
+  { name: "grafana",          tier: "platform", category: "Monitoring",       desc: "Dashboards for OEE, model health, infrastructure, and operator feedback. Keycloak OIDC ready.", iso: "B.6.2.6.2" },
+  { name: "loki",             tier: "platform", category: "Monitoring",       desc: "Centralised log aggregation with 90-day retention for ISO/IEC 42001 audit trail compliance.", iso: "B.6.2.8.1" },
+  // Platform — Data Management
+  { name: "minio",            tier: "platform", category: "Data Management",  desc: "S3-compatible object storage with 6 auto-provisioned buckets, policies, and lifecycle rules.", iso: "B.6.2.3.1" },
+  { name: "timescaledb",      tier: "platform", category: "Data Management",  desc: "Time-series warehouse with hypertables for sensor readings, predictions, and OEE KPIs.", iso: "B.6.2.6.3" },
+  { name: "postgresql",       tier: "platform", category: "Data Management",  desc: "Shared metadata store initialised with databases for MLflow, Keycloak, Zammad, and Grafana.", iso: "—" },
+  // Platform — Orchestration
+  { name: "rancher",          tier: "platform", category: "Orchestration",    desc: "Multi-cluster management UI with audit logging, cert-manager TLS, and bootstrap password.", iso: "B.6.2.5.1" },
+
+  // Enterprise
+  { name: "keycloak",         tier: "enterprise", category: "Access Management", desc: "Identity provider with AI system realm, 5 RBAC roles, and 4 OIDC clients pre-configured.", iso: "B.6.1.3.1" },
+  { name: "zammad",           tier: "enterprise", category: "Helpdesk",          desc: "Incident management with webhook integration for Prometheus alerts and SMTP notifications.", iso: "B.6.2.6.6" },
+  { name: "minio-docs",       tier: "enterprise", category: "Document Store",    desc: "Overlay buckets for ISO 42001 compliance docs, model cards, and audit evidence with object locking.", iso: "B.6.2.3.1" },
+  { name: "grafana-dashboards", tier: "enterprise", category: "Dashboards",     desc: "6 pre-built dashboard definitions for OEE, model health, security events, and operator feedback.", iso: "B.6.1.3.3" },
+];
+
+function renderCards(filter) {
+  const container = document.getElementById('cards-container');
+  const filtered = filter === 'all' ? charts : charts.filter(c => c.tier === filter);
+
+  container.innerHTML = filtered.map(c => `
+    <div class="card">
+      <div class="card-name">${c.name}</div>
+      <div class="card-desc">${c.desc}</div>
+      <div class="card-tags">
+        <span class="tag tag-${c.tier}">${c.tier}</span>
+        <span class="tag tag-iso">${c.category}</span>
+        ${c.iso !== '—' ? `<span class="tag tag-iso">${c.iso}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function showTier(tier) {
+  document.querySelectorAll('.tier-tab').forEach(t => t.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  renderCards(tier);
+}
+
+function copyUrl() {
+  const url = document.getElementById('repo-url').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="#059669"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>';
+    setTimeout(() => {
+      btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/></svg>';
+    }, 1500);
+  });
+}
+
+// Initial render
+renderCards('all');
+</script>
+
+</body>
+</html>
