@@ -718,7 +718,7 @@ def render_index_html(packaged: list[tuple[str, dict, pathlib.Path]]) -> None:
       <div class="card-tags">
         <span class="tag tag-${c.tier}">${c.tier}</span>
         <span class="tag tag-iso">${c.category}</span>
-        ${c.iso && c.iso \!== '\\u2014' ? `<span class="tag tag-iso">${c.iso}</span>` : ''}
+        ${c.iso && c.iso !== '\\u2014' ? `<span class="tag tag-iso">${c.iso}</span>` : ''}
       </div>
       <div class="card-footer">
         <span class="card-version">v${c.version} \\u00b7 app ${c.appVersion}</span>
