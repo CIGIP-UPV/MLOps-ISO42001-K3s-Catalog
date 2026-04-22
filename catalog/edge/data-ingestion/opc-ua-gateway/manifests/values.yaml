@@ -1,0 +1,83 @@
+# =============================================================================
+# OPC-UA Gateway — Industrial Protocol Bridge
+# Tier: Edge | RA Component: Device-to-Edge Protocol Adaptation
+# ISO/IEC 42001: B.6.2.6.4 (Retraining — fresh sensor data),
+#                B.6.2.8.1 (Logging — OPC-UA transaction trail)
+# Image: EMQX Neuron Community Edition (GPL-3.0)
+# =============================================================================
+
+image:
+  repository: emqx/neuron
+  tag: "2.9.0"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+# ---------------------------------------------------------------------------
+# OPC-UA server endpoints to poll (example; override per site)
+# ---------------------------------------------------------------------------
+opcua:
+  endpoints:
+    - name: plant-floor-plc
+      url: opc.tcp://plc-01.plant.local:4840
+      securityPolicy: Basic256Sha256
+      securityMode: SignAndEncrypt
+      username: ""          # set via Vault/Secret in production
+      password: ""
+      nodes:
+        - ns=2;s=Channel1.Device1.Temperature
+        - ns=2;s=Channel1.Device1.Pressure
+        - ns=2;s=Channel1.Device1.Vibration
+  samplingIntervalMs: 1000
+  publishingIntervalMs: 500
+
+# ---------------------------------------------------------------------------
+# Downstream — forward scraped tags to MQTT broker / Kafka
+# ---------------------------------------------------------------------------
+downstream:
+  mqtt:
+    enabled: true
+    host: edge-mosquitto
+    port: 1883
+    topicPrefix: plant/opcua
+    qos: 1
+  kafka:
+    enabled: false
+    brokers: edge-kafka:9092
+    topic: opcua.raw
+
+# ---------------------------------------------------------------------------
+# REST/Dashboard exposure
+# ---------------------------------------------------------------------------
+service:
+  type: ClusterIP
+  webPort: 7000
+  apiPort: 7001
+
+ingress:
+  enabled: false
+  className: traefik
+  host: opcua.local
+  tls: false
+
+# ---------------------------------------------------------------------------
+# Persistence — Neuron config + cached tag history
+# ---------------------------------------------------------------------------
+persistence:
+  enabled: true
+  size: 2Gi
+  storageClass: local-path
+
+# ---------------------------------------------------------------------------
+# Resource profile (edge node)
+# ---------------------------------------------------------------------------
+resources:
+  limits:   { cpu: 500m,  memory: 512Mi }
+  requests: { cpu: 100m,  memory: 128Mi }
+
+# ---------------------------------------------------------------------------
+# Audit logging (B.6.2.8.1) — ship Neuron journal to Loki via Fluent Bit
+# ---------------------------------------------------------------------------
+auditLogs:
+  enabled: true
+  level: info  # info | debug | warn | error

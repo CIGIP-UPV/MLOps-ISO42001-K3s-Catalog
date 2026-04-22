@@ -1,0 +1,1132 @@
+apiVersion: v1
+generated: '2026-04-22T20:33:15.000000000Z'
+entries:
+  edge-fastapi-model:
+  - apiVersion: v2
+    name: edge-fastapi-model
+    type: application
+    version: 0.2.0
+    appVersion: 1.0.0
+    kubeVersion: '>=1.24.0-0'
+    description: REST / gRPC inference server with Prometheus metrics, health probes and rolling-update strategy for on-edge
+      model serving.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-fastapi-model.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - edge
+    - ai-inference
+    - fastapi
+    - model-server
+    - mlops
+    - inference
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: AI Inference
+      artifacthub.io/category: ai-machine-learning
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: edge
+      mlops-iso42001.cigip-upv.es/display-name: FastAPI Model Server
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.2, B.6.2.6.4
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fastapi-model-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 3f4aabe0c6b3c6bb29f59dd8c2b4c2bb4b2e3d86e294b02cb3603e5bbf51752a
+  edge-kafka:
+  - apiVersion: v2
+    name: edge-kafka
+    type: application
+    version: 0.2.0
+    appVersion: '3.6'
+    kubeVersion: '>=1.24.0-0'
+    description: Distributed event streaming on K3s with KRaft mode; pre-configured topics for sensor data, predictions and
+      alerts.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-kafka.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - edge
+    - data-ingestion
+    - kafka
+    - streaming
+    - event-bus
+    - kraft
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Data Ingestion
+      artifacthub.io/category: streaming-messaging
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: edge
+      mlops-iso42001.cigip-upv.es/display-name: Apache Kafka (Edge)
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.4, B.6.2.8.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-kafka-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 96198bd85853291166f29f46f1e4d569686fadae56112cfd2008be923eafa275
+    dependencies:
+    - name: kafka
+      version: ~30
+      repository: https://charts.bitnami.com/bitnami
+  edge-mosquitto:
+  - apiVersion: v2
+    name: edge-mosquitto
+    type: application
+    version: 0.2.0
+    appVersion: '2.0'
+    kubeVersion: '>=1.24.0-0'
+    description: Lightweight MQTT broker for plant-floor sensor telemetry with authentication and WebSocket support.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-mosquitto.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - edge
+    - mqtt
+    - data-ingestion
+    - broker
+    - sensors
+    - iot
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Data Ingestion
+      artifacthub.io/category: streaming-messaging
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: edge
+      mlops-iso42001.cigip-upv.es/display-name: Eclipse Mosquitto
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.6.2.6.4
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mosquitto-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: d9513de9b941c69d69ac763f01ab6c5a59bf02fef32408ebe5d4b81ed5cffb0e
+  edge-node-red:
+  - apiVersion: v2
+    name: edge-node-red
+    type: application
+    version: 0.2.0
+    appVersion: '3.1'
+    kubeVersion: '>=1.24.0-0'
+    description: Low-code flow editor for sensor data acquisition, MQTT routing and OPC-UA / REST integration.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-node-red.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - edge
+    - data-ingestion
+    - node-red
+    - low-code
+    - opc-ua
+    - mqtt
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Data Ingestion
+      artifacthub.io/category: integration-delivery
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: edge
+      mlops-iso42001.cigip-upv.es/display-name: Node-RED
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.4
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-node-red-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 8181d11f80af84d837e5b1b8b037d776e1746365477bff672a18c01ce556eb34
+    dependencies:
+    - name: node-red
+      version: ~0.30
+      repository: https://node-red-chart.github.io/node-red-chart/
+  edge-opc-ua-gateway:
+  - apiVersion: v2
+    name: edge-opc-ua-gateway
+    type: application
+    version: 0.2.0
+    appVersion: '2.9'
+    kubeVersion: '>=1.24.0-0'
+    description: OPC-UA to MQTT/Kafka bridge (EMQX Neuron) that pulls tags from PLC/SCADA endpoints and forwards them into
+      the edge event bus.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-opc-ua-gateway.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - edge
+    - data-ingestion
+    - opc-ua
+    - gateway
+    - neuron
+    - plc
+    - scada
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Data Ingestion
+      artifacthub.io/category: integration-delivery
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: edge
+      mlops-iso42001.cigip-upv.es/display-name: OPC-UA Gateway
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.6.2.6.4
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-opc-ua-gateway-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 302cb34e1343688cab4ee266918ed81d54651da2d7777067a47c2dc50e17758e
+  edge-fluent-bit:
+  - apiVersion: v2
+    name: edge-fluent-bit
+    type: application
+    version: 0.2.0
+    appVersion: '3.0'
+    kubeVersion: '>=1.24.0-0'
+    description: DaemonSet log forwarder shipping container logs to Loki with Kubernetes metadata for audit-trail compliance.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-fluent-bit.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - edge
+    - monitoring
+    - logging
+    - fluent-bit
+    - audit-trail
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Monitoring
+      artifacthub.io/category: monitoring-logging
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: edge
+      mlops-iso42001.cigip-upv.es/display-name: Fluent Bit
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.8.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fluent-bit-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 468428a962c9148a9c40b9346cb76b577601432d34df38eb74f8a11369addbfc
+    dependencies:
+    - name: fluent-bit
+      version: ~0.47
+      repository: https://fluent.github.io/helm-charts
+  edge-prometheus-agent:
+  - apiVersion: v2
+    name: edge-prometheus-agent
+    type: application
+    version: 0.2.0
+    appVersion: '25.3'
+    kubeVersion: '>=1.24.0-0'
+    description: Prometheus running in agent mode — scrapes local targets and forwards metrics to the platform via remote-write.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-prometheus-agent.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - edge
+    - monitoring
+    - metrics
+    - prometheus
+    - remote-write
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Monitoring
+      artifacthub.io/category: monitoring-logging
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: edge
+      mlops-iso42001.cigip-upv.es/display-name: Prometheus Agent
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.2.2, B.6.2.6.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-prometheus-agent-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 10edf814794faf1ca14a8427b131e616a987c6fb8bdcbad32eb6f015eb05ee31
+    dependencies:
+    - name: prometheus
+      version: ~25
+      repository: https://prometheus-community.github.io/helm-charts
+  edge-falco:
+  - apiVersion: v2
+    name: edge-falco
+    type: application
+    version: 0.2.0
+    appVersion: '0.37'
+    kubeVersion: '>=1.24.0-0'
+    description: Runtime threat detection with eBPF / kernel-module drivers and custom rules for AI model file access and
+      container anomalies.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-falco.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - edge
+    - security
+    - runtime-security
+    - falco
+    - ebpf
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Security
+      artifacthub.io/category: security
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: edge
+      mlops-iso42001.cigip-upv.es/display-name: Falco
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.7, B.6.2.8.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-falco-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 5513723d69a019808d09908b63c5c939de9245292e6fe17cb9f9da2007a35bfa
+    dependencies:
+    - name: falco
+      version: ~4
+      repository: https://falcosecurity.github.io/charts
+  edge-mongodb:
+  - apiVersion: v2
+    name: edge-mongodb
+    type: application
+    version: 0.2.0
+    appVersion: '7.0'
+    kubeVersion: '>=1.24.0-0'
+    description: Document buffer with TTL indexes for automatic cleanup of raw sensor events at the edge.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-mongodb.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - edge
+    - storage
+    - mongodb
+    - document-store
+    - buffer
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Storage
+      artifacthub.io/category: database
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: edge
+      mlops-iso42001.cigip-upv.es/display-name: MongoDB (Edge Buffer)
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mongodb-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 2c49316f5c4b9abf10e111f84bc967e260a48d0fe1b032ce1eeabf7143b435c4
+    dependencies:
+    - name: mongodb
+      version: ~15
+      repository: https://charts.bitnami.com/bitnami
+  edge-postgresql:
+  - apiVersion: v2
+    name: edge-postgresql
+    type: application
+    version: 0.2.0
+    appVersion: '16'
+    kubeVersion: '>=1.24.0-0'
+    description: Feature cache and prediction store initialised with predictions, feedback and audit tables for edge inference.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-postgresql.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - edge
+    - storage
+    - postgresql
+    - feature-store
+    - prediction-cache
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Storage
+      artifacthub.io/category: database
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: edge
+      mlops-iso42001.cigip-upv.es/display-name: PostgreSQL (Edge Cache)
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.1, B.6.2.6.3, B.6.2.8.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-postgresql-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: cf1eddf981be93df2c0ca81df3621e06b1c03ea2950c8ac86449a2ba908aafe7
+    dependencies:
+    - name: postgresql
+      version: ~15
+      repository: https://charts.bitnami.com/bitnami
+  platform-mlflow:
+  - apiVersion: v2
+    name: platform-mlflow
+    type: application
+    version: 0.2.0
+    appVersion: 2.14.0
+    kubeVersion: '>=1.24.0-0'
+    description: Experiment tracking, model registry and artefact storage backed by PostgreSQL and MinIO.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-mlflow.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - ai-lifecycle
+    - mlflow
+    - model-registry
+    - experiment-tracking
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: AI Lifecycle
+      artifacthub.io/category: ai-machine-learning
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: MLflow
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.2, B.6.1.3.4, B.6.2.6.4
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-mlflow-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: d45ae6fcb7c003b6e200e232b5ca8d4378ba9609e4c3c26ef0e0926093cdb43e
+    dependencies:
+    - name: mlflow
+      version: ~0.7
+      repository: https://community-charts.github.io/helm-charts
+  platform-training-jobs:
+  - apiVersion: v2
+    name: platform-training-jobs
+    type: application
+    version: 0.2.0
+    appVersion: 1.0.0
+    kubeVersion: '>=1.24.0-0'
+    description: CronJob for scheduled retraining and a drift-triggered Job template integrated with MLflow.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-training-jobs.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - ai-lifecycle
+    - training
+    - retraining
+    - cronjob
+    - mlops
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: AI Lifecycle
+      artifacthub.io/category: ai-machine-learning
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: Training Jobs
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.4
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-training-jobs-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 87e00768897cde2a4877bd6917a1d88213be351771208cae4480b09c52946936
+  platform-evidently:
+  - apiVersion: v2
+    name: platform-evidently
+    type: application
+    version: 0.2.0
+    appVersion: '0.4'
+    kubeVersion: '>=1.24.0-0'
+    description: Data and model drift detection service that closes the MLOps loop by triggering retraining jobs when drift
+      exceeds a configurable threshold.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-evidently.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - ai-lifecycle
+    - drift-detection
+    - monitoring
+    - mlops
+    - evidently
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: AI Lifecycle
+      artifacthub.io/category: ai-machine-learning
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: Evidently AI
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.2, B.6.2.8.1, B.8.0.5.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-evidently-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 2ab5f4c040cf99cebf451a8dcaf07f8c9301eff4ce3eeb57db1e50265cbbf00a
+  platform-minio:
+  - apiVersion: v2
+    name: platform-minio
+    type: application
+    version: 0.2.0
+    appVersion: '5.0'
+    kubeVersion: '>=1.24.0-0'
+    description: S3-compatible object storage with six auto-provisioned buckets, policies and lifecycle rules.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-minio.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - data-management
+    - minio
+    - s3
+    - object-storage
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Data Management
+      artifacthub.io/category: storage
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: MinIO
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.3.1, B.6.2.5.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-minio-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: d64de700a532dab77a7d6368342e0b058722f09b7757e2ee7ac1b9c54cdcc68a
+    dependencies:
+    - name: minio
+      version: ~5
+      repository: https://charts.min.io/
+  platform-postgresql:
+  - apiVersion: v2
+    name: platform-postgresql
+    type: application
+    version: 0.2.0
+    appVersion: '15.0'
+    kubeVersion: '>=1.24.0-0'
+    description: Shared metadata store initialised with databases for MLflow, Keycloak, Zammad and Grafana.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-postgresql.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - data-management
+    - postgresql
+    - metadata-store
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Data Management
+      artifacthub.io/category: database
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: PostgreSQL (Platform)
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.4
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-postgresql-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 5d30ba2eb246dd1004d967763ac06a02c13e2d539fd967399baa5cdce6c0a75c
+    dependencies:
+    - name: postgresql
+      version: ~15
+      repository: https://charts.bitnami.com/bitnami
+  platform-timescaledb:
+  - apiVersion: v2
+    name: platform-timescaledb
+    type: application
+    version: 0.2.0
+    appVersion: '16.0'
+    kubeVersion: '>=1.24.0-0'
+    description: Time-series warehouse with hypertables for sensor readings, predictions and OEE KPIs.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-timescaledb.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - data-management
+    - timescaledb
+    - time-series
+    - oee
+    - kpi
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Data Management
+      artifacthub.io/category: database
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: TimescaleDB
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.1, B.6.2.6.3
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-timescaledb-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 065af806aec81da0c439ececdade0f077eef96e062bf0f098bf9d20937fbeeb5
+    dependencies:
+    - name: timescaledb-single
+      version: ~0.35
+      repository: https://charts.timescale.com/
+  platform-grafana:
+  - apiVersion: v2
+    name: platform-grafana
+    type: application
+    version: 0.2.0
+    appVersion: 11.0.0
+    kubeVersion: '>=1.24.0-0'
+    description: Dashboards for OEE, model health, infrastructure and operator feedback; Keycloak OIDC ready.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-grafana.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - monitoring
+    - dashboards
+    - grafana
+    - oidc
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Monitoring
+      artifacthub.io/category: monitoring-logging
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: Grafana
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.6.1.3.3, B.6.2.6.2
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-grafana-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: d3b8b99ae71f8028782703917a0b03d0055a64b7ff7897f08da61cefd6e75fd0
+    dependencies:
+    - name: grafana
+      version: ~8
+      repository: https://grafana.github.io/helm-charts
+  platform-loki:
+  - apiVersion: v2
+    name: platform-loki
+    type: application
+    version: 0.2.0
+    appVersion: '6.0'
+    kubeVersion: '>=1.24.0-0'
+    description: Centralised log aggregation with long retention for ISO/IEC 42001 audit-trail compliance.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-loki.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - monitoring
+    - logging
+    - loki
+    - audit-trail
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Monitoring
+      artifacthub.io/category: monitoring-logging
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: Loki
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.8.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-loki-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 5dd27a89c84bf73f920889fcb95ed182c6ddad3c312c6db9fb69b2fba10ca5c1
+    dependencies:
+    - name: loki
+      version: ~6
+      repository: https://grafana.github.io/helm-charts
+  platform-prometheus:
+  - apiVersion: v2
+    name: platform-prometheus
+    type: application
+    version: 0.2.0
+    appVersion: '61.0'
+    kubeVersion: '>=1.24.0-0'
+    description: kube-prometheus-stack with custom AI alert rules for latency, error rate and model drift.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-prometheus.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - monitoring
+    - prometheus
+    - alertmanager
+    - kube-prometheus-stack
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Monitoring
+      artifacthub.io/category: monitoring-logging
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: Prometheus + Alertmanager
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.2.2, B.6.2.6.2, B.8.0.5.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-prometheus-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: f82d2f568c027fca1676fc4ed9699ef9a30bd524e87d03aa5aa94eb9add09a58
+    dependencies:
+    - name: kube-prometheus-stack
+      version: ~61
+      repository: https://prometheus-community.github.io/helm-charts
+  platform-rancher:
+  - apiVersion: v2
+    name: platform-rancher
+    type: application
+    version: 0.2.0
+    appVersion: 2.9.0
+    kubeVersion: '>=1.24.0-0'
+    description: Multi-cluster Kubernetes management UI with audit logging and cert-manager TLS.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-rancher.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - orchestration
+    - rancher
+    - multi-cluster
+    - k3s
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Orchestration
+      artifacthub.io/category: integration-delivery
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: Rancher
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.5.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-rancher-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: a03a737adbae45a245bcc039f50fdf7011426e2f052eef3b7535b368ae2da254
+    dependencies:
+    - name: rancher
+      version: ~2.9
+      repository: https://releases.rancher.com/server-charts/latest
+  platform-argocd:
+  - apiVersion: v2
+    name: platform-argocd
+    type: application
+    version: 0.2.0
+    appVersion: '2.12'
+    kubeVersion: '>=1.24.0-0'
+    description: GitOps controller that reconciles the declared state of the catalog against the cluster, providing an immutable
+      change-management audit trail.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-argocd.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - orchestration
+    - gitops
+    - argocd
+    - continuous-delivery
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Orchestration
+      artifacthub.io/category: integration-delivery
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: Argo CD
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.5.1, B.6.2.6.4, B.6.2.8.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-argocd-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 154bc9530f5f75c778d8da05f1d28f36eeeb06353479af62abc30e03dddc886b
+    dependencies:
+    - name: argo-cd
+      version: ~7
+      repository: https://argoproj.github.io/argo-helm
+  platform-vault:
+  - apiVersion: v2
+    name: platform-vault
+    type: application
+    version: 0.2.0
+    appVersion: '1.15'
+    kubeVersion: '>=1.24.0-0'
+    description: Centralised secrets manager with KV, PKI and database engines; provides dynamic credentials and encryption
+      keys to every tier via External Secrets.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-vault.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - security
+    - vault
+    - secrets
+    - pki
+    - kms
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Security
+      artifacthub.io/category: security
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: HashiCorp Vault
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.3, B.6.1.4.1, B.8.0.2.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-vault-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 776a6dfeca9354b72300eca37afc266e9e9d264ae5bd3521711daa1a4ad1a44f
+    dependencies:
+    - name: vault
+      version: ~0.27.0
+      repository: https://helm.releases.hashicorp.com
+      condition: vault.enabled
+  platform-cert-manager:
+  - apiVersion: v2
+    name: platform-cert-manager
+    type: application
+    version: 0.2.0
+    appVersion: '1.14'
+    kubeVersion: '>=1.24.0-0'
+    description: Automated X.509 certificate provisioning and renewal (ACME, self-signed, Vault PKI) for every ingress endpoint
+      in the reference architecture.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-cert-manager.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - platform
+    - security
+    - cert-manager
+    - tls
+    - acme
+    - letsencrypt
+    - pki
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Security
+      artifacthub.io/category: security
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: platform
+      mlops-iso42001.cigip-upv.es/display-name: cert-manager
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.4.1, B.6.2.3.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-cert-manager-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: f703f445557742565bea827df572fec01034bc9f132c5ddff1a6abce849639ac
+    dependencies:
+    - name: cert-manager
+      version: ~1.14.0
+      repository: https://charts.jetstack.io
+      condition: cert-manager.enabled
+      alias: cert-manager
+  enterprise-keycloak:
+  - apiVersion: v2
+    name: enterprise-keycloak
+    type: application
+    version: 0.2.0
+    appVersion: 24.0.0
+    kubeVersion: '>=1.24.0-0'
+    description: Identity provider with AI system realm, RBAC roles and pre-configured OIDC clients.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-keycloak.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - enterprise
+    - access-management
+    - keycloak
+    - identity
+    - oidc
+    - rbac
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Access Management
+      artifacthub.io/category: security
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: enterprise
+      mlops-iso42001.cigip-upv.es/display-name: Keycloak
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.8.0.2.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-keycloak-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 4c010a36d9c2d2576aeda398c06d758b991580e1bbc9988419829f30a4484ee3
+    dependencies:
+    - name: keycloak
+      version: ~22
+      repository: https://charts.bitnami.com/bitnami
+  enterprise-grafana-dashboards:
+  - apiVersion: v2
+    name: enterprise-grafana-dashboards
+    type: application
+    version: 0.2.0
+    appVersion: 1.0.0
+    kubeVersion: '>=1.24.0-0'
+    description: Pre-built dashboards for OEE, model health, security events and operator feedback.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-grafana-dashboards.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - enterprise
+    - dashboards
+    - grafana
+    - oee
+    - feedback
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Dashboards
+      artifacthub.io/category: monitoring-logging
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: enterprise
+      mlops-iso42001.cigip-upv.es/display-name: Grafana Dashboards (Overlay)
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.3, B.6.2.6.2
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-grafana-dashboards-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 2db885c8cc3ff3e9b5249257a27029ce9b0f46150ee8072b8982ee6257861186
+  enterprise-minio-overlay:
+  - apiVersion: v2
+    name: enterprise-minio-overlay
+    type: application
+    version: 0.2.0
+    appVersion: 1.0.0
+    kubeVersion: '>=1.24.0-0'
+    description: Overlay buckets for ISO/IEC 42001 compliance documentation, model cards and audit evidence with object locking.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-minio-overlay.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - enterprise
+    - document-store
+    - minio
+    - compliance
+    - audit-evidence
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Document Store
+      artifacthub.io/category: storage
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: enterprise
+      mlops-iso42001.cigip-upv.es/display-name: MinIO Docs Overlay
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.3.1, B.6.2.6.5
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-minio-overlay-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 609a6f60309c2db1771995476ef9f396fe55ac8a9c027baae179708730f85af6
+  enterprise-zammad:
+  - apiVersion: v2
+    name: enterprise-zammad
+    type: application
+    version: 0.2.0
+    appVersion: 6.3.0
+    kubeVersion: '>=1.24.0-0'
+    description: Incident management with webhook integration for Prometheus alerts and SMTP notifications.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-zammad.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - enterprise
+    - helpdesk
+    - zammad
+    - ticketing
+    - incident-response
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Helpdesk
+      artifacthub.io/category: integration-delivery
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: enterprise
+      mlops-iso42001.cigip-upv.es/display-name: Zammad
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.6, B.8.0.4.1, B.8.0.5.1
+      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
+        in Conformity to ISO/IEC 42001
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-zammad-0.2.0.tgz
+    created: '2026-04-22T20:33:15.000000000Z'
+    digest: 64180b23197e49af37803cac79c7ba113eb3695c9ae541a7ddd3d8aad6500da4
+    dependencies:
+    - name: zammad
+      version: ~10
+      repository: https://zammad.github.io/zammad-helm

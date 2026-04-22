@@ -1,0 +1,103 @@
+# =============================================================================
+# Evidently AI — Model & Data Drift Monitoring
+# Tier: Platform | RA Component: Drift Detection / Continuous Validation
+# ISO/IEC 42001: B.6.2.6.2 (Operation — Model Performance),
+#                B.6.2.6.4 (Operation — Retraining / Lifecycle trigger)
+# Image: Evidently UI Service (Apache-2.0)
+# =============================================================================
+
+image:
+  repository: evidently/evidently-service
+  tag: "0.4.33"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+# ---------------------------------------------------------------------------
+# Service / Ingress
+# ---------------------------------------------------------------------------
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: true
+  className: traefik
+  host: evidently.platform.local
+  tls: false
+  annotations: {}
+
+# ---------------------------------------------------------------------------
+# Persistence — workspace projects + reports
+# ---------------------------------------------------------------------------
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: local-path
+
+# ---------------------------------------------------------------------------
+# Workspace seed — Evidently UI projects pre-created at startup
+# ---------------------------------------------------------------------------
+workspace:
+  projects:
+    - name: edge-fastapi-model
+      description: "Drift monitoring for the on-edge FastAPI inference service"
+      tags: [edge, ai-inference, fastapi]
+    - name: platform-batch-model
+      description: "Drift monitoring for the platform-side batch retraining model"
+      tags: [platform, batch]
+
+# ---------------------------------------------------------------------------
+# Datasource — where Evidently reads predictions / reference data from
+# ---------------------------------------------------------------------------
+datasource:
+  type: postgres        # postgres | s3 | local
+  postgres:
+    host: platform-postgresql
+    port: 5432
+    database: predictions
+    user: evidently
+    passwordSecret:
+      name: evidently-db
+      key: password
+  s3:
+    endpoint: http://platform-minio:9000
+    bucket: ai-predictions
+    accessKeySecret:
+      name: evidently-s3
+      key: access_key
+    secretKeySecret:
+      name: evidently-s3
+      key: secret_key
+
+# ---------------------------------------------------------------------------
+# Drift detection schedules — read by an external CronJob
+# ---------------------------------------------------------------------------
+schedules:
+  driftCheckCron: "*/30 * * * *"   # every 30 min
+  retrainTriggerThreshold: 0.15    # PSI / Wasserstein > 0.15 → trigger MLflow training-jobs
+
+# ---------------------------------------------------------------------------
+# Webhook to platform-training-jobs (closes the retraining loop)
+# ---------------------------------------------------------------------------
+webhook:
+  retrainOnDrift:
+    enabled: true
+    url: http://platform-training-jobs.platform.svc/trigger
+    method: POST
+    headers:
+      Content-Type: application/json
+
+# ---------------------------------------------------------------------------
+# Resource profile
+# ---------------------------------------------------------------------------
+resources:
+  limits:   { cpu: 1,    memory: 1Gi  }
+  requests: { cpu: 200m, memory: 256Mi }
+
+# ---------------------------------------------------------------------------
+# Observability — emit drift score as Prometheus metric
+# ---------------------------------------------------------------------------
+metrics:
+  enabled: true
+  port: 8001

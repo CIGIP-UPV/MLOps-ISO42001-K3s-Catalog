@@ -1,17 +1,35 @@
+# Auto-generated / enriched by infrastructure/publish.py
+# Source of truth for the Chart metadata displayed in Rancher and ArtifactHub.
 apiVersion: v2
 name: enterprise-minio-overlay
-description: MinIO Bucket Overlay — Enterprise Document Store Configuration (Overlay for platform MinIO)
 type: application
-version: 0.1.0
-appVersion: "1.0.0"
-keywords:
-  - iso42001
-  - enterprise
-  - document-store
-  - minio
-  - overlay
-home: https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+version: 0.2.0
+appVersion: 1.0.0
+kubeVersion: '>=1.24.0-0'
+description: Overlay buckets for ISO/IEC 42001 compliance documentation, model cards and audit evidence with object locking.
+icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-minio-overlay.svg
+home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
 sources:
-  - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+- https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+keywords:
+- iso42001
+- enterprise
+- document-store
+- minio
+- compliance
+- audit-evidence
 maintainers:
-  - name: CIGIP-UPV
+- name: CIGIP-UPV
+  email: cigip@upv.es
+  url: https://cigip.webs.upv.es/
+annotations:
+  category: Document Store
+  artifacthub.io/category: storage
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name": "catalog",
+    "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+  mlops-iso42001.cigip-upv.es/tier: enterprise
+  mlops-iso42001.cigip-upv.es/display-name: MinIO Docs Overlay
+  mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.3.1, B.6.2.6.5
+  mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing in Conformity
+    to ISO/IEC 42001

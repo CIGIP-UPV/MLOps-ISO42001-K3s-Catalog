@@ -422,6 +422,66 @@
       .tier-tabs { overflow-x: auto; }
       .footer { flex-direction: column; gap: .8rem; text-align: center; }
     }
+  
+    /* --- Card (augmented) --- */
+    .card { display: flex; flex-direction: column; gap: .6rem; }
+    .card-head { display: flex; align-items: center; gap: .8rem; }
+    .card-icon {
+      width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;
+      background: #f9fafb; object-fit: contain;
+      border: 1px solid #e5e7eb;
+    }
+    .card-titles { min-width: 0; }
+    .card-display {
+      font-size: .75rem; color: #6b7280; font-weight: 500;
+      margin-top: .1rem;
+    }
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid #f3f4f6; padding-top: .6rem; margin-top: .2rem;
+    }
+    .card-version {
+      font-family: 'JetBrains Mono', monospace; font-size: .7rem;
+      color: #6b7280;
+    }
+    .card-dl {
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-size: .75rem; font-weight: 600; color: #b91c1c;
+      padding: .25rem .55rem; border: 1px solid #fecaca;
+      border-radius: 6px; transition: background .2s, color .2s;
+    }
+    .card-dl:hover { background: #fef2f2; }
+    .card-dl svg { width: 12px; height: 12px; }
+  
+    /* --- Card (augmented) --- */
+    .card { display: flex; flex-direction: column; gap: .6rem; }
+    .card-head { display: flex; align-items: center; gap: .8rem; }
+    .card-icon {
+      width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;
+      background: #f9fafb; object-fit: contain;
+      border: 1px solid #e5e7eb;
+    }
+    .card-titles { min-width: 0; }
+    .card-display {
+      font-size: .75rem; color: #6b7280; font-weight: 500;
+      margin-top: .1rem;
+    }
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid #f3f4f6; padding-top: .6rem; margin-top: .2rem;
+    }
+    .card-version {
+      font-family: 'JetBrains Mono', monospace; font-size: .7rem;
+      color: #6b7280;
+    }
+    .card-dl {
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-size: .75rem; font-weight: 600; color: #b91c1c;
+      padding: .25rem .55rem; border: 1px solid #fecaca;
+      border-radius: 6px; transition: background .2s, color .2s;
+    }
+    .card-dl:hover { background: #fef2f2; }
+    .card-dl svg { width: 12px; height: 12px; }
   </style>
 </head>
 <body>
@@ -464,9 +524,9 @@
   <div class="section-bar"></div>
 
   <div class="tier-tabs">
-    <button class="tier-tab active" onclick="showTier('all')">All <span class="tab-count">22</span></button>
-    <button class="tier-tab" onclick="showTier('edge')">Edge <span class="tab-count">9</span></button>
-    <button class="tier-tab" onclick="showTier('platform')">Platform <span class="tab-count">9</span></button>
+    <button class="tier-tab active" onclick="showTier('all')">All <span class="tab-count">27</span></button>
+    <button class="tier-tab" onclick="showTier('edge')">Edge <span class="tab-count">10</span></button>
+    <button class="tier-tab" onclick="showTier('platform')">Platform <span class="tab-count">13</span></button>
     <button class="tier-tab" onclick="showTier('enterprise')">Enterprise <span class="tab-count">4</span></button>
   </div>
 
@@ -480,7 +540,7 @@
     <h2>Helm Repository</h2>
     <p>for AI Systems on K3s in Conformity to ISO/IEC 42001</p>
     <div class="dark-cols">
-      <p><strong>Structured as a 4-tier reference architecture</strong> mapping Device, Edge, Platform, and Enterprise layers to 18 ISO/IEC 42001 Annex B requirements. Each solution includes a Helm chart, Rancher deployment questionnaire, and traceability to specific compliance clauses.</p>
+      <p><strong>Structured as a 4-tier reference architecture</strong> mapping Device, Edge, Platform, and Enterprise layers to 19 ISO/IEC 42001 Annex B requirements. Each solution includes a Helm chart, Rancher deployment questionnaire, and traceability to specific compliance clauses.</p>
       <p><strong>Designed for Rancher and K3s</strong> with Traefik ingress, local-path storage, and lightweight resource profiles. Add this catalog to Rancher to deploy, configure, and manage each component via the UI with guided questionnaires for every deployment variable.</p>
     </div>
   </div>
@@ -506,6 +566,7 @@
       <p>AI lifecycle management, centralised monitoring, and data warehousing</p>
       <div class="arch-components">
         <span class="arch-comp">mlflow</span>
+        <span class="arch-comp">evidently</span>
         <span class="arch-comp">training-jobs</span>
         <span class="arch-comp">prometheus</span>
         <span class="arch-comp">grafana</span>
@@ -514,6 +575,9 @@
         <span class="arch-comp">timescaledb</span>
         <span class="arch-comp">postgresql</span>
         <span class="arch-comp">rancher</span>
+        <span class="arch-comp">argocd</span>
+        <span class="arch-comp">vault</span>
+        <span class="arch-comp">cert-manager</span>
       </div>
     </div>
     <div class="arch-tier arch-tier-edge">
@@ -521,6 +585,7 @@
       <p>Data ingestion, real-time inference, and local monitoring at the plant floor</p>
       <div class="arch-components">
         <span class="arch-comp">node-red</span>
+        <span class="arch-comp">opc-ua-gateway</span>
         <span class="arch-comp">kafka</span>
         <span class="arch-comp">mosquitto</span>
         <span class="arch-comp">fastapi-model</span>
@@ -549,23 +614,24 @@
       </thead>
       <tbody>
         <tr><td class="iso-clause">B.6.1.2.2</td><td>Resources, Monitoring Performance</td><td>Prometheus, Grafana, Prometheus Agent</td></tr>
-        <tr><td class="iso-clause">B.6.1.3.1</td><td>Resources, Access Control</td><td>Keycloak, Grafana, Mosquitto</td></tr>
+        <tr><td class="iso-clause">B.6.1.3.1</td><td>Resources, Access Control</td><td>Keycloak, Grafana, Mosquitto, OPC-UA Gateway</td></tr>
         <tr><td class="iso-clause">B.6.1.3.2</td><td>Resources, Version Control</td><td>MLflow, MinIO</td></tr>
         <tr><td class="iso-clause">B.6.1.3.3</td><td>Resources, Human Oversight / Feedback</td><td>Grafana (Operator Feedback), Keycloak</td></tr>
         <tr><td class="iso-clause">B.6.1.3.4</td><td>Resources, Inventory / Registry</td><td>MLflow</td></tr>
-        <tr><td class="iso-clause">B.6.2.3.1</td><td>Planning, System Documentation</td><td>MinIO (iso42001-docs bucket)</td></tr>
-        <tr><td class="iso-clause">B.6.2.5.1</td><td>Planning, Deployment Plan</td><td>MinIO, Rancher</td></tr>
+        <tr><td class="iso-clause">B.6.1.4.1</td><td>Resources, Security of AI Assets</td><td>Vault (KV / PKI), cert-manager (TLS)</td></tr>
+        <tr><td class="iso-clause">B.6.2.3.1</td><td>Planning, System Documentation</td><td>MinIO (iso42001-docs bucket), cert-manager (TLS provenance)</td></tr>
+        <tr><td class="iso-clause">B.6.2.5.1</td><td>Planning, Deployment Plan</td><td>MinIO, Rancher, Argo CD</td></tr>
         <tr><td class="iso-clause">B.6.2.6.1</td><td>Operation, Infrastructure Monitoring</td><td>Prometheus, PostgreSQL, MongoDB</td></tr>
         <tr><td class="iso-clause">B.6.2.6.2</td><td>Operation, Model Performance</td><td>Prometheus (AI rules), Grafana</td></tr>
         <tr><td class="iso-clause">B.6.2.6.3</td><td>Operation, KPI Assessment (OEE)</td><td>TimescaleDB, Grafana, Edge PostgreSQL</td></tr>
-        <tr><td class="iso-clause">B.6.2.6.4</td><td>Operation, Retraining / Lifecycle</td><td>MLflow, Training Jobs, Kafka</td></tr>
+        <tr><td class="iso-clause">B.6.2.6.4</td><td>Operation, Retraining / Lifecycle</td><td>MLflow, Training Jobs, Kafka, Evidently, Argo CD</td></tr>
         <tr><td class="iso-clause">B.6.2.6.5</td><td>Operation, Update &amp; Repair Plan</td><td>MinIO (update-repair-plan)</td></tr>
         <tr><td class="iso-clause">B.6.2.6.6</td><td>Operation, Incident Communication</td><td>Zammad</td></tr>
         <tr><td class="iso-clause">B.6.2.6.7</td><td>Operation, Security Monitoring</td><td>Falco</td></tr>
-        <tr><td class="iso-clause">B.6.2.8.1</td><td>Operation, Logging / Audit Trail</td><td>Fluent Bit, Loki, PostgreSQL, Falco</td></tr>
-        <tr><td class="iso-clause">B.8.0.2.1</td><td>Continual Improvement, Roles</td><td>Keycloak (RBAC realm)</td></tr>
+        <tr><td class="iso-clause">B.6.2.8.1</td><td>Operation, Logging / Audit Trail</td><td>Fluent Bit, Loki, PostgreSQL, Falco, Argo CD, Evidently</td></tr>
+        <tr><td class="iso-clause">B.8.0.2.1</td><td>Continual Improvement, Roles</td><td>Keycloak (RBAC realm), Vault (dynamic credentials)</td></tr>
         <tr><td class="iso-clause">B.8.0.4.1</td><td>Continual Improvement, Helpdesk</td><td>Zammad</td></tr>
-        <tr><td class="iso-clause">B.8.0.5.1</td><td>Continual Improvement, Alerts</td><td>Prometheus (Alertmanager), Grafana, Zammad</td></tr>
+        <tr><td class="iso-clause">B.8.0.5.1</td><td>Continual Improvement, Alerts</td><td>Prometheus (Alertmanager), Grafana, Zammad, Evidently (drift)</td></tr>
       </tbody>
     </table>
   </div>
@@ -630,40 +696,33 @@
 <!-- ═══ Data & Scripts ═══ -->
 <script>
 const charts = [
-  // Edge — Data Ingestion
-  { name: "node-red",         tier: "edge", category: "Data Ingestion",   desc: "Low-code flow editor for sensor data acquisition, MQTT routing, and OPC-UA integration.", iso: "B.6.2.6.4" },
-  { name: "kafka",            tier: "edge", category: "Data Ingestion",   desc: "Distributed event streaming with KRaft mode. Pre-configured topics for sensor data, predictions, and alerts.", iso: "B.6.2.6.4" },
-  { name: "mosquitto",        tier: "edge", category: "Data Ingestion",   desc: "Lightweight MQTT broker for plant-floor sensor telemetry with authentication and WebSocket support.", iso: "B.6.2.6.4" },
-  // Edge — AI Inference
-  { name: "fastapi-model",    tier: "edge", category: "AI Inference",     desc: "REST/gRPC inference server with Prometheus metrics, health probes, and rolling update strategy.", iso: "B.6.2.6.2" },
-  // Edge — Monitoring
-  { name: "fluent-bit",       tier: "edge", category: "Monitoring",       desc: "Lightweight log forwarder (DaemonSet) shipping container logs to Loki with Kubernetes metadata.", iso: "B.6.2.8.1" },
-  { name: "prometheus-agent", tier: "edge", category: "Monitoring",       desc: "Prometheus in agent mode forwarding edge metrics to the platform via remote-write.", iso: "B.6.1.2.2" },
-  // Edge — Security
-  { name: "falco",            tier: "edge", category: "Security",         desc: "Runtime threat detection with eBPF. Custom rules for AI model file access and container anomalies.", iso: "B.6.2.6.7" },
-  // Edge — Storage
-  { name: "postgresql",       tier: "edge", category: "Storage",          desc: "Feature cache and prediction store with init scripts for predictions, feedback, and audit tables.", iso: "B.6.2.6.1" },
-  { name: "mongodb",          tier: "edge", category: "Storage",          desc: "Document buffer with TTL indexes for automatic cleanup of sensor data and raw events.", iso: "B.6.2.6.1" },
-
-  // Platform — AI Lifecycle
-  { name: "mlflow",           tier: "platform", category: "AI Lifecycle",     desc: "Experiment tracking, model registry, and artefact storage backed by PostgreSQL and MinIO.", iso: "B.6.1.3.2" },
-  { name: "training-jobs",    tier: "platform", category: "AI Lifecycle",     desc: "CronJob for scheduled retraining and drift-triggered Job template with MLflow integration.", iso: "B.6.2.6.4" },
-  // Platform — Monitoring
-  { name: "prometheus",       tier: "platform", category: "Monitoring",       desc: "kube-prometheus-stack with custom AI alert rules for latency, error rate, and model drift.", iso: "B.6.1.2.2" },
-  { name: "grafana",          tier: "platform", category: "Monitoring",       desc: "Dashboards for OEE, model health, infrastructure, and operator feedback. Keycloak OIDC ready.", iso: "B.6.2.6.2" },
-  { name: "loki",             tier: "platform", category: "Monitoring",       desc: "Centralised log aggregation with 90-day retention for ISO/IEC 42001 audit trail compliance.", iso: "B.6.2.8.1" },
-  // Platform — Data Management
-  { name: "minio",            tier: "platform", category: "Data Management",  desc: "S3-compatible object storage with 6 auto-provisioned buckets, policies, and lifecycle rules.", iso: "B.6.2.3.1" },
-  { name: "timescaledb",      tier: "platform", category: "Data Management",  desc: "Time-series warehouse with hypertables for sensor readings, predictions, and OEE KPIs.", iso: "B.6.2.6.3" },
-  { name: "postgresql",       tier: "platform", category: "Data Management",  desc: "Shared metadata store initialised with databases for MLflow, Keycloak, Zammad, and Grafana.", iso: "—" },
-  // Platform — Orchestration
-  { name: "rancher",          tier: "platform", category: "Orchestration",    desc: "Multi-cluster management UI with audit logging, cert-manager TLS, and bootstrap password.", iso: "B.6.2.5.1" },
-
-  // Enterprise
-  { name: "keycloak",         tier: "enterprise", category: "Access Management", desc: "Identity provider with AI system realm, 5 RBAC roles, and 4 OIDC clients pre-configured.", iso: "B.6.1.3.1" },
-  { name: "zammad",           tier: "enterprise", category: "Helpdesk",          desc: "Incident management with webhook integration for Prometheus alerts and SMTP notifications.", iso: "B.6.2.6.6" },
-  { name: "minio-docs",       tier: "enterprise", category: "Document Store",    desc: "Overlay buckets for ISO 42001 compliance docs, model cards, and audit evidence with object locking.", iso: "B.6.2.3.1" },
-  { name: "grafana-dashboards", tier: "enterprise", category: "Dashboards",     desc: "6 pre-built dashboard definitions for OEE, model health, security events, and operator feedback.", iso: "B.6.1.3.3" },
+  { name: "edge-fastapi-model", display: "FastAPI Model Server", tier: "edge", category: "AI Inference", iso: "B.6.2.6.2, B.6.2.6.4", version: "0.2.0", appVersion: "1.0.0", desc: "REST / gRPC inference server with Prometheus metrics, health probes and rolling-update strategy for on-edge model serving.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-fastapi-model.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fastapi-model-0.2.0.tgz" },
+  { name: "edge-kafka", display: "Apache Kafka (Edge)", tier: "edge", category: "Data Ingestion", iso: "B.6.2.6.4, B.6.2.8.1", version: "0.2.0", appVersion: "3.6", desc: "Distributed event streaming on K3s with KRaft mode; pre-configured topics for sensor data, predictions and alerts.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-kafka.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-kafka-0.2.0.tgz" },
+  { name: "edge-mosquitto", display: "Eclipse Mosquitto", tier: "edge", category: "Data Ingestion", iso: "B.6.1.3.1, B.6.2.6.4", version: "0.2.0", appVersion: "2.0", desc: "Lightweight MQTT broker for plant-floor sensor telemetry with authentication and WebSocket support.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-mosquitto.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mosquitto-0.2.0.tgz" },
+  { name: "edge-node-red", display: "Node-RED", tier: "edge", category: "Data Ingestion", iso: "B.6.2.6.4", version: "0.2.0", appVersion: "3.1", desc: "Low-code flow editor for sensor data acquisition, MQTT routing and OPC-UA / REST integration.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-node-red.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-node-red-0.2.0.tgz" },
+  { name: "edge-opc-ua-gateway", display: "OPC-UA Gateway", tier: "edge", category: "Data Ingestion", iso: "B.6.1.3.1, B.6.2.6.4", version: "0.2.0", appVersion: "2.9", desc: "OPC-UA to MQTT/Kafka bridge (EMQX Neuron) that pulls tags from PLC/SCADA endpoints and forwards them into the edge event bus.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-opc-ua-gateway.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-opc-ua-gateway-0.2.0.tgz" },
+  { name: "edge-fluent-bit", display: "Fluent Bit", tier: "edge", category: "Monitoring", iso: "B.6.2.8.1", version: "0.2.0", appVersion: "3.0", desc: "DaemonSet log forwarder shipping container logs to Loki with Kubernetes metadata for audit-trail compliance.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-fluent-bit.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fluent-bit-0.2.0.tgz" },
+  { name: "edge-prometheus-agent", display: "Prometheus Agent", tier: "edge", category: "Monitoring", iso: "B.6.1.2.2, B.6.2.6.1", version: "0.2.0", appVersion: "25.3", desc: "Prometheus running in agent mode \u2014 scrapes local targets and forwards metrics to the platform via remote-write.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-prometheus-agent.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-prometheus-agent-0.2.0.tgz" },
+  { name: "edge-falco", display: "Falco", tier: "edge", category: "Security", iso: "B.6.2.6.7, B.6.2.8.1", version: "0.2.0", appVersion: "0.37", desc: "Runtime threat detection with eBPF / kernel-module drivers and custom rules for AI model file access and container anomalies.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-falco.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-falco-0.2.0.tgz" },
+  { name: "edge-mongodb", display: "MongoDB (Edge Buffer)", tier: "edge", category: "Storage", iso: "B.6.2.6.1", version: "0.2.0", appVersion: "7.0", desc: "Document buffer with TTL indexes for automatic cleanup of raw sensor events at the edge.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-mongodb.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mongodb-0.2.0.tgz" },
+  { name: "edge-postgresql", display: "PostgreSQL (Edge Cache)", tier: "edge", category: "Storage", iso: "B.6.2.6.1, B.6.2.6.3, B.6.2.8.1", version: "0.2.0", appVersion: "16", desc: "Feature cache and prediction store initialised with predictions, feedback and audit tables for edge inference.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-postgresql.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-postgresql-0.2.0.tgz" },
+  { name: "platform-evidently", display: "Evidently AI", tier: "platform", category: "AI Lifecycle", iso: "B.6.2.6.2, B.6.2.8.1, B.8.0.5.1", version: "0.2.0", appVersion: "0.4", desc: "Data and model drift detection service that closes the MLOps loop by triggering retraining jobs when drift exceeds a configurable threshold.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-evidently.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-evidently-0.2.0.tgz" },
+  { name: "platform-mlflow", display: "MLflow", tier: "platform", category: "AI Lifecycle", iso: "B.6.1.3.2, B.6.1.3.4, B.6.2.6.4", version: "0.2.0", appVersion: "2.14.0", desc: "Experiment tracking, model registry and artefact storage backed by PostgreSQL and MinIO.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-mlflow.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-mlflow-0.2.0.tgz" },
+  { name: "platform-training-jobs", display: "Training Jobs", tier: "platform", category: "AI Lifecycle", iso: "B.6.2.6.4", version: "0.2.0", appVersion: "1.0.0", desc: "CronJob for scheduled retraining and a drift-triggered Job template integrated with MLflow.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-training-jobs.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-training-jobs-0.2.0.tgz" },
+  { name: "platform-minio", display: "MinIO", tier: "platform", category: "Data Management", iso: "B.6.2.3.1, B.6.2.5.1", version: "0.2.0", appVersion: "5.0", desc: "S3-compatible object storage with six auto-provisioned buckets, policies and lifecycle rules.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-minio.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-minio-0.2.0.tgz" },
+  { name: "platform-postgresql", display: "PostgreSQL (Platform)", tier: "platform", category: "Data Management", iso: "B.6.1.3.4", version: "0.2.0", appVersion: "15.0", desc: "Shared metadata store initialised with databases for MLflow, Keycloak, Zammad and Grafana.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-postgresql.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-postgresql-0.2.0.tgz" },
+  { name: "platform-timescaledb", display: "TimescaleDB", tier: "platform", category: "Data Management", iso: "B.6.2.6.1, B.6.2.6.3", version: "0.2.0", appVersion: "16.0", desc: "Time-series warehouse with hypertables for sensor readings, predictions and OEE KPIs.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-timescaledb.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-timescaledb-0.2.0.tgz" },
+  { name: "platform-grafana", display: "Grafana", tier: "platform", category: "Monitoring", iso: "B.6.1.3.1, B.6.1.3.3, B.6.2.6.2", version: "0.2.0", appVersion: "11.0.0", desc: "Dashboards for OEE, model health, infrastructure and operator feedback; Keycloak OIDC ready.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-grafana.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-grafana-0.2.0.tgz" },
+  { name: "platform-loki", display: "Loki", tier: "platform", category: "Monitoring", iso: "B.6.2.8.1", version: "0.2.0", appVersion: "6.0", desc: "Centralised log aggregation with long retention for ISO/IEC 42001 audit-trail compliance.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-loki.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-loki-0.2.0.tgz" },
+  { name: "platform-prometheus", display: "Prometheus + Alertmanager", tier: "platform", category: "Monitoring", iso: "B.6.1.2.2, B.6.2.6.2, B.8.0.5.1", version: "0.2.0", appVersion: "61.0", desc: "kube-prometheus-stack with custom AI alert rules for latency, error rate and model drift.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-prometheus.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-prometheus-0.2.0.tgz" },
+  { name: "platform-argocd", display: "Argo CD", tier: "platform", category: "Orchestration", iso: "B.6.2.5.1, B.6.2.6.4, B.6.2.8.1", version: "0.2.0", appVersion: "2.12", desc: "GitOps controller that reconciles the declared state of the catalog against the cluster, providing an immutable change-management audit trail.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-argocd.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-argocd-0.2.0.tgz" },
+  { name: "platform-rancher", display: "Rancher", tier: "platform", category: "Orchestration", iso: "B.6.2.5.1", version: "0.2.0", appVersion: "2.9.0", desc: "Multi-cluster Kubernetes management UI with audit logging and cert-manager TLS.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-rancher.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-rancher-0.2.0.tgz" },
+  { name: "platform-cert-manager", display: "cert-manager", tier: "platform", category: "Security", iso: "B.6.1.4.1, B.6.2.3.1", version: "0.2.0", appVersion: "1.14", desc: "Automated X.509 certificate provisioning and renewal (ACME, self-signed, Vault PKI) for every ingress endpoint in the reference architecture.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-cert-manager.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-cert-manager-0.2.0.tgz" },
+  { name: "platform-vault", display: "HashiCorp Vault", tier: "platform", category: "Security", iso: "B.6.1.3.3, B.6.1.4.1, B.8.0.2.1", version: "0.2.0", appVersion: "1.15", desc: "Centralised secrets manager with KV, PKI and database engines; provides dynamic credentials and encryption keys to every tier via External Secrets.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-vault.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-vault-0.2.0.tgz" },
+  { name: "enterprise-keycloak", display: "Keycloak", tier: "enterprise", category: "Access Management", iso: "B.6.1.3.1, B.8.0.2.1", version: "0.2.0", appVersion: "24.0.0", desc: "Identity provider with AI system realm, RBAC roles and pre-configured OIDC clients.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-keycloak.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-keycloak-0.2.0.tgz" },
+  { name: "enterprise-grafana-dashboards", display: "Grafana Dashboards (Overlay)", tier: "enterprise", category: "Dashboards", iso: "B.6.1.3.3, B.6.2.6.2", version: "0.2.0", appVersion: "1.0.0", desc: "Pre-built dashboards for OEE, model health, security events and operator feedback.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-grafana-dashboards.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-grafana-dashboards-0.2.0.tgz" },
+  { name: "enterprise-minio-overlay", display: "MinIO Docs Overlay", tier: "enterprise", category: "Document Store", iso: "B.6.2.3.1, B.6.2.6.5", version: "0.2.0", appVersion: "1.0.0", desc: "Overlay buckets for ISO/IEC 42001 compliance documentation, model cards and audit evidence with object locking.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-minio-overlay.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-minio-overlay-0.2.0.tgz" },
+  { name: "enterprise-zammad", display: "Zammad", tier: "enterprise", category: "Helpdesk", iso: "B.6.2.6.6, B.8.0.4.1, B.8.0.5.1", version: "0.2.0", appVersion: "6.3.0", desc: "Incident management with webhook integration for Prometheus alerts and SMTP notifications.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-zammad.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-zammad-0.2.0.tgz" }
 ];
 
 function renderCards(filter) {
@@ -672,12 +731,25 @@ function renderCards(filter) {
 
   container.innerHTML = filtered.map(c => `
     <div class="card">
-      <div class="card-name">${c.name}</div>
+      <div class="card-head">
+        <img class="card-icon" src="${c.icon}" alt="${c.name} icon" loading="lazy" onerror="this.style.display='none'"/>
+        <div class="card-titles">
+          <div class="card-name">${c.name}</div>
+          <div class="card-display">${c.display}</div>
+        </div>
+      </div>
       <div class="card-desc">${c.desc}</div>
       <div class="card-tags">
         <span class="tag tag-${c.tier}">${c.tier}</span>
         <span class="tag tag-iso">${c.category}</span>
-        ${c.iso !== '—' ? `<span class="tag tag-iso">${c.iso}</span>` : ''}
+        ${c.iso && c.iso \!== '\u2014' ? `<span class="tag tag-iso">${c.iso}</span>` : ''}
+      </div>
+      <div class="card-footer">
+        <span class="card-version">v${c.version} \u00b7 app ${c.appVersion}</span>
+        <a class="card-dl" href="${c.tgz}" title="Download chart">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M7.25 1.75a.75.75 0 011.5 0v7.69l2.22-2.22a.75.75 0 111.06 1.06l-3.5 3.5a.75.75 0 01-1.06 0l-3.5-3.5a.75.75 0 111.06-1.06l2.22 2.22V1.75zM2.25 13.5a.75.75 0 000 1.5h11.5a.75.75 0 000-1.5H2.25z"/></svg>
+          .tgz
+        </a>
       </div>
     </div>
   `).join('');

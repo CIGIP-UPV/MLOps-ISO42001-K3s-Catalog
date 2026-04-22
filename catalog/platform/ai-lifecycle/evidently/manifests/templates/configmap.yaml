@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-evidently-config
+  labels:
+    {{- include "platform-evidently.labels" . | nindent 4 }}
+data:
+  workspace.json: |
+    {
+      "projects": {{ toJson .Values.workspace.projects }},
+      "datasource": {
+        "type": "{{ .Values.datasource.type }}",
+        "postgres": {
+          "host": "{{ .Values.datasource.postgres.host }}",
+          "port": {{ .Values.datasource.postgres.port }},
+          "database": "{{ .Values.datasource.postgres.database }}",
+          "user": "{{ .Values.datasource.postgres.user }}"
+        },
+        "s3": {
+          "endpoint": "{{ .Values.datasource.s3.endpoint }}",
+          "bucket":   "{{ .Values.datasource.s3.bucket }}"
+        }
+      },
+      "schedules": {
+        "drift_check_cron": "{{ .Values.schedules.driftCheckCron }}",
+        "retrain_trigger_threshold": {{ .Values.schedules.retrainTriggerThreshold }}
+      },
+      "webhook": {
+        "enabled": {{ .Values.webhook.retrainOnDrift.enabled }},
+        "url":     "{{ .Values.webhook.retrainOnDrift.url }}",
+        "method":  "{{ .Values.webhook.retrainOnDrift.method }}"
+      }
+    }

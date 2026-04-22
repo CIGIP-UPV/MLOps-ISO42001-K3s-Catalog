@@ -1,0 +1,114 @@
+# ------------------------------------------------------------------
+# platform-vault - MLOps platform secrets backend
+# Wraps hashicorp/vault-helm ~0.27
+# ------------------------------------------------------------------
+
+vault:
+  enabled: true
+  global:
+    tlsDisable: false
+  server:
+    image:
+      repository: hashicorp/vault
+      tag: "1.15.6"
+    dataStorage:
+      enabled: true
+      size: 10Gi
+      storageClass: local-path
+    auditStorage:
+      enabled: true
+      size: 5Gi
+      storageClass: local-path
+    # Single-node for edge / small deployments; switch to HA for production
+    ha:
+      enabled: false
+      replicas: 3
+      raft:
+        enabled: true
+        setNodeId: true
+    standalone:
+      enabled: true
+      config: |
+        ui = true
+        listener "tcp" {
+          tls_disable = 0
+          address     = "[::]:8200"
+          cluster_address = "[::]:8201"
+          tls_cert_file = "/vault/userconfig/vault-tls/tls.crt"
+          tls_key_file  = "/vault/userconfig/vault-tls/tls.key"
+        }
+        storage "file" {
+          path = "/vault/data"
+        }
+        telemetry {
+          prometheus_retention_time = "24h"
+          disable_hostname = true
+        }
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    # Cluster-internal access; external ingress optional
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 8200
+    ingress:
+      enabled: false
+      ingressClassName: traefik
+      hosts:
+        - host: vault.platform.local
+          paths:
+            - /
+      tls:
+        - secretName: vault-tls-ingress
+          hosts:
+            - vault.platform.local
+
+  ui:
+    enabled: true
+    serviceType: ClusterIP
+
+  # Vault Agent Injector - for pods requesting secrets at runtime
+  injector:
+    enabled: true
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+  csi:
+    enabled: false
+
+# ------------------------------------------------------------------
+# Bootstrap secrets engines and policies via post-install hook.
+# These are consumed by ExternalSecretsOperator to propagate keys
+# across the catalog (MLflow, registry, training-jobs, notebooks...).
+# ------------------------------------------------------------------
+bootstrap:
+  enabled: true
+  # Secrets engines to enable on first start
+  engines:
+    - path: mlops-kv
+      type: kv
+      options:
+        version: "2"
+    - path: mlops-pki
+      type: pki
+    - path: mlops-database
+      type: database
+  # ACL policies skeleton (body applied via ConfigMap documentation only)
+  policies:
+    - name: mlops-reader
+      capabilities: ["read", "list"]
+      paths: ["mlops-kv/data/shared/*"]
+    - name: mlops-writer
+      capabilities: ["create", "read", "update", "delete", "list"]
+      paths: ["mlops-kv/data/shared/*"]

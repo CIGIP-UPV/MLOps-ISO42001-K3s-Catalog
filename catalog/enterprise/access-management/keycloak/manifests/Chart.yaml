@@ -1,21 +1,40 @@
+# Auto-generated / enriched by infrastructure/publish.py
+# Source of truth for the Chart metadata displayed in Rancher and ArtifactHub.
 apiVersion: v2
 name: enterprise-keycloak
-description: Keycloak — Identity & Access Management (Bitnami wrapper)
 type: application
-version: 0.1.0
-appVersion: "24.0.0"
-keywords:
-  - iso42001
-  - enterprise
-  - access-management
-  - keycloak
-  - identity
-home: https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+version: 0.2.0
+appVersion: 24.0.0
+kubeVersion: '>=1.24.0-0'
+description: Identity provider with AI system realm, RBAC roles and pre-configured OIDC clients.
+icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-keycloak.svg
+home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
 sources:
-  - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+- https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+keywords:
+- iso42001
+- enterprise
+- access-management
+- keycloak
+- identity
+- oidc
+- rbac
 maintainers:
-  - name: CIGIP-UPV
+- name: CIGIP-UPV
+  email: cigip@upv.es
+  url: https://cigip.webs.upv.es/
+annotations:
+  category: Access Management
+  artifacthub.io/category: security
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name": "catalog",
+    "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+  mlops-iso42001.cigip-upv.es/tier: enterprise
+  mlops-iso42001.cigip-upv.es/display-name: Keycloak
+  mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.8.0.2.1
+  mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing in Conformity
+    to ISO/IEC 42001
 dependencies:
-  - name: keycloak
-    version: "~22"
-    repository: "https://charts.bitnami.com/bitnami"
+- name: keycloak
+  version: ~22
+  repository: https://charts.bitnami.com/bitnami

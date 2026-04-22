@@ -1,0 +1,105 @@
+# =============================================================================
+# Argo CD — GitOps Continuous Delivery
+# Helm chart: argoproj/argo-cd
+# Tier: Platform | RA Component: Deployment Orchestration (GitOps)
+# ISO/IEC 42001: B.6.1.3.2 (Version Control of config & infrastructure),
+#                B.6.2.5.1 (Deployment Plan — declarative, auditable),
+#                B.6.2.8.1 (Audit trail of every sync / rollback)
+# =============================================================================
+
+argo-cd:
+  # ---------------------------------------------------------------------------
+  # Global
+  # ---------------------------------------------------------------------------
+  global:
+    domain: argocd.platform.local
+    logging:
+      format: json
+      level: info
+
+  # ---------------------------------------------------------------------------
+  # Server
+  # ---------------------------------------------------------------------------
+  server:
+    replicas: 1
+    service:
+      type: ClusterIP
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      hostname: argocd.platform.local
+      annotations:
+        traefik.ingress.kubernetes.io/router.tls: "true"
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      tls: true
+    config:
+      url: https://argocd.platform.local
+      admin.enabled: "true"
+      exec.enabled: "false"
+      kustomize.buildOptions: "--enable-helm"
+      # OIDC / Keycloak integration placeholder — fill via overlay or Vault
+      oidc.config: |
+        name: Keycloak
+        issuer: https://keycloak.enterprise.local/realms/ai-system
+        clientID: argocd
+        clientSecret: $oidc.keycloak.clientSecret
+        requestedScopes: ["openid", "profile", "email", "groups"]
+    rbacConfig:
+      policy.default: role:readonly
+      policy.csv: |
+        p, role:platform-admin, applications, *, */*, allow
+        p, role:platform-admin, clusters, *, *, allow
+        g, ai-platform-admins, role:platform-admin
+
+  # ---------------------------------------------------------------------------
+  # Repo server
+  # ---------------------------------------------------------------------------
+  repoServer:
+    replicas: 1
+    resources:
+      requests: { cpu: 100m, memory: 128Mi }
+      limits:   { cpu: 500m, memory: 512Mi }
+
+  # ---------------------------------------------------------------------------
+  # Controller
+  # ---------------------------------------------------------------------------
+  controller:
+    replicas: 1
+    resources:
+      requests: { cpu: 200m, memory: 256Mi }
+      limits:   { cpu: 1,    memory: 1Gi  }
+
+  # ---------------------------------------------------------------------------
+  # Notifications (integration with Zammad webhook)
+  # ---------------------------------------------------------------------------
+  notifications:
+    enabled: true
+
+  # ---------------------------------------------------------------------------
+  # ApplicationSet (multi-cluster fan-out — edge factories)
+  # ---------------------------------------------------------------------------
+  applicationSet:
+    enabled: true
+    replicas: 1
+
+  # ---------------------------------------------------------------------------
+  # Redis — use external only if HA is needed
+  # ---------------------------------------------------------------------------
+  redis:
+    enabled: true
+  redis-ha:
+    enabled: false
+
+  # ---------------------------------------------------------------------------
+  # Dex (disabled — using Keycloak OIDC directly)
+  # ---------------------------------------------------------------------------
+  dex:
+    enabled: false
+
+# ---------------------------------------------------------------------------
+# Bootstrap AppProject / Applications declaratively after install
+# ---------------------------------------------------------------------------
+bootstrap:
+  enabled: false            # set to true after Argo CD is up and repo creds are configured
+  repoUrl: https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+  revision: main
