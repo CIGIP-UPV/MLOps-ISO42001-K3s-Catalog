@@ -1,0 +1,53 @@
+categories:
+  - Security
+questions:
+  - variable: cert-manager.installCRDs
+    default: true
+    description: "Install cert-manager CRDs. Disable only if another release already owns them."
+    type: boolean
+    label: Install CRDs
+    group: "Core"
+  - variable: issuers.letsencryptStaging.enabled
+    default: true
+    description: "Provision the Let's Encrypt staging ClusterIssuer (safe for testing)."
+    type: boolean
+    label: Let's Encrypt staging
+    group: "ClusterIssuers"
+  - variable: issuers.letsencryptStaging.email
+    default: "admin@example.com"
+    description: "Contact e-mail for Let's Encrypt staging ACME account."
+    type: string
+    label: LE staging e-mail
+    show_if: "issuers.letsencryptStaging.enabled=true"
+    group: "ClusterIssuers"
+  - variable: issuers.letsencryptProd.enabled
+    default: false
+    description: "Provision the Let's Encrypt production ClusterIssuer (only enable once staging succeeds)."
+    type: boolean
+    label: Let's Encrypt production
+    group: "ClusterIssuers"
+  - variable: issuers.letsencryptProd.email
+    default: "admin@example.com"
+    description: "Contact e-mail for Let's Encrypt production ACME account."
+    type: string
+    label: LE prod e-mail
+    show_if: "issuers.letsencryptProd.enabled=true"
+    group: "ClusterIssuers"
+  - variable: issuers.selfSignedCA.enabled
+    default: true
+    description: "Provision a cluster-internal self-signed CA ClusterIssuer (useful for internal services)."
+    type: boolean
+    label: Self-signed internal CA
+    group: "ClusterIssuers"
+  - variable: issuers.vaultInternal.enabled
+    default: false
+    description: "Provision a Vault-backed PKI ClusterIssuer (requires platform-vault with PKI engine configured)."
+    type: boolean
+    label: Vault-backed internal CA
+    group: "ClusterIssuers"
+  - variable: cert-manager.prometheus.enabled
+    default: true
+    description: "Expose cert-manager Prometheus metrics."
+    type: boolean
+    label: Prometheus metrics
+    group: "Observability"

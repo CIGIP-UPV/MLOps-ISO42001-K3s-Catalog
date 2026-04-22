@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-opcua-config
+  labels:
+    {{- include "edge-opc-ua-gateway.labels" . | nindent 4 }}
+data:
+  neuron.json: |
+    {
+      "endpoints": {{ toJson .Values.opcua.endpoints }},
+      "sampling_interval_ms": {{ .Values.opcua.samplingIntervalMs }},
+      "publishing_interval_ms": {{ .Values.opcua.publishingIntervalMs }},
+      "downstream": {
+        "mqtt": {
+          "enabled": {{ .Values.downstream.mqtt.enabled }},
+          "host":    "{{ .Values.downstream.mqtt.host }}",
+          "port":    {{ .Values.downstream.mqtt.port }},
+          "topic_prefix": "{{ .Values.downstream.mqtt.topicPrefix }}",
+          "qos":     {{ .Values.downstream.mqtt.qos }}
+        },
+        "kafka": {
+          "enabled": {{ .Values.downstream.kafka.enabled }},
+          "brokers": "{{ .Values.downstream.kafka.brokers }}",
+          "topic":   "{{ .Values.downstream.kafka.topic }}"
+        }
+      },
+      "audit": {
+        "enabled": {{ .Values.auditLogs.enabled }},
+        "level":   "{{ .Values.auditLogs.level }}"
+      }
+    }

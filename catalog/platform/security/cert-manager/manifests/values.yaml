@@ -1,0 +1,76 @@
+# ------------------------------------------------------------------
+# platform-cert-manager - automated X.509 certificate lifecycle
+# Wraps jetstack/cert-manager ~1.14
+# ------------------------------------------------------------------
+
+cert-manager:
+  enabled: true
+  # cert-manager manages cluster-wide CRDs; we install them here.
+  installCRDs: true
+  # Observability
+  prometheus:
+    enabled: true
+    servicemonitor:
+      enabled: false
+  # Resources for cert-manager controller / webhook / cainjector
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  webhook:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+  cainjector:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+  # DNS config for ACME propagation
+  extraArgs:
+    - --dns01-recursive-nameservers=1.1.1.1:53,9.9.9.9:53
+    - --dns01-recursive-nameservers-only
+
+# ------------------------------------------------------------------
+# ClusterIssuer definitions produced by this chart.
+# Enable the ones that fit your environment.
+# ------------------------------------------------------------------
+issuers:
+  # Let's Encrypt staging (safe default for dev/test)
+  letsencryptStaging:
+    enabled: true
+    email: admin@example.com
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    solver: http01
+    ingressClass: traefik
+
+  # Let's Encrypt production
+  letsencryptProd:
+    enabled: false
+    email: admin@example.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solver: http01
+    ingressClass: traefik
+
+  # Self-signed CA - bootstraps a cluster-internal PKI
+  selfSignedCA:
+    enabled: true
+    commonName: "k3s-mlops-platform-ca"
+    duration: "87600h"  # 10 years
+
+  # Vault-backed internal CA (requires platform-vault + PKI engine)
+  vaultInternal:
+    enabled: false
+    server: https://platform-vault.platform.svc:8200
+    path: mlops-pki/sign/mlops-platform
+    authRole: cert-manager

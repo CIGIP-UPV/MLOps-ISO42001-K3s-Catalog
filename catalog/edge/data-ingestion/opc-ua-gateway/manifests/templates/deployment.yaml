@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-opcua-gateway
+  labels:
+    {{- include "edge-opc-ua-gateway.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "edge-opc-ua-gateway.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "edge-opc-ua-gateway.labels" . | nindent 8 }}
+      annotations:
+        mlops-iso42001.cigip-upv.es/audit-logs: "{{ .Values.auditLogs.enabled }}"
+    spec:
+      containers:
+        - name: neuron
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: web
+              containerPort: 7000
+            - name: api
+              containerPort: 7001
+          volumeMounts:
+            - name: config
+              mountPath: /opt/neuron/config
+            - name: data
+              mountPath: /opt/neuron/persistence
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            tcpSocket: { port: web }
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          readinessProbe:
+            tcpSocket: { port: api }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-opcua-config
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-opcua-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}

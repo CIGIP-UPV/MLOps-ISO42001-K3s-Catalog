@@ -1,19 +1,39 @@
+# Auto-generated / enriched by infrastructure/publish.py
+# Source of truth for the Chart metadata displayed in Rancher and ArtifactHub.
 apiVersion: v2
 name: platform-rancher
-description: Rancher — Multi-Cluster Kubernetes Management
 type: application
-version: 0.1.0
-appVersion: "2.9.0"
-keywords:
-  - iso42001
-  - platform
-  - orchestration
-home: https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+version: 0.2.0
+appVersion: 2.9.0
+kubeVersion: '>=1.24.0-0'
+description: Multi-cluster Kubernetes management UI with audit logging and cert-manager TLS.
+icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-rancher.svg
+home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
 sources:
-  - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+- https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+keywords:
+- iso42001
+- platform
+- orchestration
+- rancher
+- multi-cluster
+- k3s
 maintainers:
-  - name: CIGIP-UPV
+- name: CIGIP-UPV
+  email: cigip@upv.es
+  url: https://cigip.webs.upv.es/
+annotations:
+  category: Orchestration
+  artifacthub.io/category: integration-delivery
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name": "catalog",
+    "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+  mlops-iso42001.cigip-upv.es/tier: platform
+  mlops-iso42001.cigip-upv.es/display-name: Rancher
+  mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.5.1
+  mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing in Conformity
+    to ISO/IEC 42001
 dependencies:
-  - name: rancher
-    version: "~2.9"
-    repository: "https://releases.rancher.com/server-charts/latest"
+- name: rancher
+  version: ~2.9
+  repository: https://releases.rancher.com/server-charts/latest

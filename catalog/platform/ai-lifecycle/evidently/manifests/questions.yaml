@@ -1,0 +1,91 @@
+categories:
+  - Platform
+  - AI Lifecycle
+  - Monitoring
+
+questions:
+  - variable: image.tag
+    default: "0.4.33"
+    description: "Evidently UI service image tag"
+    type: string
+    label: "Image Tag"
+    group: "Image"
+
+  - variable: ingress.enabled
+    default: true
+    description: "Expose the Evidently UI via Traefik ingress"
+    type: boolean
+    label: "Enable Ingress"
+    group: "Ingress"
+
+  - variable: ingress.host
+    default: "evidently.platform.local"
+    description: "Hostname for the Evidently UI"
+    type: hostname
+    show_if: "ingress.enabled=true"
+    label: "Hostname"
+    group: "Ingress"
+
+  - variable: ingress.tls
+    default: false
+    description: "Enable TLS on the ingress (requires cert-manager)"
+    type: boolean
+    show_if: "ingress.enabled=true"
+    label: "Enable TLS"
+    group: "Ingress"
+
+  - variable: persistence.size
+    default: "10Gi"
+    description: "Workspace volume size — projects, snapshots and reports"
+    type: string
+    label: "Workspace Size"
+    group: "Persistence"
+
+  - variable: datasource.type
+    default: "postgres"
+    description: "Where to read prediction / reference data from"
+    type: enum
+    options:
+      - "postgres"
+      - "s3"
+      - "local"
+    label: "Datasource Type"
+    group: "Datasource"
+
+  - variable: datasource.postgres.host
+    default: "platform-postgresql"
+    description: "PostgreSQL host for predictions database"
+    type: string
+    show_if: "datasource.type=postgres"
+    label: "PostgreSQL Host"
+    group: "Datasource"
+
+  - variable: schedules.driftCheckCron
+    default: "*/30 * * * *"
+    description: "Cron expression — how often to compute drift snapshots"
+    type: string
+    label: "Drift Check Schedule"
+    group: "Schedules"
+
+  - variable: schedules.retrainTriggerThreshold
+    default: 0.15
+    description: "Drift score threshold (PSI / Wasserstein) above which a retraining job is fired"
+    type: float
+    min: 0.01
+    max: 1.0
+    label: "Retrain Threshold"
+    group: "Schedules"
+
+  - variable: webhook.retrainOnDrift.enabled
+    default: true
+    description: "Trigger platform-training-jobs when drift exceeds threshold (closes the MLOps loop)"
+    type: boolean
+    label: "Enable Retrain Webhook"
+    group: "Closed-loop"
+
+  - variable: metrics.enabled
+    default: true
+    description: "Expose drift score as a Prometheus metric (scraped by platform-prometheus)"
+    type: boolean
+    label: "Enable Prometheus Metrics"
+    group: "Observability"

@@ -1,0 +1,108 @@
+categories:
+  - Edge
+  - Data Ingestion
+
+questions:
+  # ── Image ────────────────────────────────────────────────────────────────
+  - variable: image.tag
+    default: "2.9.0"
+    description: "EMQX Neuron image tag"
+    type: string
+    label: "Neuron Image Tag"
+    group: "Image"
+
+  # ── OPC-UA endpoint ──────────────────────────────────────────────────────
+  - variable: opcua.endpoints[0].url
+    default: "opc.tcp://plc-01.plant.local:4840"
+    description: "Endpoint URL of the OPC-UA server (PLC / SCADA / edge device)"
+    type: string
+    required: true
+    label: "OPC-UA Endpoint URL"
+    group: "OPC-UA Server"
+
+  - variable: opcua.endpoints[0].securityPolicy
+    default: "Basic256Sha256"
+    description: "OPC-UA security policy"
+    type: enum
+    options:
+      - "None"
+      - "Basic128Rsa15"
+      - "Basic256"
+      - "Basic256Sha256"
+    label: "Security Policy"
+    group: "OPC-UA Server"
+
+  - variable: opcua.endpoints[0].securityMode
+    default: "SignAndEncrypt"
+    description: "Message security mode"
+    type: enum
+    options:
+      - "None"
+      - "Sign"
+      - "SignAndEncrypt"
+    label: "Security Mode"
+    group: "OPC-UA Server"
+
+  - variable: opcua.samplingIntervalMs
+    default: 1000
+    description: "Sampling interval in milliseconds"
+    type: int
+    min: 50
+    max: 60000
+    label: "Sampling Interval (ms)"
+    group: "OPC-UA Server"
+
+  # ── Downstream ───────────────────────────────────────────────────────────
+  - variable: downstream.mqtt.enabled
+    default: true
+    description: "Forward scraped tags to the edge MQTT broker"
+    type: boolean
+    label: "Enable MQTT Forwarding"
+    group: "Downstream"
+
+  - variable: downstream.mqtt.host
+    default: "edge-mosquitto"
+    description: "MQTT broker hostname (Kubernetes service name)"
+    type: string
+    show_if: "downstream.mqtt.enabled=true"
+    label: "MQTT Host"
+    group: "Downstream"
+
+  - variable: downstream.mqtt.topicPrefix
+    default: "plant/opcua"
+    description: "Topic prefix for forwarded tag updates"
+    type: string
+    show_if: "downstream.mqtt.enabled=true"
+    label: "MQTT Topic Prefix"
+    group: "Downstream"
+
+  - variable: downstream.kafka.enabled
+    default: false
+    description: "Forward scraped tags to Kafka (alternative to MQTT)"
+    type: boolean
+    label: "Enable Kafka Forwarding"
+    group: "Downstream"
+
+  # ── Ingress ──────────────────────────────────────────────────────────────
+  - variable: ingress.enabled
+    default: false
+    description: "Expose Neuron dashboard via Traefik ingress"
+    type: boolean
+    label: "Enable Ingress"
+    group: "Ingress"
+
+  - variable: ingress.host
+    default: "opcua.local"
+    description: "Ingress host for the Neuron dashboard"
+    type: hostname
+    show_if: "ingress.enabled=true"
+    label: "Ingress Host"
+    group: "Ingress"
+
+  # ── Persistence ──────────────────────────────────────────────────────────
+  - variable: persistence.size
+    default: "2Gi"
+    description: "Persistent volume size for Neuron config and tag history"
+    type: string
+    label: "PVC Size"
+    group: "Persistence"

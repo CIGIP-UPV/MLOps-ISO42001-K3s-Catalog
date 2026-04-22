@@ -1,0 +1,70 @@
+categories:
+  - Platform
+  - Orchestration
+  - GitOps
+
+questions:
+  - variable: argo-cd.global.domain
+    default: "argocd.platform.local"
+    description: "Base domain for Argo CD server"
+    type: hostname
+    required: true
+    label: "Argo CD Domain"
+    group: "General"
+
+  - variable: argo-cd.server.ingress.enabled
+    default: true
+    description: "Expose Argo CD via Traefik ingress"
+    type: boolean
+    label: "Enable Ingress"
+    group: "Ingress"
+
+  - variable: argo-cd.server.ingress.tls
+    default: true
+    description: "Enable TLS on the ingress (requires cert-manager)"
+    type: boolean
+    show_if: "argo-cd.server.ingress.enabled=true"
+    label: "Enable TLS"
+    group: "Ingress"
+
+  - variable: argo-cd.server.config.admin.enabled
+    default: "true"
+    description: "Enable the built-in admin user (disable after OIDC is configured)"
+    type: enum
+    options:
+      - "true"
+      - "false"
+    label: "Built-in Admin User"
+    group: "Authentication"
+
+  - variable: argo-cd.applicationSet.enabled
+    default: true
+    description: "Enable ApplicationSet controller for multi-cluster fan-out (recommended for edge factory deployments)"
+    type: boolean
+    label: "Enable ApplicationSet"
+    group: "Features"
+
+  - variable: argo-cd.notifications.enabled
+    default: true
+    description: "Enable the notifications controller (for Zammad / Slack webhooks)"
+    type: boolean
+    label: "Enable Notifications"
+    group: "Features"
+
+  - variable: argo-cd.controller.replicas
+    default: 1
+    description: "Number of application controller replicas (HA: ≥ 2)"
+    type: int
+    min: 1
+    max: 3
+    label: "Controller Replicas"
+    group: "High Availability"
+
+  - variable: argo-cd.server.replicas
+    default: 1
+    description: "Number of Argo CD server replicas (HA: ≥ 2)"
+    type: int
+    min: 1
+    max: 3
+    label: "Server Replicas"
+    group: "High Availability"

@@ -1,0 +1,44 @@
+# Auto-generated / enriched by infrastructure/publish.py
+# Source of truth for the Chart metadata displayed in Rancher and ArtifactHub.
+apiVersion: v2
+name: platform-cert-manager
+type: application
+version: 0.2.0
+appVersion: '1.14'
+kubeVersion: '>=1.24.0-0'
+description: Automated X.509 certificate provisioning and renewal (ACME, self-signed, Vault PKI) for every ingress endpoint
+  in the reference architecture.
+icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-cert-manager.svg
+home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+sources:
+- https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+keywords:
+- iso42001
+- platform
+- security
+- cert-manager
+- tls
+- acme
+- letsencrypt
+- pki
+maintainers:
+- name: CIGIP-UPV
+  email: cigip@upv.es
+  url: https://cigip.webs.upv.es/
+annotations:
+  category: Security
+  artifacthub.io/category: security
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name": "catalog",
+    "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+  mlops-iso42001.cigip-upv.es/tier: platform
+  mlops-iso42001.cigip-upv.es/display-name: cert-manager
+  mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.4.1, B.6.2.3.1
+  mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing in Conformity
+    to ISO/IEC 42001
+dependencies:
+- name: cert-manager
+  version: ~1.14.0
+  repository: https://charts.jetstack.io
+  condition: cert-manager.enabled
+  alias: cert-manager
