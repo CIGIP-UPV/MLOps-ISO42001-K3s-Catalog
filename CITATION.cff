@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this catalog in academic work, please cite it as below."
+title: "K3s Solution Catalog for ISO/IEC 42001-Compliant Industrial AI Systems"
+abstract: >-
+  A structured catalog of K3s-compatible Helm chart solutions for designing,
+  deploying, and governing AI systems in manufacturing environments in
+  conformity with ISO/IEC 42001:2023. Solutions are organised by deployment
+  tier (Edge, Platform, Enterprise) and functional category, with explicit
+  mapping to ISO/IEC 42001 Annex B requirements. Companion artifact to the
+  doctoral thesis "Automatización de operaciones en el ciclo de vida de
+  soluciones para fabricación cero defectos" (Mateo-Casalí, Universitat
+  Politècnica de València, 2026).
+type: software
+authors:
+  - family-names: "Mateo-Casalí"
+    given-names: "Miguel Ángel"
+    affiliation: "Centro de Investigación en Gestión e Ingeniería de Producción (CIGIP), Universitat Politècnica de València"
+    orcid: "https://orcid.org/0000-0001-5086-9378"
+  - family-names: "Boza"
+    given-names: "Andrés"
+    affiliation: "Centro de Investigación en Gestión e Ingeniería de Producción (CIGIP), Universitat Politècnica de València"
+    orcid: "https://orcid.org/0000-0002-5429-0416"
+  - family-names: "Fraile"
+    given-names: "Francisco"
+    affiliation: "Centro de Investigación en Gestión e Ingeniería de Producción (CIGIP), Universitat Politècnica de València"
+    orcid: "https://orcid.org/0000-0003-0852-8953"
+version: "1.0.0"
+date-released: "2026-04-28"
+license: Apache-2.0
+repository-code: "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"
+url: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/"
+keywords:
+  - "MLOps"
+  - "Zero-Defects Manufacturing"
+  - "ISO/IEC 42001"
+  - "Industrial AI"
+  - "K3s"
+  - "Kubernetes"
+  - "Helm"
+  - "Reference Architecture"
+  - "Industry 4.0"

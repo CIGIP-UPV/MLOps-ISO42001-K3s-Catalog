@@ -2,14 +2,14 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![GitHub](https://img.shields.io/badge/GitHub-CIGIP--UPV-181717?logo=github)](https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog)
+[![DOI](https://zenodo.org/badge/DOI/TODO_DOI_ZENODO_AFTER_FIRST_RELEASE.svg)](https://doi.org/TODO_DOI_ZENODO_AFTER_FIRST_RELEASE)
+[![CITATION.cff](https://img.shields.io/badge/cite-CITATION.cff-brightgreen.svg)](./CITATION.cff)
 
 A structured catalog of K3S-compatible solutions for designing, deploying, and governing AI systems in manufacturing environments in conformity with **ISO/IEC 42001:2023**.
 
 **Repository**: [https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog](https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog)
 
-This catalog is a companion resource to the reference architecture described in:
-
-> *Reference Architecture for the Design and Implementation of AI Systems in Manufacturing in Conformity to ISO/IEC 42001* — Mateo-Casali et al.
+This catalog is a companion artifact to the doctoral thesis *Automatización de operaciones en el ciclo de vida de soluciones para fabricación cero defectos* (Mateo-Casalí, Universitat Politècnica de València, 2026).
 
 ---
 
@@ -44,6 +44,39 @@ Every solution entry maps to one or more **ISO/IEC 42001 Annex B requirements** 
 ```
 
 All tiers run on **K3S** (lightweight Kubernetes), which is the orchestration layer assumed throughout this catalog. The Platform tier may be managed via **Rancher**.
+
+---
+
+## Tested against
+
+This catalog has been validated as a constructive proof of viability against the following stack:
+
+| Component       | Version                          | Notes                                              |
+|-----------------|----------------------------------|----------------------------------------------------|
+| K3s             | TODO_K3S_VERSION                 | Lightweight Kubernetes distribution                |
+| Helm            | TODO_HELM_VERSION                | Chart packaging and deployment                     |
+| Kubernetes API  | TODO_K8S_API_VERSION             | Server-side compatibility level                    |
+| Host OS         | TODO_OS (e.g. Ubuntu 22.04 LTS)  | Tested via `infrastructure/setup-ubuntu.sh`        |
+
+Reproducing the validation requires the versions above. Other versions may work but are not validated.
+
+> **How to populate this table.** On the validation host, run:
+> `k3s --version`, `helm version --short`, `kubectl version --short`, and `lsb_release -a`.
+> Then replace the four `TODO_*` placeholders with the exact strings reported.
+
+---
+
+## Installation as a Helm repository
+
+The catalog is published as a Helm chart repository via GitHub Pages. To use it:
+
+```bash
+helm repo add zdmp-iso42001 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/
+helm repo update
+helm search repo zdmp-iso42001
+```
+
+Refer to each solution's individual `README.md` under `catalog/<tier>/<category>/<solution>/` for installation values and ISO/IEC 42001 requirement coverage.
 
 ---
 
@@ -105,6 +138,38 @@ k3s-iso42001-catalog/
 - **ISA/IEC 62443** — Industrial Cybersecurity
 - **EU AI Act** — Risk-based AI regulation
 - **ALTAI** — Assessment List for Trustworthy AI
+
+---
+
+## How to cite
+
+If you use this catalog in academic work, please cite the catalog itself and the doctoral thesis it accompanies.
+
+**The catalog (this repository)**
+
+```bibtex
+@software{mateo-casali_2026_k3s_catalog,
+  author       = {Mateo-Casalí, Miguel Ángel and Boza, Andrés and Fraile, Francisco},
+  title        = {K3s Solution Catalog for ISO/IEC 42001-Compliant Industrial AI Systems},
+  year         = {2026},
+  publisher    = {Zenodo},
+  version      = {v1.0.0},
+  doi          = {TODO_DOI_ZENODO_AFTER_FIRST_RELEASE},
+  url          = {https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog}
+}
+```
+
+**The doctoral thesis**
+
+```bibtex
+@phdthesis{mateo-casali_2026_thesis,
+  author = {Mateo-Casalí, Miguel Ángel},
+  title  = {Automatización de operaciones en el ciclo de vida de soluciones para fabricación cero defectos},
+  school = {Universitat Politècnica de València},
+  year   = {2026},
+  doi    = {TODO_DOI_THESIS_AFTER_DEPOSIT}
+}
+```
 
 ---
 
