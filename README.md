@@ -38,31 +38,15 @@ Every solution entry maps to one or more **ISO/IEC 42001 Annex B requirements** 
 │  EDGE TIER          Node-RED · FastAPI Model · Fluent Bit   │
 │                     Falco · PostgreSQL · Prometheus Agent   │
 ├─────────────────────────────────────────────────────────────┤
-│  DEVICE TIER        Sensors · CNC · IoT · PLCs             │
+│  DEVICE TIER        Sensors · CNC · IoT · PLCs              │
 │                     (outside K3S scope — protocol adapters) │
 └─────────────────────────────────────────────────────────────┘
 ```
 
+![catalog.png](docs/catalog.png)
+
 All tiers run on **K3S** (lightweight Kubernetes), which is the orchestration layer assumed throughout this catalog. The Platform tier may be managed via **Rancher**.
 
----
-
-## Tested against
-
-This catalog has been validated as a constructive proof of viability against the following stack:
-
-| Component       | Version                          | Notes                                              |
-|-----------------|----------------------------------|----------------------------------------------------|
-| K3s             | TODO_K3S_VERSION                 | Lightweight Kubernetes distribution                |
-| Helm            | TODO_HELM_VERSION                | Chart packaging and deployment                     |
-| Kubernetes API  | TODO_K8S_API_VERSION             | Server-side compatibility level                    |
-| Host OS         | TODO_OS (e.g. Ubuntu 22.04 LTS)  | Tested via `infrastructure/setup-ubuntu.sh`        |
-
-Reproducing the validation requires the versions above. Other versions may work but are not validated.
-
-> **How to populate this table.** On the validation host, run:
-> `k3s --version`, `helm version --short`, `kubectl version --short`, and `lsb_release -a`.
-> Then replace the four `TODO_*` placeholders with the exact strings reported.
 
 ---
 
