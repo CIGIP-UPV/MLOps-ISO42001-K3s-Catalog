@@ -25,7 +25,7 @@ authors:
     affiliation: "Centro de Investigación en Gestión e Ingeniería de Producción (CIGIP), Universitat Politècnica de València"
     orcid: "https://orcid.org/0000-0003-0852-8953"
 version: "1.0.0"
-date-released: "2026-04-28"
+date-released: "2026-04-29"
 license: Apache-2.0
 repository-code: "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"
 url: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/"
