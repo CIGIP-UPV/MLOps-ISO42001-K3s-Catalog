@@ -31,8 +31,6 @@ annotations:
   mlops-iso42001.cigip-upv.es/tier: platform
   mlops-iso42001.cigip-upv.es/display-name: MLflow
   mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.2, B.6.1.3.4, B.6.2.6.4
-  mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing in Conformity
-    to ISO/IEC 42001
 dependencies:
 - name: mlflow
   version: ~0.7

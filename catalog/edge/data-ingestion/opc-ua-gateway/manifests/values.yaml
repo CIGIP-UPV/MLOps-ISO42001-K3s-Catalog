@@ -22,7 +22,7 @@ opcua:
       url: opc.tcp://plc-01.plant.local:4840
       securityPolicy: Basic256Sha256
       securityMode: SignAndEncrypt
-      username: ""          # set via Vault/Secret in production
+      username: ""          # set via OpenBao/Secret in production
       password: ""
       nodes:
         - ns=2;s=Channel1.Device1.Temperature

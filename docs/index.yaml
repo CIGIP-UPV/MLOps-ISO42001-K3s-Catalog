@@ -1,5 +1,5 @@
 apiVersion: v1
-generated: '2026-04-22T20:33:15.000000000Z'
+generated: '2026-04-29T08:19:20.000000000Z'
 entries:
   edge-fastapi-model:
   - apiVersion: v2
@@ -35,12 +35,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: edge
       mlops-iso42001.cigip-upv.es/display-name: FastAPI Model Server
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.2, B.6.2.6.4
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fastapi-model-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 3f4aabe0c6b3c6bb29f59dd8c2b4c2bb4b2e3d86e294b02cb3603e5bbf51752a
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 49e67fb35b48dbd8528a71bde0e8867ca73120837207d03909cad661b3a7b1cb
   edge-kafka:
   - apiVersion: v2
     name: edge-kafka
@@ -75,12 +73,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: edge
       mlops-iso42001.cigip-upv.es/display-name: Apache Kafka (Edge)
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.4, B.6.2.8.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-kafka-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 96198bd85853291166f29f46f1e4d569686fadae56112cfd2008be923eafa275
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: ca8ef5d9293f4bf8af8d927c5438b62a9c77007685522e4474cb8b55a1de1f5b
     dependencies:
     - name: kafka
       version: ~30
@@ -118,12 +114,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: edge
       mlops-iso42001.cigip-upv.es/display-name: Eclipse Mosquitto
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.6.2.6.4
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mosquitto-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: d9513de9b941c69d69ac763f01ab6c5a59bf02fef32408ebe5d4b81ed5cffb0e
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: d5d39f4c26493f2b5ca17d24a524a66dfe9704674bc32322eaa1bdd8d0697e66
   edge-node-red:
   - apiVersion: v2
     name: edge-node-red
@@ -157,12 +151,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: edge
       mlops-iso42001.cigip-upv.es/display-name: Node-RED
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.4
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-node-red-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 8181d11f80af84d837e5b1b8b037d776e1746365477bff672a18c01ce556eb34
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: a408984dc8dda3f1e1c89eeefbef1971196befd77f903f352b842afd8d1dcb42
     dependencies:
     - name: node-red
       version: ~0.30
@@ -202,12 +194,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: edge
       mlops-iso42001.cigip-upv.es/display-name: OPC-UA Gateway
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.6.2.6.4
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-opc-ua-gateway-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 302cb34e1343688cab4ee266918ed81d54651da2d7777067a47c2dc50e17758e
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 0521206ac95a50d769c9fe91fac43003c3fc3142930ed3a7466a624111b55e5b
   edge-fluent-bit:
   - apiVersion: v2
     name: edge-fluent-bit
@@ -240,12 +230,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: edge
       mlops-iso42001.cigip-upv.es/display-name: Fluent Bit
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.8.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fluent-bit-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 468428a962c9148a9c40b9346cb76b577601432d34df38eb74f8a11369addbfc
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 8b9bfa10ff655058397c5a94fa582c47717b7a20c46530f6e6cf1b16b04aaf9c
     dependencies:
     - name: fluent-bit
       version: ~0.47
@@ -282,12 +270,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: edge
       mlops-iso42001.cigip-upv.es/display-name: Prometheus Agent
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.2.2, B.6.2.6.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-prometheus-agent-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 10edf814794faf1ca14a8427b131e616a987c6fb8bdcbad32eb6f015eb05ee31
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: dd12e9fb4c8ae5d2a5b76ba9e9b463309d7177e264275c2969be7176f1cd6fa0
     dependencies:
     - name: prometheus
       version: ~25
@@ -325,12 +311,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: edge
       mlops-iso42001.cigip-upv.es/display-name: Falco
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.7, B.6.2.8.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-falco-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 5513723d69a019808d09908b63c5c939de9245292e6fe17cb9f9da2007a35bfa
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: edf69c40311c5816370ec74375612c41576b8da4a2c80636c42a3b0eefbe9e3f
     dependencies:
     - name: falco
       version: ~4
@@ -367,12 +351,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: edge
       mlops-iso42001.cigip-upv.es/display-name: MongoDB (Edge Buffer)
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mongodb-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 2c49316f5c4b9abf10e111f84bc967e260a48d0fe1b032ce1eeabf7143b435c4
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: e645d2028472f9bc6e54fd13970427a79787ce89914c39188633c5abf3f77bd8
     dependencies:
     - name: mongodb
       version: ~15
@@ -409,12 +391,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: edge
       mlops-iso42001.cigip-upv.es/display-name: PostgreSQL (Edge Cache)
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.1, B.6.2.6.3, B.6.2.8.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-postgresql-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: cf1eddf981be93df2c0ca81df3621e06b1c03ea2950c8ac86449a2ba908aafe7
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: b5657ba27e3cedc28649ed0e6ce0124e9bdb64fe2df7a84b94e943213a7a284a
     dependencies:
     - name: postgresql
       version: ~15
@@ -451,12 +431,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: MLflow
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.2, B.6.1.3.4, B.6.2.6.4
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-mlflow-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: d45ae6fcb7c003b6e200e232b5ca8d4378ba9609e4c3c26ef0e0926093cdb43e
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: cf9ec35c659df4a98c0ed6834f470e5ab9146532637583431baa5f042645e54b
     dependencies:
     - name: mlflow
       version: ~0.7
@@ -494,12 +472,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: Training Jobs
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.4
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-training-jobs-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 87e00768897cde2a4877bd6917a1d88213be351771208cae4480b09c52946936
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 9ebc761a4914fce67fe78340ba76278c70a614d4d9351cb3018190ed4987813a
   platform-evidently:
   - apiVersion: v2
     name: platform-evidently
@@ -534,12 +510,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: Evidently AI
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.2, B.6.2.8.1, B.8.0.5.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-evidently-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 2ab5f4c040cf99cebf451a8dcaf07f8c9301eff4ce3eeb57db1e50265cbbf00a
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: d77079359711797667b8a395acb3fbbd99826dd7830d7e17425b34bab8fd1ffe
   platform-minio:
   - apiVersion: v2
     name: platform-minio
@@ -572,12 +546,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: MinIO
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.3.1, B.6.2.5.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-minio-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: d64de700a532dab77a7d6368342e0b058722f09b7757e2ee7ac1b9c54cdcc68a
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 75dc51e7af0732644779516ab40527a7d5429a75a538608359b8de3e4bb8be87
     dependencies:
     - name: minio
       version: ~5
@@ -613,12 +585,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: PostgreSQL (Platform)
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.4
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-postgresql-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 5d30ba2eb246dd1004d967763ac06a02c13e2d539fd967399baa5cdce6c0a75c
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 9a8a9c5185f316ebc850dfb8d6035c8b255171cde8957f418be226f28209a89a
     dependencies:
     - name: postgresql
       version: ~15
@@ -656,12 +626,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: TimescaleDB
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.1, B.6.2.6.3
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-timescaledb-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 065af806aec81da0c439ececdade0f077eef96e062bf0f098bf9d20937fbeeb5
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 215a1eba90b69430127c90488101c6618f74ba9ada1279a221a0d7e2a309e138
     dependencies:
     - name: timescaledb-single
       version: ~0.35
@@ -698,12 +666,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: Grafana
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.6.1.3.3, B.6.2.6.2
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-grafana-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: d3b8b99ae71f8028782703917a0b03d0055a64b7ff7897f08da61cefd6e75fd0
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: c5926ce97bfc7bbb55ad3c0cff1dff1e9b649dc435a7cf70afd7a5a59e9aeb92
     dependencies:
     - name: grafana
       version: ~8
@@ -740,12 +706,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: Loki
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.8.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-loki-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 5dd27a89c84bf73f920889fcb95ed182c6ddad3c312c6db9fb69b2fba10ca5c1
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: f8e525d82bfa2e1bbe58a5aea503aa6724e9e28c79dbc42d77e14911d461d1d2
     dependencies:
     - name: loki
       version: ~6
@@ -782,12 +746,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: Prometheus + Alertmanager
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.2.2, B.6.2.6.2, B.8.0.5.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-prometheus-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: f82d2f568c027fca1676fc4ed9699ef9a30bd524e87d03aa5aa94eb9add09a58
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: f5664a78d839722695349b6477af7696bcd0c673dc8b827dc4fb139f7d895dfc
     dependencies:
     - name: kube-prometheus-stack
       version: ~61
@@ -824,12 +786,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: Rancher
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.5.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-rancher-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: a03a737adbae45a245bcc039f50fdf7011426e2f052eef3b7535b368ae2da254
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: fbaf165b86c4f634e5f490b2207cfc1baed6c4f92ead657b854e9aa837096653
     dependencies:
     - name: rancher
       version: ~2.9
@@ -867,26 +827,24 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: Argo CD
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.5.1, B.6.2.6.4, B.6.2.8.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-argocd-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 154bc9530f5f75c778d8da05f1d28f36eeeb06353479af62abc30e03dddc886b
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 620b2222f03a4e3d5f034714f37d340a8a339120b3a78be6921c8f208fdb8a17
     dependencies:
     - name: argo-cd
       version: ~7
       repository: https://argoproj.github.io/argo-helm
-  platform-vault:
+  platform-openbao:
   - apiVersion: v2
-    name: platform-vault
+    name: platform-openbao
     type: application
     version: 0.2.0
-    appVersion: '1.15'
+    appVersion: '2.0'
     kubeVersion: '>=1.24.0-0'
     description: Centralised secrets manager with KV, PKI and database engines; provides dynamic credentials and encryption
-      keys to every tier via External Secrets.
-    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-vault.svg
+      keys to every tier via External Secrets. Open-source (MPL 2.0) Vault-compatible alternative.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-openbao.svg
     home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
     sources:
     - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
@@ -894,7 +852,7 @@ entries:
     - iso42001
     - platform
     - security
-    - vault
+    - openbao
     - secrets
     - pki
     - kms
@@ -909,19 +867,17 @@ entries:
       artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
         "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
       mlops-iso42001.cigip-upv.es/tier: platform
-      mlops-iso42001.cigip-upv.es/display-name: HashiCorp Vault
+      mlops-iso42001.cigip-upv.es/display-name: OpenBao
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.3, B.6.1.4.1, B.8.0.2.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
-    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-vault-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 776a6dfeca9354b72300eca37afc266e9e9d264ae5bd3521711daa1a4ad1a44f
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-openbao-0.2.0.tgz
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 70acd569b5613e6058ab9be1a555eac608b5080fd6b2ae0abe9c5c2aee50e532
     dependencies:
-    - name: vault
-      version: ~0.27.0
-      repository: https://helm.releases.hashicorp.com
-      condition: vault.enabled
+    - name: openbao
+      version: ~0.16.0
+      repository: https://openbao.github.io/openbao-helm
+      condition: openbao.enabled
   platform-cert-manager:
   - apiVersion: v2
     name: platform-cert-manager
@@ -929,7 +885,7 @@ entries:
     version: 0.2.0
     appVersion: '1.14'
     kubeVersion: '>=1.24.0-0'
-    description: Automated X.509 certificate provisioning and renewal (ACME, self-signed, Vault PKI) for every ingress endpoint
+    description: Automated X.509 certificate provisioning and renewal (ACME, self-signed, OpenBao PKI) for every ingress endpoint
       in the reference architecture.
     icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-cert-manager.svg
     home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
@@ -957,12 +913,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: platform
       mlops-iso42001.cigip-upv.es/display-name: cert-manager
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.4.1, B.6.2.3.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-cert-manager-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: f703f445557742565bea827df572fec01034bc9f132c5ddff1a6abce849639ac
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 9ac146088b8b6d89c6ff3c7895b74d83c23f86af429eca5e9d74da076b399b97
     dependencies:
     - name: cert-manager
       version: ~1.14.0
@@ -1002,12 +956,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: enterprise
       mlops-iso42001.cigip-upv.es/display-name: Keycloak
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.8.0.2.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-keycloak-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 4c010a36d9c2d2576aeda398c06d758b991580e1bbc9988419829f30a4484ee3
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 4b117c76fe77c460b5e080a6fd72f7be2029c5cb1e03018da680e3843e752376
     dependencies:
     - name: keycloak
       version: ~22
@@ -1044,12 +996,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: enterprise
       mlops-iso42001.cigip-upv.es/display-name: Grafana Dashboards (Overlay)
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.3, B.6.2.6.2
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-grafana-dashboards-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 2db885c8cc3ff3e9b5249257a27029ce9b0f46150ee8072b8982ee6257861186
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 5a47d4a743f96854a5d03626c0eb14be38b25259937daf22447ff580aeba038c
   enterprise-minio-overlay:
   - apiVersion: v2
     name: enterprise-minio-overlay
@@ -1082,12 +1032,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: enterprise
       mlops-iso42001.cigip-upv.es/display-name: MinIO Docs Overlay
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.3.1, B.6.2.6.5
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-minio-overlay-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 609a6f60309c2db1771995476ef9f396fe55ac8a9c027baae179708730f85af6
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 1c1642d1cd053397816f214ea3dbc1ce4acb1391d2b7d043a95ec8ac01d976fe
   enterprise-zammad:
   - apiVersion: v2
     name: enterprise-zammad
@@ -1120,12 +1068,10 @@ entries:
       mlops-iso42001.cigip-upv.es/tier: enterprise
       mlops-iso42001.cigip-upv.es/display-name: Zammad
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.6, B.8.0.4.1, B.8.0.5.1
-      mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing
-        in Conformity to ISO/IEC 42001
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-zammad-0.2.0.tgz
-    created: '2026-04-22T20:33:15.000000000Z'
-    digest: 64180b23197e49af37803cac79c7ba113eb3695c9ae541a7ddd3d8aad6500da4
+    created: '2026-04-29T08:19:20.000000000Z'
+    digest: 618ec7ae5c59369bc3a2aef2791df2be1ea014f832aee4a17ff6d786e4502727
     dependencies:
     - name: zammad
       version: ~10

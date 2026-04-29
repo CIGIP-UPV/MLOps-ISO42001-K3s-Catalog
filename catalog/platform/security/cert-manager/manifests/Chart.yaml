@@ -6,7 +6,7 @@ type: application
 version: 0.2.0
 appVersion: '1.14'
 kubeVersion: '>=1.24.0-0'
-description: Automated X.509 certificate provisioning and renewal (ACME, self-signed, Vault PKI) for every ingress endpoint
+description: Automated X.509 certificate provisioning and renewal (ACME, self-signed, OpenBao PKI) for every ingress endpoint
   in the reference architecture.
 icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-cert-manager.svg
 home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
@@ -34,8 +34,6 @@ annotations:
   mlops-iso42001.cigip-upv.es/tier: platform
   mlops-iso42001.cigip-upv.es/display-name: cert-manager
   mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.4.1, B.6.2.3.1
-  mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing in Conformity
-    to ISO/IEC 42001
 dependencies:
 - name: cert-manager
   version: ~1.14.0

@@ -39,11 +39,11 @@ questions:
     type: boolean
     label: Self-signed internal CA
     group: "ClusterIssuers"
-  - variable: issuers.vaultInternal.enabled
+  - variable: issuers.openbaoInternal.enabled
     default: false
-    description: "Provision a Vault-backed PKI ClusterIssuer (requires platform-vault with PKI engine configured)."
+    description: "Provision an OpenBao-backed PKI ClusterIssuer (requires platform-openbao with PKI engine configured)."
     type: boolean
-    label: Vault-backed internal CA
+    label: OpenBao-backed internal CA
     group: "ClusterIssuers"
   - variable: cert-manager.prometheus.enabled
     default: true

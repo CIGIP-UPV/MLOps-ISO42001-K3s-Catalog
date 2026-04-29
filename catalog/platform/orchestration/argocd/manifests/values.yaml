@@ -37,7 +37,7 @@ argo-cd:
       admin.enabled: "true"
       exec.enabled: "false"
       kustomize.buildOptions: "--enable-helm"
-      # OIDC / Keycloak integration placeholder — fill via overlay or Vault
+      # OIDC / Keycloak integration placeholder — fill via overlay or OpenBao
       oidc.config: |
         name: Keycloak
         issuer: https://keycloak.enterprise.local/realms/ai-system
