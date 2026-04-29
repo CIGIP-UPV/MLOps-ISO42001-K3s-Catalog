@@ -4,10 +4,7 @@
 
 [\![Tier](https://img.shields.io/badge/tier-enterprise-92400e)](#) [\![ISO/IEC 42001](https://img.shields.io/badge/ISO%2FIEC-42001-991b1b)](#) [\![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Part of the [MLOps ISO/IEC 42001 K3s Catalog](https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog) — a companion resource
-to the reference architecture described in *Mateo-Casali et al. (2025), Reference
-Architecture for the Design and Implementation of AI Systems in Manufacturing
-in Conformity to ISO/IEC 42001*.
+Part of the [K3s Solution Catalog for ISO/IEC 42001](https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog).
 
 ---
 

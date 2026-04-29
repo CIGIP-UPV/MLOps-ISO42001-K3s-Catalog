@@ -258,14 +258,14 @@ CHART_META: dict[str, dict[str, Any]] = {
         "tagline": "GitOps controller that reconciles the declared state of the catalog against the cluster, providing an immutable change-management audit trail.",
         "keywords": ["iso42001", "platform", "orchestration", "gitops", "argocd", "continuous-delivery"],
     },
-    "platform-vault": {
-        "path": "catalog/platform/security/vault",
+    "platform-openbao": {
+        "path": "catalog/platform/security/openbao",
         "tier": "platform", "category": "Security",
-        "display": "HashiCorp Vault",
+        "display": "OpenBao",
         "iso_clauses": ["B.6.1.3.3", "B.6.1.4.1", "B.8.0.2.1"],
         "ah_category": "security",
-        "tagline": "Centralised secrets manager with KV, PKI and database engines; provides dynamic credentials and encryption keys to every tier via External Secrets.",
-        "keywords": ["iso42001", "platform", "security", "vault", "secrets", "pki", "kms"],
+        "tagline": "Centralised secrets manager with KV, PKI and database engines; provides dynamic credentials and encryption keys to every tier via External Secrets. Open-source (MPL 2.0) Vault-compatible alternative.",
+        "keywords": ["iso42001", "platform", "security", "openbao", "secrets", "pki", "kms"],
     },
     "platform-cert-manager": {
         "path": "catalog/platform/security/cert-manager",
@@ -273,7 +273,7 @@ CHART_META: dict[str, dict[str, Any]] = {
         "display": "cert-manager",
         "iso_clauses": ["B.6.1.4.1", "B.6.2.3.1"],
         "ah_category": "security",
-        "tagline": "Automated X.509 certificate provisioning and renewal (ACME, self-signed, Vault PKI) for every ingress endpoint in the reference architecture.",
+        "tagline": "Automated X.509 certificate provisioning and renewal (ACME, self-signed, OpenBao PKI) for every ingress endpoint in the reference architecture.",
         "keywords": ["iso42001", "platform", "security", "cert-manager", "tls", "acme", "letsencrypt", "pki"],
     },
 
@@ -348,7 +348,7 @@ ICON_GLYPHS = {
     "platform-prometheus":      ("\u25c7", "MET"),
     "platform-rancher":         ("\u2388", "RNC"),
     "platform-argocd":          ("\u21bb", "GIT"),
-    "platform-vault":           ("\u26c1", "VAULT"),
+    "platform-openbao":         ("\u26c1", "BAO"),
     "platform-cert-manager":    ("\u2713", "TLS"),
 
     "enterprise-keycloak":      ("\u2b18", "IAM"),
@@ -398,10 +398,7 @@ README_TEMPLATE = """# {display} — `{name}`
 
 [\![Tier](https://img.shields.io/badge/tier-{tier}-{badge_color})](#) [\![ISO/IEC 42001](https://img.shields.io/badge/ISO%2FIEC-42001-991b1b)](#) [\![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Part of the [MLOps ISO/IEC 42001 K3s Catalog]({source}) — a companion resource
-to the reference architecture described in *Mateo-Casali et al. (2025), Reference
-Architecture for the Design and Implementation of AI Systems in Manufacturing
-in Conformity to ISO/IEC 42001*.
+Part of the [K3s Solution Catalog for ISO/IEC 42001]({source}).
 
 ---
 
@@ -533,8 +530,6 @@ def enrich_chart_yaml(chart_name: str) -> tuple[pathlib.Path, dict]:
         "mlops-iso42001.cigip-upv.es/tier": meta["tier"],
         "mlops-iso42001.cigip-upv.es/display-name": meta["display"],
         "mlops-iso42001.cigip-upv.es/iso42001-clauses": ", ".join(meta["iso_clauses"]),
-        "mlops-iso42001.cigip-upv.es/reference-architecture":
-            "Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing in Conformity to ISO/IEC 42001",
     }
 
     field_order = [
@@ -606,7 +601,13 @@ def package_chart(chart_name: str, chart_data: dict) -> pathlib.Path:
 
     CHARTS_DIR.mkdir(parents=True, exist_ok=True)
     if out_tgz.exists():
-        out_tgz.unlink()
+        try:
+            out_tgz.unlink()
+        except PermissionError:
+            # Some sandboxed / mounted filesystems forbid unlink even when
+            # the parent dir is writable. tarfile.open(..., "w:gz") below
+            # will overwrite by truncating, so this is safe to ignore.
+            pass
 
     with tarfile.open(out_tgz, "w:gz") as tar:
         for p in sorted(src.rglob("*")):
@@ -793,11 +794,15 @@ def main() -> int:
     CHARTS_DIR.mkdir(parents=True, exist_ok=True)
     ICONS_DIR.mkdir(parents=True, exist_ok=True)
 
+    written = 0
     for chart_name in CHART_META:
-        (ICONS_DIR / f"{chart_name}.svg").write_text(
-            make_icon_svg(chart_name), encoding="utf-8"
-        )
-    print(f"[icons] wrote {len(CHART_META)} SVG icons \u2192 {ICONS_DIR.relative_to(ROOT)}")
+        icon_path = ICONS_DIR / f"{chart_name}.svg"
+        # Respect manually-curated icons: only generate when missing.
+        if icon_path.exists():
+            continue
+        icon_path.write_text(make_icon_svg(chart_name), encoding="utf-8")
+        written += 1
+    print(f"[icons] generated {written} new SVG icon(s); kept {len(CHART_META) - written} existing \u2192 {ICONS_DIR.relative_to(ROOT)}")
 
     enriched: list[tuple[str, dict]] = []
     for chart_name in CHART_META:

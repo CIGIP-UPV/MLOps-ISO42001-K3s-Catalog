@@ -32,8 +32,6 @@ annotations:
   mlops-iso42001.cigip-upv.es/tier: edge
   mlops-iso42001.cigip-upv.es/display-name: Falco
   mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.7, B.6.2.8.1
-  mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing in Conformity
-    to ISO/IEC 42001
 dependencies:
 - name: falco
   version: ~4

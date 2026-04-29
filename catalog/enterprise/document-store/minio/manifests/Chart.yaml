@@ -31,5 +31,3 @@ annotations:
   mlops-iso42001.cigip-upv.es/tier: enterprise
   mlops-iso42001.cigip-upv.es/display-name: MinIO Docs Overlay
   mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.3.1, B.6.2.6.5
-  mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing in Conformity
-    to ISO/IEC 42001

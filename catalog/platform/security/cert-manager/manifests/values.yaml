@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------
-# platform-cert-manager - automated X.509 certificate lifecycle
+# platform-cert-manager - automated X.509 certificate lifecycle (ACME, self-signed, OpenBao PKI)
 # Wraps jetstack/cert-manager ~1.14
 # ------------------------------------------------------------------
 
@@ -68,9 +68,9 @@ issuers:
     commonName: "k3s-mlops-platform-ca"
     duration: "87600h"  # 10 years
 
-  # Vault-backed internal CA (requires platform-vault + PKI engine)
-  vaultInternal:
+  # OpenBao-backed internal CA (requires platform-openbao + PKI engine)
+  openbaoInternal:
     enabled: false
-    server: https://platform-vault.platform.svc:8200
+    server: https://platform-openbao.platform.svc:8200
     path: mlops-pki/sign/mlops-platform
     authRole: cert-manager

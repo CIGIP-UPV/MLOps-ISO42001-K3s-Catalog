@@ -512,6 +512,36 @@
     }
     .card-dl:hover { background: #fef2f2; }
     .card-dl svg { width: 12px; height: 12px; }
+  
+    /* --- Card (augmented) --- */
+    .card { display: flex; flex-direction: column; gap: .6rem; }
+    .card-head { display: flex; align-items: center; gap: .8rem; }
+    .card-icon {
+      width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;
+      background: #f9fafb; object-fit: contain;
+      border: 1px solid #e5e7eb;
+    }
+    .card-titles { min-width: 0; }
+    .card-display {
+      font-size: .75rem; color: #6b7280; font-weight: 500;
+      margin-top: .1rem;
+    }
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid #f3f4f6; padding-top: .6rem; margin-top: .2rem;
+    }
+    .card-version {
+      font-family: 'JetBrains Mono', monospace; font-size: .7rem;
+      color: #6b7280;
+    }
+    .card-dl {
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-size: .75rem; font-weight: 600; color: #b91c1c;
+      padding: .25rem .55rem; border: 1px solid #fecaca;
+      border-radius: 6px; transition: background .2s, color .2s;
+    }
+    .card-dl:hover { background: #fef2f2; }
+    .card-dl svg { width: 12px; height: 12px; }
   </style>
 </head>
 <body>
@@ -747,8 +777,8 @@ const charts = [
   { name: "platform-prometheus", display: "Prometheus + Alertmanager", tier: "platform", category: "Monitoring", iso: "B.6.1.2.2, B.6.2.6.2, B.8.0.5.1", version: "0.2.0", appVersion: "61.0", desc: "kube-prometheus-stack with custom AI alert rules for latency, error rate and model drift.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-prometheus.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-prometheus-0.2.0.tgz" },
   { name: "platform-argocd", display: "Argo CD", tier: "platform", category: "Orchestration", iso: "B.6.2.5.1, B.6.2.6.4, B.6.2.8.1", version: "0.2.0", appVersion: "2.12", desc: "GitOps controller that reconciles the declared state of the catalog against the cluster, providing an immutable change-management audit trail.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-argocd.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-argocd-0.2.0.tgz" },
   { name: "platform-rancher", display: "Rancher", tier: "platform", category: "Orchestration", iso: "B.6.2.5.1", version: "0.2.0", appVersion: "2.9.0", desc: "Multi-cluster Kubernetes management UI with audit logging and cert-manager TLS.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-rancher.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-rancher-0.2.0.tgz" },
-  { name: "platform-cert-manager", display: "cert-manager", tier: "platform", category: "Security", iso: "B.6.1.4.1, B.6.2.3.1", version: "0.2.0", appVersion: "1.14", desc: "Automated X.509 certificate provisioning and renewal (ACME, self-signed, Vault PKI) for every ingress endpoint in the reference architecture.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-cert-manager.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-cert-manager-0.2.0.tgz" },
-  { name: "platform-vault", display: "HashiCorp Vault", tier: "platform", category: "Security", iso: "B.6.1.3.3, B.6.1.4.1, B.8.0.2.1", version: "0.2.0", appVersion: "1.15", desc: "Centralised secrets manager with KV, PKI and database engines; provides dynamic credentials and encryption keys to every tier via External Secrets.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-vault.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-vault-0.2.0.tgz" },
+  { name: "platform-cert-manager", display: "cert-manager", tier: "platform", category: "Security", iso: "B.6.1.4.1, B.6.2.3.1", version: "0.2.0", appVersion: "1.14", desc: "Automated X.509 certificate provisioning and renewal (ACME, self-signed, OpenBao PKI) for every ingress endpoint in the reference architecture.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-cert-manager.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-cert-manager-0.2.0.tgz" },
+  { name: "platform-openbao", display: "OpenBao", tier: "platform", category: "Security", iso: "B.6.1.3.3, B.6.1.4.1, B.8.0.2.1", version: "0.2.0", appVersion: "2.0", desc: "Centralised secrets manager with KV, PKI and database engines; provides dynamic credentials and encryption keys to every tier via External Secrets. Open-source (MPL 2.0) Vault-compatible alternative.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-openbao.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-openbao-0.2.0.tgz" },
   { name: "enterprise-keycloak", display: "Keycloak", tier: "enterprise", category: "Access Management", iso: "B.6.1.3.1, B.8.0.2.1", version: "0.2.0", appVersion: "24.0.0", desc: "Identity provider with AI system realm, RBAC roles and pre-configured OIDC clients.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-keycloak.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-keycloak-0.2.0.tgz" },
   { name: "enterprise-grafana-dashboards", display: "Grafana Dashboards (Overlay)", tier: "enterprise", category: "Dashboards", iso: "B.6.1.3.3, B.6.2.6.2", version: "0.2.0", appVersion: "1.0.0", desc: "Pre-built dashboards for OEE, model health, security events and operator feedback.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-grafana-dashboards.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-grafana-dashboards-0.2.0.tgz" },
   { name: "enterprise-minio-overlay", display: "MinIO Docs Overlay", tier: "enterprise", category: "Document Store", iso: "B.6.2.3.1, B.6.2.6.5", version: "0.2.0", appVersion: "1.0.0", desc: "Overlay buckets for ISO/IEC 42001 compliance documentation, model cards and audit evidence with object locking.", icon: "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-minio-overlay.svg", tgz:  "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-minio-overlay-0.2.0.tgz" },

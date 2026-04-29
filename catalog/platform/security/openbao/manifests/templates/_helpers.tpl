@@ -1,12 +1,12 @@
 {{/* -----------------------------------------------------------------
-     Common helpers for platform-vault
+     Common helpers for platform-openbao
      ----------------------------------------------------------------- */}}
 
-{{- define "platform-vault.fullname" -}}
+{{- define "platform-openbao.fullname" -}}
 {{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{- define "platform-vault.labels" -}}
+{{- define "platform-openbao.labels" -}}
 app.kubernetes.io/name: {{ .Chart.Name }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
@@ -16,7 +16,7 @@ tier: platform
 iso42001/clause: "B.6.1.3,B.6.1.4,B.8.0.2"
 {{- end -}}
 
-{{- define "platform-vault.selectorLabels" -}}
+{{- define "platform-openbao.selectorLabels" -}}
 app.kubernetes.io/name: {{ .Chart.Name }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}

@@ -30,8 +30,6 @@ annotations:
   mlops-iso42001.cigip-upv.es/tier: platform
   mlops-iso42001.cigip-upv.es/display-name: PostgreSQL (Platform)
   mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.4
-  mlops-iso42001.cigip-upv.es/reference-architecture: Mateo-Casali et al. (2025) — RA for AI Systems in Manufacturing in Conformity
-    to ISO/IEC 42001
 dependencies:
 - name: postgresql
   version: ~15

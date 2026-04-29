@@ -1,16 +1,17 @@
 # ------------------------------------------------------------------
-# platform-vault - MLOps platform secrets backend
-# Wraps hashicorp/vault-helm ~0.27
+# platform-openbao - MLOps platform secrets backend
+# Wraps openbao/openbao-helm ~0.16
+# OpenBao is the Linux Foundation Edge MPL-2.0 fork of HashiCorp Vault.
 # ------------------------------------------------------------------
 
-vault:
+openbao:
   enabled: true
   global:
     tlsDisable: false
   server:
     image:
-      repository: hashicorp/vault
-      tag: "1.15.6"
+      repository: openbao/openbao
+      tag: "2.0.0"
     dataStorage:
       enabled: true
       size: 10Gi
@@ -34,11 +35,11 @@ vault:
           tls_disable = 0
           address     = "[::]:8200"
           cluster_address = "[::]:8201"
-          tls_cert_file = "/vault/userconfig/vault-tls/tls.crt"
-          tls_key_file  = "/vault/userconfig/vault-tls/tls.key"
+          tls_cert_file = "/openbao/userconfig/openbao-tls/tls.crt"
+          tls_key_file  = "/openbao/userconfig/openbao-tls/tls.key"
         }
         storage "file" {
-          path = "/vault/data"
+          path = "/openbao/data"
         }
         telemetry {
           prometheus_retention_time = "24h"
@@ -60,19 +61,19 @@ vault:
       enabled: false
       ingressClassName: traefik
       hosts:
-        - host: vault.platform.local
+        - host: openbao.platform.local
           paths:
             - /
       tls:
-        - secretName: vault-tls-ingress
+        - secretName: openbao-tls-ingress
           hosts:
-            - vault.platform.local
+            - openbao.platform.local
 
   ui:
     enabled: true
     serviceType: ClusterIP
 
-  # Vault Agent Injector - for pods requesting secrets at runtime
+  # OpenBao Agent Injector - for pods requesting secrets at runtime
   injector:
     enabled: true
     replicas: 1
