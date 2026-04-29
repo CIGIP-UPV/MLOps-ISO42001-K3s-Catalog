@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![GitHub](https://img.shields.io/badge/GitHub-CIGIP--UPV-181717?logo=github)](https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog)
-[![DOI](https://zenodo.org/badge/DOI/TODO_DOI_ZENODO_AFTER_FIRST_RELEASE.svg)](https://doi.org/TODO_DOI_ZENODO_AFTER_FIRST_RELEASE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19882677.svg)](https://doi.org/10.5281/zenodo.19882677)
 [![CITATION.cff](https://img.shields.io/badge/cite-CITATION.cff-brightgreen.svg)](./CITATION.cff)
 
 A structured catalog of K3S-compatible solutions for designing, deploying, and governing AI systems in manufacturing environments in conformity with **ISO/IEC 42001:2023**.
@@ -138,7 +138,7 @@ If you use this catalog in academic work, please cite the catalog itself and the
   year         = {2026},
   publisher    = {Zenodo},
   version      = {v1.0.0},
-  doi          = {TODO_DOI_ZENODO_AFTER_FIRST_RELEASE},
+  doi          = {10.5281/zenodo.19882677},
   url          = {https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog}
 }
 ```
