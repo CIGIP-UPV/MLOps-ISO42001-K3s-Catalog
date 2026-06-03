@@ -1,5 +1,5 @@
 apiVersion: v1
-generated: '2026-04-29T08:19:20.000000000Z'
+generated: '2026-06-03T11:11:57.000000000Z'
 entries:
   edge-fastapi-model:
   - apiVersion: v2
@@ -37,8 +37,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.2, B.6.2.6.4
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fastapi-model-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 49e67fb35b48dbd8528a71bde0e8867ca73120837207d03909cad661b3a7b1cb
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 148f9d421095ff0a52dc42b61adce0dfbae18ffe5974bab4770d7ffa347d02a0
   edge-kafka:
   - apiVersion: v2
     name: edge-kafka
@@ -75,8 +75,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.4, B.6.2.8.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-kafka-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: ca8ef5d9293f4bf8af8d927c5438b62a9c77007685522e4474cb8b55a1de1f5b
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: a42be439ba0faa6e33ae1bb9a7f6023f4781c27ada56c748399ff4d4b26dbcbc
     dependencies:
     - name: kafka
       version: ~30
@@ -116,8 +116,47 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.6.2.6.4
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mosquitto-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: d5d39f4c26493f2b5ca17d24a524a66dfe9704674bc32322eaa1bdd8d0697e66
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: e42651cab79473bddb68568f04d5a83fba362d272d96bb7e515b594d49b02703
+  edge-rabbitmq:
+  - apiVersion: v2
+    name: edge-rabbitmq
+    type: application
+    version: 0.2.0
+    appVersion: '3.13'
+    kubeVersion: '>=1.24.0-0'
+    description: Lightweight AMQP message broker for edge ingestion with store-and-forward buffering, management UI and Prometheus
+      metrics.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-rabbitmq.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - edge
+    - data-ingestion
+    - rabbitmq
+    - amqp
+    - broker
+    - message-queue
+    - store-and-forward
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Data Ingestion
+      artifacthub.io/category: streaming-messaging
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: edge
+      mlops-iso42001.cigip-upv.es/display-name: RabbitMQ (Edge)
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.4, B.6.2.8.1
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-rabbitmq-0.2.0.tgz
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: b659713f0a4715686e89a0543ea112e91a43f268050ea48010d90d907b6593f2
   edge-node-red:
   - apiVersion: v2
     name: edge-node-red
@@ -153,8 +192,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.4
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-node-red-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: a408984dc8dda3f1e1c89eeefbef1971196befd77f903f352b842afd8d1dcb42
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 2cd89426e23e62c5f0584dcdad16f810d45bc3ca0618186ff80291b0bd2b2814
     dependencies:
     - name: node-red
       version: ~0.30
@@ -196,8 +235,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.6.2.6.4
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-opc-ua-gateway-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 0521206ac95a50d769c9fe91fac43003c3fc3142930ed3a7466a624111b55e5b
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: f5e9f8817d6dbad425fe6ccc808462a82642b2078838d7c3cff744cf1c033962
   edge-fluent-bit:
   - apiVersion: v2
     name: edge-fluent-bit
@@ -232,8 +271,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.8.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fluent-bit-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 8b9bfa10ff655058397c5a94fa582c47717b7a20c46530f6e6cf1b16b04aaf9c
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: a11cd8eddf23fd400ba27ccb9b8c8af424f03cabeb7117a6b3446a218806d80b
     dependencies:
     - name: fluent-bit
       version: ~0.47
@@ -272,8 +311,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.2.2, B.6.2.6.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-prometheus-agent-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: dd12e9fb4c8ae5d2a5b76ba9e9b463309d7177e264275c2969be7176f1cd6fa0
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 68477ade3381f1054e0feefe738f495f1272a8f9a28293b9f982b16c09b37fa1
     dependencies:
     - name: prometheus
       version: ~25
@@ -313,8 +352,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.7, B.6.2.8.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-falco-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: edf69c40311c5816370ec74375612c41576b8da4a2c80636c42a3b0eefbe9e3f
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: db67f03cbf523d5b7a3767c352eb3600d6f638897f976484f710f3f479784968
     dependencies:
     - name: falco
       version: ~4
@@ -353,8 +392,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mongodb-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: e645d2028472f9bc6e54fd13970427a79787ce89914c39188633c5abf3f77bd8
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: f7b37b5407ede0a4a1b0af03b4ea50e68b7d830c047b356e267c6bf27cd3e785
     dependencies:
     - name: mongodb
       version: ~15
@@ -393,8 +432,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.1, B.6.2.6.3, B.6.2.8.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-postgresql-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: b5657ba27e3cedc28649ed0e6ce0124e9bdb64fe2df7a84b94e943213a7a284a
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 3ffeca833756f4b697af65adb60f7d2b29258b33d09d979ad2423dc079858f20
     dependencies:
     - name: postgresql
       version: ~15
@@ -433,8 +472,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.2, B.6.1.3.4, B.6.2.6.4
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-mlflow-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: cf9ec35c659df4a98c0ed6834f470e5ab9146532637583431baa5f042645e54b
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: ecee8c906064f9ed45640316a80f0f659a7664800757eb5fd3a38e919ad65fcd
     dependencies:
     - name: mlflow
       version: ~0.7
@@ -474,8 +513,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.4
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-training-jobs-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 9ebc761a4914fce67fe78340ba76278c70a614d4d9351cb3018190ed4987813a
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 8f671e4a35df07f4b40597e1fc2feabc08ae7e8043c917ccb7885be6fb4de3ba
   platform-evidently:
   - apiVersion: v2
     name: platform-evidently
@@ -512,8 +551,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.2, B.6.2.8.1, B.8.0.5.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-evidently-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: d77079359711797667b8a395acb3fbbd99826dd7830d7e17425b34bab8fd1ffe
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 9c296eff3290f64660598817c728fb281ce669105b373d970303432c02fa5973
   platform-minio:
   - apiVersion: v2
     name: platform-minio
@@ -548,8 +587,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.3.1, B.6.2.5.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-minio-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 75dc51e7af0732644779516ab40527a7d5429a75a538608359b8de3e4bb8be87
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 2f970300572ac9139ccb8518a7c7ffc74bdddc68e875f36d9ac4af2eca5fe5a2
     dependencies:
     - name: minio
       version: ~5
@@ -587,8 +626,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.4
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-postgresql-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 9a8a9c5185f316ebc850dfb8d6035c8b255171cde8957f418be226f28209a89a
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: ae16592f2f7518f653d041a9a3c7bdf201a5bb2082a13d3ef40325a7024515ee
     dependencies:
     - name: postgresql
       version: ~15
@@ -628,8 +667,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.1, B.6.2.6.3
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-timescaledb-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 215a1eba90b69430127c90488101c6618f74ba9ada1279a221a0d7e2a309e138
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 5cecd80f788fc487d3bf9413b635512c92d6bab0184d05ecaa05606481951707
     dependencies:
     - name: timescaledb-single
       version: ~0.35
@@ -668,8 +707,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.6.1.3.3, B.6.2.6.2
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-grafana-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: c5926ce97bfc7bbb55ad3c0cff1dff1e9b649dc435a7cf70afd7a5a59e9aeb92
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 4ae5a0456cae6dfbd4c51b93940f9fb2f920857015738332d876d76f14e63aa1
     dependencies:
     - name: grafana
       version: ~8
@@ -708,8 +747,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.8.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-loki-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: f8e525d82bfa2e1bbe58a5aea503aa6724e9e28c79dbc42d77e14911d461d1d2
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 95b9103538fc42b1ff4c08e1ccfedf06f577e0f85a6a8f1f1615a6cf8aa0371f
     dependencies:
     - name: loki
       version: ~6
@@ -748,8 +787,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.2.2, B.6.2.6.2, B.8.0.5.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-prometheus-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: f5664a78d839722695349b6477af7696bcd0c673dc8b827dc4fb139f7d895dfc
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 9a0e75ac4192768ea6a21856027c33e220ab7f3befba3fcf214e51c1c7743b1d
     dependencies:
     - name: kube-prometheus-stack
       version: ~61
@@ -788,8 +827,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.5.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-rancher-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: fbaf165b86c4f634e5f490b2207cfc1baed6c4f92ead657b854e9aa837096653
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 66cc9c7035b4cbd303ec6894147a57f6d5c78f13564638fdb34a79e8bd0e032a
     dependencies:
     - name: rancher
       version: ~2.9
@@ -829,8 +868,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.5.1, B.6.2.6.4, B.6.2.8.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-argocd-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 620b2222f03a4e3d5f034714f37d340a8a339120b3a78be6921c8f208fdb8a17
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 0e7d6d353a1678db216d95df2f25aee6c2c737a041fd6d1e8d68283f103f5d35
     dependencies:
     - name: argo-cd
       version: ~7
@@ -871,8 +910,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.3, B.6.1.4.1, B.8.0.2.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-openbao-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 70acd569b5613e6058ab9be1a555eac608b5080fd6b2ae0abe9c5c2aee50e532
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 7d3e6450a84a4f3f05daf42b33270ddfd6ca5b4f8ab01b48d41ab4c286c8e157
     dependencies:
     - name: openbao
       version: ~0.16.0
@@ -915,8 +954,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.4.1, B.6.2.3.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-cert-manager-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 9ac146088b8b6d89c6ff3c7895b74d83c23f86af429eca5e9d74da076b399b97
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 73fac80345d378d194734a68f349edac03e1d459f1f1e6a17acffbfe52d5816b
     dependencies:
     - name: cert-manager
       version: ~1.14.0
@@ -958,8 +997,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.1, B.8.0.2.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-keycloak-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 4b117c76fe77c460b5e080a6fd72f7be2029c5cb1e03018da680e3843e752376
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: a4ef06cd1351b5d2e24a0d1bb78c62a9c65dcd5575d3538bc14b023b9f39f336
     dependencies:
     - name: keycloak
       version: ~22
@@ -998,8 +1037,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.3, B.6.2.6.2
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-grafana-dashboards-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 5a47d4a743f96854a5d03626c0eb14be38b25259937daf22447ff580aeba038c
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 317a7fbf674c442b6198f99390d4558067ddbc7fd847589b144b2298dd2b3199
   enterprise-minio-overlay:
   - apiVersion: v2
     name: enterprise-minio-overlay
@@ -1034,8 +1073,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.3.1, B.6.2.6.5
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-minio-overlay-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 1c1642d1cd053397816f214ea3dbc1ce4acb1391d2b7d043a95ec8ac01d976fe
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 86971a3fd28ad58e1d570dc022faaaeb93c92e3a6a45b0d8a6a474aa215181a2
   enterprise-zammad:
   - apiVersion: v2
     name: enterprise-zammad
@@ -1070,8 +1109,8 @@ entries:
       mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.2.6.6, B.8.0.4.1, B.8.0.5.1
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-zammad-0.2.0.tgz
-    created: '2026-04-29T08:19:20.000000000Z'
-    digest: 618ec7ae5c59369bc3a2aef2791df2be1ea014f832aee4a17ff6d786e4502727
+    created: '2026-06-03T11:11:57.000000000Z'
+    digest: 2708e536488684b08847e430456c942d9f97d25bae9acb7a46cb39932d5ccc48
     dependencies:
     - name: zammad
       version: ~10

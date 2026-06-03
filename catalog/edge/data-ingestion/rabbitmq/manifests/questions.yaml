@@ -1,0 +1,157 @@
+# =============================================================================
+# Rancher Questions — RabbitMQ (Edge AMQP Broker)
+# ISO/IEC 42001: B.6.2.6.4, B.6.2.8.1
+# =============================================================================
+categories:
+  - "Edge"
+  - "Data Ingestion"
+
+questions:
+
+  # ---- Container Image ----
+  - variable: image.tag
+    label: "RabbitMQ Version"
+    type: string
+    default: "3.13-management"
+    group: "Container Image"
+
+  # ---- Broker Configuration ----
+  - variable: config.amqpPort
+    label: "AMQP Port"
+    type: int
+    default: 5672
+    group: "Broker Configuration"
+
+  - variable: config.managementEnabled
+    label: "Enable Management UI"
+    description: "Web management console and HTTP API"
+    type: boolean
+    default: true
+    group: "Broker Configuration"
+
+  - variable: config.managementPort
+    label: "Management UI Port"
+    type: int
+    default: 15672
+    show_if: "config.managementEnabled=true"
+    group: "Broker Configuration"
+
+  - variable: config.metricsEnabled
+    label: "Enable Prometheus Metrics"
+    description: "Exposes the rabbitmq_prometheus endpoint (B.6.2.8.1)"
+    type: boolean
+    default: true
+    group: "Broker Configuration"
+
+  - variable: config.mqttEnabled
+    label: "Enable MQTT Plugin"
+    description: "Bridge MQTT sensors onto AMQP. Leave off if using the Mosquitto chart."
+    type: boolean
+    default: false
+    group: "Broker Configuration"
+
+  - variable: config.diskFreeLimit
+    label: "Disk Free Limit"
+    description: "Back-pressure threshold for store-and-forward buffering"
+    type: string
+    default: "1GB"
+    group: "Broker Configuration"
+
+  # ---- Credentials ----
+  - variable: auth.username
+    label: "Default Username"
+    type: string
+    default: "edge"
+    group: "Credentials"
+
+  - variable: auth.password
+    label: "Default Password"
+    description: "Set a strong password for production (ISO 42001: B.6.1.3.1)"
+    type: password
+    default: ""
+    required: true
+    group: "Credentials"
+
+  # ---- Service ----
+  - variable: service.type
+    label: "Service Type"
+    type: enum
+    default: "ClusterIP"
+    options:
+      - "ClusterIP"
+      - "NodePort"
+      - "LoadBalancer"
+    group: "Networking"
+
+  - variable: service.nodePorts.amqp
+    label: "AMQP NodePort"
+    type: int
+    default: 30672
+    show_if: "service.type=NodePort"
+    group: "Networking"
+
+  - variable: service.nodePorts.management
+    label: "Management NodePort"
+    type: int
+    default: 31672
+    show_if: "service.type=NodePort"
+    group: "Networking"
+
+  # ---- Ingress ----
+  - variable: ingress.enabled
+    label: "Expose Management UI via Ingress"
+    type: boolean
+    default: false
+    group: "Networking"
+
+  - variable: ingress.hostname
+    label: "Management UI Hostname"
+    type: hostname
+    default: "rabbitmq.edge.local"
+    show_if: "ingress.enabled=true"
+    group: "Networking"
+
+  # ---- Persistence ----
+  - variable: persistence.storageClass
+    label: "Storage Class"
+    type: storageclass
+    default: "local-path"
+    group: "Storage"
+
+  - variable: persistence.size
+    label: "Volume Size"
+    type: string
+    default: "2Gi"
+    group: "Storage"
+
+  # ---- Resources ----
+  - variable: resources.requests.cpu
+    label: "CPU Request"
+    type: string
+    default: "100m"
+    group: "Resources"
+
+  - variable: resources.requests.memory
+    label: "Memory Request"
+    type: string
+    default: "256Mi"
+    group: "Resources"
+
+  - variable: resources.limits.cpu
+    label: "CPU Limit"
+    type: string
+    default: "500m"
+    group: "Resources"
+
+  - variable: resources.limits.memory
+    label: "Memory Limit"
+    type: string
+    default: "512Mi"
+    group: "Resources"
+
+  # ---- Scheduling ----
+  - variable: nodeSelector.node-role\.kubernetes\.io/edge
+    label: "Pin to Edge Nodes"
+    type: string
+    default: "true"
+    group: "Scheduling"

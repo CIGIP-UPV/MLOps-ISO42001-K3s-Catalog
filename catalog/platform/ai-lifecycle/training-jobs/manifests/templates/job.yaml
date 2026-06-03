@@ -14,7 +14,7 @@ metadata:
     {{- with .Values.labels }}
     app: {{ .app }}
     tier: {{ .tier }}
-    ra-component: {{ .ra-component }}
+    ra-component: {{ index . "ra-component" }}
     trigger: drift
     {{- end }}
   {{- with .Values.annotations }}

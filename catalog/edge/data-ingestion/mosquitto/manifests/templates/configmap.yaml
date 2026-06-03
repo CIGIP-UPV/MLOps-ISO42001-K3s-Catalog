@@ -22,16 +22,16 @@ data:
     {{- end }}
 
     # Persistence
-    persistence {{ .Values.config.persistence | lower }}
+    persistence {{ .Values.config.persistence | toString | lower }}
     persistence_location {{ .Values.config.persistenceLocation }}
 
     # Logging
     log_dest {{ .Values.config.logDest }}
     log_type {{ .Values.config.logType }}
-    connection_messages {{ .Values.config.connectionMessages | lower }}
+    connection_messages {{ .Values.config.connectionMessages | toString | lower }}
 
     # Authentication — enable for production (B.6.1.3.1)
-    allow_anonymous {{ .Values.config.allowAnonymous | lower }}
+    allow_anonymous {{ .Values.config.allowAnonymous | toString | lower }}
     password_file /mosquitto/config/passwords.txt
 
     # Max message size (prevent oversized payloads)
