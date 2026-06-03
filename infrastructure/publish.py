@@ -94,6 +94,15 @@ CHART_META: dict[str, dict[str, Any]] = {
         "tagline": "Lightweight MQTT broker for plant-floor sensor telemetry with authentication and WebSocket support.",
         "keywords": ["iso42001", "edge", "mqtt", "data-ingestion", "broker", "sensors", "iot"],
     },
+    "edge-rabbitmq": {
+        "path": "catalog/edge/data-ingestion/rabbitmq",
+        "tier": "edge", "category": "Data Ingestion",
+        "display": "RabbitMQ (Edge)",
+        "iso_clauses": ["B.6.2.6.4", "B.6.2.8.1"],
+        "ah_category": "streaming-messaging",
+        "tagline": "Lightweight AMQP message broker for edge ingestion with store-and-forward buffering, management UI and Prometheus metrics.",
+        "keywords": ["iso42001", "edge", "data-ingestion", "rabbitmq", "amqp", "broker", "message-queue", "store-and-forward"],
+    },
     "edge-node-red": {
         "path": "catalog/edge/data-ingestion/node-red",
         "tier": "edge", "category": "Data Ingestion",
@@ -329,6 +338,7 @@ ICON_GLYPHS = {
     "edge-fastapi-model":       ("\u26a1", "API"),
     "edge-kafka":               ("\u224b", "KFK"),
     "edge-mosquitto":           ("\u25c9", "MQTT"),
+    "edge-rabbitmq":            ("\u2709", "AMQP"),
     "edge-node-red":            ("\u25cf", "NR"),
     "edge-opc-ua-gateway":      ("\u29c9", "OPC"),
     "edge-fluent-bit":          ("\u2261", "LOG"),

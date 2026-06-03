@@ -1,0 +1,109 @@
+# =============================================================================
+# RabbitMQ Deployment
+# Tier: Edge | RA Component: Input Data Monitoring
+# ISO/IEC 42001: B.6.2.6.4, B.6.2.8.1
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "edge-rabbitmq.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "edge-rabbitmq.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "edge-rabbitmq.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "edge-rabbitmq.selectorLabels" . | nindent 8 }}
+        tier: edge
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: rabbitmq
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ include "edge-rabbitmq.fullname" . }}-auth
+          ports:
+            - name: amqp
+              containerPort: {{ .Values.config.amqpPort }}
+              protocol: TCP
+            {{- if .Values.config.managementEnabled }}
+            - name: management
+              containerPort: {{ .Values.config.managementPort }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.config.metricsEnabled }}
+            - name: metrics
+              containerPort: {{ .Values.config.metricsPort }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.config.mqttEnabled }}
+            - name: mqtt
+              containerPort: {{ .Values.config.mqttPort }}
+              protocol: TCP
+            {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/rabbitmq/rabbitmq.conf
+              subPath: rabbitmq.conf
+            - name: config
+              mountPath: /etc/rabbitmq/enabled_plugins
+              subPath: enabled_plugins
+            {{- if .Values.persistence.enabled }}
+            - name: data
+              mountPath: /var/lib/rabbitmq
+            {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "edge-rabbitmq.fullname" . }}-config
+        {{- if .Values.persistence.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "edge-rabbitmq.fullname" . }}-data
+        {{- end }}

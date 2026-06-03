@@ -6,7 +6,7 @@ This index provides a cross-reference of all solutions by **Deployment Tier** an
 
 | Category | Edge | Platform | Enterprise |
 |----------|------|----------|------------|
-| **Data Ingestion** | [Node-RED](./edge/data-ingestion/node-red/README.md) · [Kafka](./edge/data-ingestion/kafka/README.md) · [Mosquitto (MQTT)](./edge/data-ingestion/mosquitto/README.md) | — | — |
+| **Data Ingestion** | [Node-RED](./edge/data-ingestion/node-red/README.md) · [Kafka](./edge/data-ingestion/kafka/README.md) · [Mosquitto (MQTT)](./edge/data-ingestion/mosquitto/README.md) · [RabbitMQ](./edge/data-ingestion/rabbitmq/README.md) | — | — |
 | **AI Inference** | [FastAPI Model Server](./edge/ai-inference/fastapi-model/README.md) | [FastAPI Model Server (Cloud)](./platform/ai-lifecycle/mlflow/README.md) | — |
 | **AI Lifecycle** | — | [MLflow](./platform/ai-lifecycle/mlflow/README.md) · [Training Jobs](./platform/ai-lifecycle/training-jobs/README.md) | — |
 | **Monitoring** | [Prometheus Agent](./edge/monitoring/prometheus-agent/README.md) · [Fluent Bit](./edge/monitoring/fluent-bit/README.md) | [Prometheus](./platform/monitoring/prometheus/README.md) · [Grafana](./platform/monitoring/grafana/README.md) · [Loki](./platform/monitoring/loki/README.md) | [Grafana](./enterprise/dashboards/grafana/README.md) |
@@ -49,6 +49,7 @@ This index provides a cross-reference of all solutions by **Deployment Tier** an
 - [`data-ingestion/node-red`](./edge/data-ingestion/node-red/README.md)
 - [`data-ingestion/kafka`](./edge/data-ingestion/kafka/README.md)
 - [`data-ingestion/mosquitto`](./edge/data-ingestion/mosquitto/README.md)
+- [`data-ingestion/rabbitmq`](./edge/data-ingestion/rabbitmq/README.md)
 - [`ai-inference/fastapi-model`](./edge/ai-inference/fastapi-model/README.md)
 - [`monitoring/fluent-bit`](./edge/monitoring/fluent-bit/README.md)
 - [`monitoring/prometheus-agent`](./edge/monitoring/prometheus-agent/README.md)

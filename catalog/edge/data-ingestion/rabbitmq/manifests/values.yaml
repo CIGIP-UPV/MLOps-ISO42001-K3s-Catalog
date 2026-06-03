@@ -1,0 +1,117 @@
+# =============================================================================
+# RabbitMQ — AMQP Message Broker (Edge)
+# Helm Chart Values
+# Tier: Edge | RA Component: Input Data Monitoring
+# ISO/IEC 42001: B.6.2.6.4, B.6.2.8.1
+# =============================================================================
+
+replicaCount: 1
+
+image:
+  repository: rabbitmq
+  pullPolicy: IfNotPresent
+  # 'management' variant ships the Management UI + Prometheus plugin.
+  tag: "3.13-management"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# RabbitMQ broker configuration
+config:
+  amqpPort: 5672
+  # Management UI / HTTP API
+  managementEnabled: true
+  managementPort: 15672
+  # Prometheus metrics endpoint (rabbitmq_prometheus plugin)
+  metricsEnabled: true
+  metricsPort: 15692
+  # Optional MQTT plugin — bridges MQTT sensors onto AMQP (off by default;
+  # use the dedicated Mosquitto chart for pure MQTT workloads).
+  mqttEnabled: false
+  mqttPort: 1883
+  # Default virtual host created on first boot.
+  defaultVhost: "/"
+  # Disk free limit before the broker applies back-pressure (store-and-forward
+  # buffering for upstream connectivity interruptions).
+  diskFreeLimit: "1GB"
+
+# Broker credentials — rendered into a Secret created by this chart.
+# Override 'password' at install time; never commit a real secret.
+auth:
+  username: "edge"
+  password: "changeme"
+  # Erlang cookie for clustering (single-node by default).
+  erlangCookie: "iso42001-edge-cookie"
+
+service:
+  type: ClusterIP
+  annotations: {}
+  ports:
+    amqp: 5672
+    management: 15672
+    metrics: 15692
+    mqtt: 1883
+  nodePorts:
+    amqp: 30672
+    management: 31672
+
+# Optional Ingress for the Management UI (disabled by default)
+ingress:
+  enabled: false
+  className: traefik
+  annotations: {}
+  hostname: rabbitmq.edge.local
+  tls: []
+
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 2Gi
+
+# Prometheus scraping of the metrics endpoint
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "15692"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: false
+
+securityContext: {}
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+# Pin to edge nodes by default
+nodeSelector:
+  node-role.kubernetes.io/edge: "true"
+
+tolerations: []
+
+affinity: {}
+
+livenessProbe:
+  exec:
+    command:
+      - rabbitmq-diagnostics
+      - -q
+      - ping
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 15
+
+readinessProbe:
+  exec:
+    command:
+      - rabbitmq-diagnostics
+      - -q
+      - check_running
+  initialDelaySeconds: 20
+  periodSeconds: 15
+  timeoutSeconds: 10
