@@ -96,14 +96,16 @@ PY
 
 run_test() {
   # run_test ID PHASE NAME EVIDENCE "readable command" FUNCTION [ARGS...]
-  # PASS when FUNCTION returns 0; its output is the evidence.
+  # PASS when FUNCTION returns 0, SKIP when it returns 3 (precondition not
+  # met, reason in its output), FAIL otherwise; its output is the evidence.
   local tid=$1 phase=$2 name=$3 ev=$4 shown=$5 fn=$6; shift 6
   local start rc out
   start=$(date +%s)
   # port-forwards opened by FUNCTION live in this subshell: close them there
   out=$("$fn" "$@" 2>&1; r=$?; cleanup_pf; exit $r); rc=$?
   { echo "# ${tid}: ${name}"; echo "\$ ${shown}"; echo "${out}"; echo "(exit ${rc})"; } > "${OUT}/${ev}"
-  record "$tid" "$phase" "$name" "$([[ $rc -eq 0 ]] && echo PASS || echo FAIL)" "$(( $(date +%s) - start ))" "$ev" "$shown" \
+  local res=FAIL; [[ $rc -eq 0 ]] && res=PASS; [[ $rc -eq 3 ]] && res=SKIP
+  record "$tid" "$phase" "$name" "$res" "$(( $(date +%s) - start ))" "$ev" "$shown" \
     "$(printf '%s' "$out" | tail -4 | tr '\n' ' ')"
   return $rc
 }
@@ -593,7 +595,15 @@ jobs = sorted((x["metadata"]["creationTimestamp"], x["metadata"]["name"]) for x 
 print("job.batch/" + jobs[-1][1] if jobs else "")' "${since:-9999}")
   echo "drift injection started at ${since:-unknown}"
   echo "retraining job started by the recommendation: ${j:-none}"
-  [[ -n "$j" ]] || return 1
+  if [[ -z "$j" ]]; then
+    # a retraining started by an earlier run within the cooldown blocks a
+    # new one by design: report it as not run rather than as a failure
+    if psql_ts "SELECT action FROM retraining_recommendations ORDER BY id DESC LIMIT 1" | grep -q 'within the cooldown'; then
+      echo "not run: a retraining was already started within the cooldown (earlier run); re-run after the cooldown"
+      echo cooldown > "${OUT}/state/retraining-skipped.txt"; return 3
+    fi
+    return 1
+  fi
   kubectl -n mlops wait "$j" --for=condition=complete --timeout=900s; local rc=$?
   kubectl -n mlops logs "$j" | grep '"component"'
   [[ $rc -eq 0 ]] && kubectl -n mlops logs "$j" | grep -q '"trigger": "drift"\|"model_registered"'
@@ -602,6 +612,9 @@ e_new_version() {
   port_forward edge svc/edge-fastapi-model 18001:8000 || return 1
   # the edge-mlflow-sync CronJob may already have propagated it: compare
   # with the version served before the drift (E08)
+  if [[ -f "${OUT}/state/retraining-skipped.txt" ]]; then
+    echo "not run: no retraining after the drift (E13 skipped, cooldown)"; return 3
+  fi
   local before after; before=$(cat "${OUT}/state/version-before-drift.txt" 2>/dev/null)
   job_from edge edge-mlflow-sync e2e-vsync-2; kubectl -n edge logs job/e2e-vsync-2
   after=$(served_version); echo "served version before the drift: ${before:-unknown}, now: ${after}"
