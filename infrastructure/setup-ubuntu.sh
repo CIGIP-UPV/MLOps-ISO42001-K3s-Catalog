@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# MLOps ISO 42001 K3S Catalog — Ubuntu 24.04 Environment Setup
+# MLOps ISO 42001 K3S Catalog: Ubuntu 24.04 Environment Setup
 #
 # Prepares a fresh Ubuntu 24.04 LTS server for deploying the reference
 # architecture. Installs and configures:
@@ -35,12 +35,14 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 # ---------------------------------------------------------------------------
-# Configuration — EDIT THESE BEFORE RUNNING
+# Configuration: EDIT THESE BEFORE RUNNING
 # ---------------------------------------------------------------------------
-K3S_VERSION="${K3S_VERSION:-v1.30.2+k3s1}"
-HELM_VERSION="${HELM_VERSION:-v3.15.3}"
-RANCHER_CLI_VERSION="${RANCHER_CLI_VERSION:-v2.9.0}"
+K3S_VERSION="${K3S_VERSION:-v1.32.6+k3s1}"
+HELM_VERSION="${HELM_VERSION:-v3.16.4}"
+RANCHER_CLI_VERSION="${RANCHER_CLI_VERSION:-v2.11.3}"
 K9S_VERSION="${K9S_VERSION:-v0.32.5}"
 
 # K3S server options
@@ -265,24 +267,28 @@ install_k3s_server() {
     return 0
   fi
 
+  # API audit (ISO/IEC 42001 B.6.2.8.1): the policy file and the log
+  # directory must exist before the API server starts; without a policy file
+  # the API server records no audit events.
+  log "Installing the API audit policy..."
+  mkdir -p /etc/rancher/k3s /var/log/kubernetes/audit
+  install -m 0600 "${SCRIPT_DIR}/audit-policy.yaml" /etc/rancher/k3s/audit-policy.yaml
+
   log "Installing K3S ${K3S_VERSION} (server mode)..."
 
   curl -sfL https://get.k3s.io | \
     INSTALL_K3S_VERSION="$K3S_VERSION" \
     INSTALL_K3S_EXEC="server" \
-    K3S_KUBECONFIG_MODE="644" \
     sh -s - \
       --cluster-cidr="$K3S_CLUSTER_CIDR" \
       --service-cidr="$K3S_SERVICE_CIDR" \
-      --write-kubeconfig-mode=644 \
+      --write-kubeconfig-mode=600 \
       --disable=servicelb \
-      --kube-apiserver-arg="audit-log-path=/var/log/kubernetes/audit.log" \
+      --kube-apiserver-arg="audit-policy-file=/etc/rancher/k3s/audit-policy.yaml" \
+      --kube-apiserver-arg="audit-log-path=/var/log/kubernetes/audit/audit.log" \
       --kube-apiserver-arg="audit-log-maxage=90" \
       --kube-apiserver-arg="audit-log-maxbackup=10" \
       --kube-apiserver-arg="audit-log-maxsize=100"
-
-  # Create audit log directory
-  mkdir -p /var/log/kubernetes
 
   # Wait for K3S to be ready
   log "Waiting for K3S to be ready..."
@@ -435,7 +441,7 @@ install_rancher_cli() {
 install_additional_tools() {
   log "=== Phase 8: Additional Tools ==="
 
-  # yq — YAML processor (useful for editing values.yaml)
+  # yq: YAML processor (useful for editing values.yaml)
   if ! command -v yq &>/dev/null; then
     log "Installing yq..."
     curl -fsSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${ARCH_ALT}" \
@@ -444,7 +450,7 @@ install_additional_tools() {
     info "yq installed."
   fi
 
-  # k9s — TUI for Kubernetes cluster management
+  # k9s: TUI for Kubernetes cluster management
   if ! command -v k9s &>/dev/null; then
     log "Installing k9s ${K9S_VERSION}..."
     local k9s_arch="$ARCH_ALT"
@@ -566,7 +572,7 @@ verify_installation() {
 print_summary() {
   echo ""
   echo "==========================================================================="
-  echo "  MLOps ISO 42001 K3S Catalog — Setup Complete"
+  echo "  MLOps ISO 42001 K3S Catalog: Setup Complete"
   echo "==========================================================================="
   echo ""
   echo "  Next steps:"
@@ -663,7 +669,7 @@ main() {
 
   echo ""
   echo "==========================================================================="
-  echo "  MLOps ISO 42001 K3S Catalog — Ubuntu 24.04 Setup"
+  echo "  MLOps ISO 42001 K3S Catalog: Ubuntu 24.04 Setup"
   echo "  Mode: $MODE"
   echo "==========================================================================="
   echo ""
