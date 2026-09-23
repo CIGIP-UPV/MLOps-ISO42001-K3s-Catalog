@@ -18,7 +18,8 @@ so that the analysis and the report can be completed.
 | 6 | Traceability queries per ISO/IEC 42001 clause and component, label coverage per namespace | `trace/` |
 | 7 | NetworkPolicy tests (N00 control, N01 to N12): default deny and allowed conduits | `netpol/` |
 
-Every test writes one line to `results.jsonl` and `summary.md` lists them all.
+Every test writes one line to `results.jsonl` (PASS, FAIL, or SKIP when a
+precondition is not met, with the reason) and `summary.md` lists them all.
 The script never prints or saves the value of a Secret.
 
 It takes about 60 to 90 minutes, most of it image downloads, the 5 minutes of
@@ -113,6 +114,11 @@ After an installation, the tests can be repeated without installing again:
 ```bash
 sudo -E ./docs/lab-validation/run-lab-validation.sh --phases "4 5 6 7"
 ```
+
+Leave at least 15 minutes between two runs of phase 5: a retraining started
+within the cooldown (15 minutes in `lab-values/`) blocks a new one by design,
+and E13 and E14 are then recorded as `SKIP` with that reason. Every run keeps
+its own evidence directory; commit them all.
 
 ## After the run: commit and push the evidence
 
