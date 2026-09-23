@@ -162,8 +162,22 @@ keycloak:
       cpu: "1500m"
       memory: "1536Mi"
 
-  # Prometheus metrics (B.6.1.2.2)
+  # Prometheus metrics (B.6.1.2.2). Keycloak 25 serves them on the
+  # management interface (port 9000), which this chart version predates.
+  extraContainerPorts:
+    - name: management
+      containerPort: 9000
+      protocol: TCP
   metrics:
     enabled: true
+    service:
+      extraPorts:
+        - name: management
+          port: 9000
+          protocol: TCP
+          targetPort: management
     serviceMonitor:
       enabled: true
+      port: management
+      endpoints:
+        - path: /metrics
