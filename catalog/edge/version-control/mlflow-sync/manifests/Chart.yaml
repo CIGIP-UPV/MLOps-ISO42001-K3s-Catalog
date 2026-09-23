@@ -1,0 +1,9 @@
+# Auto-generated / enriched by infrastructure/publish.py
+# Source of truth for the Chart metadata displayed in Rancher and ArtifactHub.
+apiVersion: v2
+name: edge-mlflow-sync
+type: application
+version: 0.3.0
+appVersion: "1.0.0"
+kubeVersion: '>=1.24.0-0'
+description: Propagates the model version promoted in the platform MLflow registry to the edge.
