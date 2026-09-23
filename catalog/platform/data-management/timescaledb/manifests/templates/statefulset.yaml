@@ -1,0 +1,129 @@
+# =============================================================================
+# TimescaleDB StatefulSet (single instance)
+# ISO/IEC 42001: B.6.2.6.1, B.6.2.6.3
+# =============================================================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "platform-timescaledb.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "platform-timescaledb.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  serviceName: {{ include "platform-timescaledb.fullname" . }}
+  selector:
+    matchLabels:
+      {{- include "platform-timescaledb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "platform-timescaledb.labels" . | nindent 8 }}
+      annotations:
+        checksum/init: {{ include (print $.Template.BasePath "/configmap-init.yaml") . | sha256sum }}
+    spec:
+      securityContext:
+        fsGroup: 70
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: timescaledb
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            {{- range $k, $v := .Values.parameters }}
+            - "-c"
+            - "{{ $k }}={{ $v }}"
+            {{- end }}
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_DB
+              value: {{ .Values.database | quote }}
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.auth.existingSecret }}, key: postgres-password }
+            - name: SYNC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.auth.existingSecret }}, key: sync-password }
+            - name: ML_DB_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.auth.existingSecret }}, key: ml-password }
+            - name: GRAFANA_DB_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.auth.existingSecret }}, key: grafana-password }
+          ports:
+            - name: postgresql
+              containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", {{ .Values.database | quote }}]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres"]
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: init
+              mountPath: /docker-entrypoint-initdb.d/100-zdm-schema.sh
+              subPath: 100-zdm-schema.sh
+        {{- if .Values.metrics.enabled }}
+        - name: metrics
+          image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
+          env:
+            - name: DATA_SOURCE_URI
+              value: "localhost:5432/{{ .Values.database }}?sslmode=disable"
+            - name: DATA_SOURCE_USER
+              value: postgres
+            - name: DATA_SOURCE_PASS
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.auth.existingSecret }}, key: postgres-password }
+          ports:
+            - name: metrics
+              containerPort: 9187
+          resources:
+            requests: { cpu: 20m, memory: 32Mi }
+            limits: { cpu: 100m, memory: 64Mi }
+        {{- end }}
+      volumes:
+        - name: init
+          configMap:
+            name: {{ include "platform-timescaledb.fullname" . }}-init
+            defaultMode: 0755
+        {{- if not .Values.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
+  {{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          {{- include "platform-timescaledb.labels" . | nindent 10 }}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        {{- if .Values.persistence.storageClass }}
+        storageClassName: {{ .Values.persistence.storageClass }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
+  {{- end }}

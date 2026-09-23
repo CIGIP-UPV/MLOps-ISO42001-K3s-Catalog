@@ -1,6 +1,6 @@
 # =============================================================================
-# Rancher Questions — TimescaleDB (Time-Series Data Warehouse)
-# ISO/IEC 42001: B.6.2.6.3, B.6.2.8.1
+# Rancher Questions: TimescaleDB (Platform Time-Series Data Stock)
+# ISO/IEC 42001: B.6.2.6.1, B.6.2.6.3
 # =============================================================================
 categories:
   - "Platform"
@@ -8,131 +8,61 @@ categories:
 
 questions:
 
-  # ---- Replicas ----
-  - variable: replicaCount
-    label: "Replicas"
-    description: "1 for standard; increase for HA"
-    type: int
-    default: 1
-    min: 1
-    max: 3
-    group: "Architecture"
+  - variable: database
+    label: "Database"
+    description: "Consolidated edge data, OEE KPIs and drift results"
+    type: string
+    default: "zdm_platform"
+    group: "Database"
 
-  # ---- Authentication ----
-  - variable: credentials.superuser
-    label: "Superuser Password"
-    type: password
-    default: ""
-    required: true
-    group: "Authentication"
+  - variable: auth.existingSecret
+    label: "Credentials Secret"
+    description: "Keys postgres-password, sync-password, ml-password and grafana-password (created by install.sh)"
+    type: string
+    default: "platform-timescaledb-auth"
+    group: "Database"
 
-  - variable: credentials.admin
-    label: "Admin Password"
-    type: password
-    default: ""
-    required: true
-    group: "Authentication"
+  - variable: image.tag
+    label: "TimescaleDB Image Tag"
+    type: string
+    default: "2.17.2-pg16"
+    group: "Database"
 
-  # ---- Persistence ----
-  - variable: persistentVolumes.data.storageClass
-    label: "Data Storage Class"
+  - variable: persistence.storageClass
+    label: "Storage Class"
     type: storageclass
     default: "local-path"
     group: "Storage"
 
-  - variable: persistentVolumes.data.size
-    label: "Data Volume Size"
-    description: "Stores sensor readings, predictions, and OEE KPIs"
+  - variable: persistence.size
+    label: "Volume Size"
+    description: "Scale with the retention of consolidated sensor data"
     type: string
-    default: "100Gi"
+    default: "20Gi"
     group: "Storage"
 
-  - variable: persistentVolumes.wal.enabled
-    label: "Enable WAL Volume"
-    description: "Separate volume for write-ahead log (recommended)"
+  - variable: metrics.enabled
+    label: "Enable postgres-exporter Sidecar"
+    description: "ISO/IEC 42001: B.6.2.6.1"
     type: boolean
     default: true
-    group: "Storage"
+    group: "Monitoring"
 
-  - variable: persistentVolumes.wal.storageClass
-    label: "WAL Storage Class"
-    type: storageclass
-    default: "local-path"
-    show_if: "persistentVolumes.wal.enabled=true"
-    group: "Storage"
-
-  - variable: persistentVolumes.wal.size
-    label: "WAL Volume Size"
-    type: string
-    default: "10Gi"
-    show_if: "persistentVolumes.wal.enabled=true"
-    group: "Storage"
-
-  # ---- Service ----
-  - variable: service.primary.type
-    label: "Service Type"
-    type: enum
-    default: "ClusterIP"
-    options:
-      - "ClusterIP"
-      - "NodePort"
-      - "LoadBalancer"
-    group: "Networking"
-
-  - variable: service.primary.port
-    label: "Service Port"
-    type: int
-    default: 5432
-    group: "Networking"
-
-  # ---- PostgreSQL Tuning ----
-  - variable: postgresql.parameters.max_connections
-    label: "Max Connections"
-    type: string
-    default: "100"
-    group: "Database Tuning"
-
-  - variable: postgresql.parameters.shared_buffers
-    label: "Shared Buffers"
-    type: string
-    default: "1GB"
-    group: "Database Tuning"
-
-  # ---- Backup ----
-  - variable: backup.enabled
-    label: "Enable Backup (pgBackRest)"
+  - variable: metrics.serviceMonitor.enabled
+    label: "Create ServiceMonitor"
+    description: "Only rendered when the Prometheus Operator CRDs exist"
     type: boolean
-    default: false
-    group: "Backup"
-
-  # ---- Resources ----
-  - variable: resources.requests.cpu
-    label: "CPU Request"
-    type: string
-    default: "500m"
-    group: "Resources"
+    default: true
+    group: "Monitoring"
 
   - variable: resources.requests.memory
     label: "Memory Request"
     type: string
-    default: "2Gi"
-    group: "Resources"
-
-  - variable: resources.limits.cpu
-    label: "CPU Limit"
-    type: string
-    default: "2000m"
+    default: "512Mi"
     group: "Resources"
 
   - variable: resources.limits.memory
     label: "Memory Limit"
     type: string
-    default: "4Gi"
+    default: "2Gi"
     group: "Resources"
-
-  # ---- Scheduling ----
-  - variable: nodeSelector.node-role\.kubernetes\.io/platform
-    label: "Pin to Platform Nodes"
-    type: string
-    default: "true"
-    group: "Scheduling"

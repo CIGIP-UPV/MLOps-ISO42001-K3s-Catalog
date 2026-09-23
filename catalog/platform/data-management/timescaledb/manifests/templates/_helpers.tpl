@@ -29,16 +29,17 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
-Common labels
+Common labels, including the ISO/IEC 42001 traceability labels.
 */}}
 {{- define "platform-timescaledb.labels" -}}
 helm.sh/chart: {{ include "platform-timescaledb.chart" . }}
 {{ include "platform-timescaledb.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-tier: platform
+app.kubernetes.io/part-of: iso42001-ai-system
+{{- with .Values.iso42001Labels }}
+{{ toYaml . }}
+{{- end }}
 {{- end }}
 
 {{/*

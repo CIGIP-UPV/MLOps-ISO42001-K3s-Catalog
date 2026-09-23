@@ -1,0 +1,40 @@
+# =============================================================================
+# TimescaleDB Service (and optional ServiceMonitor for the exporter)
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "platform-timescaledb.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "platform-timescaledb.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: postgresql
+      port: {{ .Values.service.port }}
+      targetPort: postgresql
+    {{- if .Values.metrics.enabled }}
+    - name: metrics
+      port: 9187
+      targetPort: metrics
+    {{- end }}
+  selector:
+    {{- include "platform-timescaledb.selectorLabels" . | nindent 4 }}
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "platform-timescaledb.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "platform-timescaledb.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "platform-timescaledb.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+{{- end }}
