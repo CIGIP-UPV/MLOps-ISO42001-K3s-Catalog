@@ -76,6 +76,7 @@ spec:
   - to:
     - podSelector: {}
 ---
+# edge: Kubernetes API server (endpoint port 6443, after the Service DNAT)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -94,8 +95,6 @@ spec:
         cidr: 0.0.0.0/0
     ports:
     - port: 6443
-      protocol: TCP
-    - port: 443
       protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
@@ -261,6 +260,7 @@ spec:
   - to:
     - podSelector: {}
 ---
+# logging: Kubernetes API server (endpoint port 6443, after the Service DNAT)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -279,8 +279,6 @@ spec:
         cidr: 0.0.0.0/0
     ports:
     - port: 6443
-      protocol: TCP
-    - port: 443
       protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
@@ -387,6 +385,7 @@ spec:
   - to:
     - podSelector: {}
 ---
+# falco: Kubernetes API server (endpoint port 6443, after the Service DNAT)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -405,8 +404,6 @@ spec:
         cidr: 0.0.0.0/0
     ports:
     - port: 6443
-      protocol: TCP
-    - port: 443
       protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
@@ -599,6 +596,7 @@ spec:
   - to:
     - podSelector: {}
 ---
+# mlops: Kubernetes API server (endpoint port 6443, after the Service DNAT)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -617,8 +615,6 @@ spec:
         cidr: 0.0.0.0/0
     ports:
     - port: 6443
-      protocol: TCP
-    - port: 443
       protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
@@ -829,6 +825,7 @@ spec:
   - to:
     - podSelector: {}
 ---
+# monitoring: Kubernetes API server (endpoint port 6443, after the Service DNAT)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -847,8 +844,6 @@ spec:
         cidr: 0.0.0.0/0
     ports:
     - port: 6443
-      protocol: TCP
-    - port: 443
       protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
@@ -1181,6 +1176,7 @@ spec:
   - to:
     - podSelector: {}
 ---
+# argocd: Kubernetes API server (endpoint port 6443, after the Service DNAT)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -1199,8 +1195,6 @@ spec:
         cidr: 0.0.0.0/0
     ports:
     - port: 6443
-      protocol: TCP
-    - port: 443
       protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
@@ -1312,6 +1306,7 @@ spec:
   - to:
     - podSelector: {}
 ---
+# openbao: Kubernetes API server (endpoint port 6443, after the Service DNAT)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -1330,8 +1325,6 @@ spec:
         cidr: 0.0.0.0/0
     ports:
     - port: 6443
-      protocol: TCP
-    - port: 443
       protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
