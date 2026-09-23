@@ -61,7 +61,10 @@ spec:
               for f in /users/*; do
                 mosquitto_passwd -b /work/passwords.txt "$(basename "$f")" "$(cat "$f")"
               done
-              chmod 0700 /work/passwords.txt
+              # The broker opens the file after dropping to the mosquitto
+              # user (uid 1883), so it must own it.
+              chown 1883:1883 /work/passwords.txt
+              chmod 0600 /work/passwords.txt
           volumeMounts:
             - name: users
               mountPath: /users
