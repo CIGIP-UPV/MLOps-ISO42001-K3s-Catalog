@@ -22,8 +22,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "edge-rabbitmq.selectorLabels" . | nindent 8 }}
-        tier: edge
+        {{- include "edge-rabbitmq.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -55,7 +54,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - secretRef:
-                name: {{ include "edge-rabbitmq.fullname" . }}-auth
+                name: {{ .Values.auth.existingSecret }}
           ports:
             - name: amqp
               containerPort: {{ .Values.config.amqpPort }}
