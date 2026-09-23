@@ -1,6 +1,7 @@
 # =============================================================================
-# Rancher Questions — PostgreSQL (Platform Metadata Store)
-# Shared backend for MLflow, Keycloak, Zammad, Grafana
+# Rancher Questions: PostgreSQL (Platform Metadata Store)
+# ISO/IEC 42001: B.6.1.3.4
+# Variables are prefixed with the subchart name (postgresql.).
 # =============================================================================
 categories:
   - "Platform"
@@ -9,94 +10,68 @@ categories:
 questions:
 
   # ---- Authentication ----
-  - variable: auth.postgresPassword
-    label: "Admin (postgres) Password"
-    type: password
-    default: ""
-    required: true
+  - variable: postgresql.auth.existingSecret
+    label: "Admin Credentials Secret"
+    description: "Secret with the key postgres-password (created by install.sh)"
+    type: string
+    default: "platform-postgresql-auth"
+    group: "Authentication"
+
+  - variable: postgresql.primary.extraEnvVarsSecret
+    label: "Service Users Secret"
+    description: "Secret with MLFLOW_DB_PASSWORD, KEYCLOAK_DB_PASSWORD, ZAMMAD_DB_PASSWORD and GRAFANA_DB_PASSWORD"
+    type: string
+    default: "platform-postgresql-app-passwords"
     group: "Authentication"
 
   # ---- Persistence ----
-  - variable: primary.persistence.storageClass
+  - variable: postgresql.primary.persistence.storageClass
     label: "Storage Class"
     type: storageclass
     default: "local-path"
     group: "Storage"
 
-  - variable: primary.persistence.size
+  - variable: postgresql.primary.persistence.size
     label: "Volume Size"
-    description: "Stores metadata for MLflow, Keycloak, Zammad, and Grafana"
     type: string
     default: "20Gi"
     group: "Storage"
 
-  # ---- Service ----
-  - variable: service.type
-    label: "Service Type"
-    type: enum
-    default: "ClusterIP"
-    options:
-      - "ClusterIP"
-      - "NodePort"
-      - "LoadBalancer"
-    group: "Networking"
-
-  - variable: service.nodePorts.postgresql
-    label: "NodePort"
-    type: int
-    default: 31432
-    show_if: "service.type=NodePort"
-    group: "Networking"
-
-  # ---- Metrics ----
-  - variable: metrics.enabled
+  # ---- Monitoring ----
+  - variable: postgresql.metrics.enabled
     label: "Enable Prometheus Exporter"
     type: boolean
     default: true
     group: "Monitoring"
 
-  - variable: metrics.serviceMonitor.enabled
-    label: "Enable Prometheus ServiceMonitor"
+  - variable: postgresql.metrics.serviceMonitor.enabled
+    label: "Enable ServiceMonitor"
+    description: "Requires the Prometheus Operator CRDs (platform-prometheus)"
     type: boolean
     default: true
-    show_if: "metrics.enabled=true"
     group: "Monitoring"
 
-  # ---- Backup ----
-  - variable: backup.enabled
-    label: "Enable Scheduled Backups"
-    type: boolean
-    default: false
-    group: "Backup"
-
   # ---- Resources ----
-  - variable: primary.resources.requests.cpu
+  - variable: postgresql.primary.resources.requests.cpu
     label: "CPU Request"
     type: string
-    default: "250m"
+    default: "100m"
     group: "Resources"
 
-  - variable: primary.resources.requests.memory
+  - variable: postgresql.primary.resources.requests.memory
     label: "Memory Request"
     type: string
     default: "256Mi"
     group: "Resources"
 
-  - variable: primary.resources.limits.cpu
+  - variable: postgresql.primary.resources.limits.cpu
     label: "CPU Limit"
     type: string
     default: "1000m"
     group: "Resources"
 
-  - variable: primary.resources.limits.memory
+  - variable: postgresql.primary.resources.limits.memory
     label: "Memory Limit"
     type: string
     default: "1Gi"
     group: "Resources"
-
-  # ---- Scheduling ----
-  - variable: primary.nodeSelector.node-role\.kubernetes\.io/platform
-    label: "Pin to Platform Nodes"
-    type: string
-    default: "true"
-    group: "Scheduling"
