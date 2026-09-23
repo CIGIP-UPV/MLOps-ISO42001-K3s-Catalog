@@ -16,6 +16,8 @@ for m in ${EXTRA_NODES}; do
 done
 cp /chart/flows.json /data/flows.json
 umask 077
+# Replace rather than overwrite: files left by an earlier user may not be writable.
+rm -f /data/flows_cred.json /data/.admin_hash
 node -e 'console.log(JSON.stringify({broker: {user: process.env.MQTT_USERNAME, password: process.env.MQTT_PASSWORD}}))' > /data/flows_cred.json
 if [ -n "${NODE_RED_ADMIN_PASSWORD:-}" ]; then
   node -e 'console.log(require("/usr/src/node-red/node_modules/bcryptjs").hashSync(process.env.NODE_RED_ADMIN_PASSWORD, 10))' > /data/.admin_hash
