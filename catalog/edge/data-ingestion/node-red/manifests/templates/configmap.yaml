@@ -1,0 +1,28 @@
+# =============================================================================
+# Declarative Node-RED configuration of the edge ingestion flow (CMP-01):
+# flows.json, settings.js and the init script that prepares /data.
+# ISO/IEC 42001: B.6.2.6.4
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-flows
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "edge-node-red.labels" . | nindent 4 }}
+data:
+  flows.json: |
+{{ .Files.Get "files/flows.json" | indent 4 }}
+  prepare.sh: |
+{{ .Files.Get "files/prepare.sh" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-settings
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "edge-node-red.labels" . | nindent 4 }}
+data:
+  settings.js: |
+{{ .Files.Get "files/settings.js" | indent 4 }}

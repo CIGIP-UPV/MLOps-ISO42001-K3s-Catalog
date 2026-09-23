@@ -57,6 +57,17 @@ LABEL_VALUE = re.compile(r"^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$")
 # render without a secret. They are never used for an installation.
 RENDER_ONLY = {}
 
+# Render as a cluster with the Prometheus Operator CRDs installed (the
+# catalog installs platform-prometheus before the charts that use them).
+API_VERSIONS = ["monitoring.coreos.com/v1"]
+
+# Free-form maps: their keys are not declared in the upstream defaults.
+FREE_FORM = {"labels", "podLabels", "commonLabels", "extraLabels", "additionalLabels",
+             "annotations", "podAnnotations", "extraEnvVars", "env", "extraEnv",
+             "nodeSelector", "limits_config", "config", "configs", "params", "cm",
+             "rbac", "extraArgs", "ini", "datasources", "dashboards", "dashboardProviders",
+             "livenessProbe", "readinessProbe", "startupProbe", "resources"}
+
 
 def sh(cmd, cwd=None, stdin=None, env=None):
     return subprocess.run(cmd, cwd=cwd, input=stdin, capture_output=True, text=True, env=env)
@@ -161,6 +172,13 @@ def unknown_subchart_keys(chart_dir: pathlib.Path):
             continue
         with tarfile.open(tgzs[0]) as t:
             upstream = yaml.safe_load(t.extractfile(f"{dep['name']}/values.yaml").read()) or {}
+            templates = "".join(t.extractfile(m).read().decode("utf-8", "replace")
+                                for m in t.getmembers()
+                                if m.isfile() and "/templates/" in m.name and m.name.count("/charts/") == 0)
+
+        def used_in_templates(path):
+            rel = path.split(".", 1)[1] if "." in path else path
+            return f".Values.{rel}" in templates
 
         def walk(mine, theirs, path):
             if not isinstance(mine, dict) or not isinstance(theirs, dict) or not theirs:
@@ -168,9 +186,12 @@ def unknown_subchart_keys(chart_dir: pathlib.Path):
             for k, v in mine.items():
                 if k == "global":
                     continue
+                if k == dep.get("condition", "").split(".")[-1] and path == key:
+                    continue  # the key that enables the dependency
                 if k not in theirs:
-                    unknown.append(f"{path}.{k}")
-                else:
+                    if not used_in_templates(f"{path}.{k}"):
+                        unknown.append(f"{path}.{k}")
+                elif k not in FREE_FORM:
                     walk(v, theirs[k], f"{path}.{k}")
         walk(own[key], upstream, key)
     return unknown
@@ -222,12 +243,13 @@ def verify(chart_name: str, post_render: bool, workdir: pathlib.Path):
         out["dependency_build"] = True
         out["dependencies"] = []
 
+    api = sum((["--api-versions", a] for a in API_VERSIONS), [])
     r = sh(["helm", "lint", str(dst), "--kube-version", KUBE_VERSION] + sum((["--set", s] for s in RENDER_ONLY.get(chart_name, [])), []))
     out["lint"] = r.returncode == 0
     if r.returncode:
         out["lint_error"] = (r.stdout + r.stderr).strip()[-400:]
 
-    cmd = ["helm", "template", chart_name, str(dst), "-n", ns, "--kube-version", KUBE_VERSION]
+    cmd = ["helm", "template", chart_name, str(dst), "-n", ns, "--kube-version", KUBE_VERSION] + api
     for s in RENDER_ONLY.get(chart_name, []):
         cmd += ["--set", s]
     if post_render:
@@ -262,6 +284,8 @@ def verify(chart_name: str, post_render: bool, workdir: pathlib.Path):
         md = d.get("metadata") or {}
         labels = md.get("labels") or {}
         ident = f"{d['kind']}/{md.get('name')}"
+        if "helm.sh/hook" in (md.get("annotations") or {}):
+            ident += " (hook)"
         if all(labels.get(k) == v for k, v in required.items()):
             res_ok += 1
         else:
