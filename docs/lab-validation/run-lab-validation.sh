@@ -122,7 +122,10 @@ port_forward() {
   # port_forward NS TARGET LOCAL:REMOTE
   local port=${3%%:*} t=0
   # a port-forward that is still closing must not answer for the new one
-  while curl -s -o /dev/null "http://127.0.0.1:${port}/" 2>/dev/null && [[ $t -lt 10 ]]; do sleep 1; t=$((t + 1)); done
+  while curl -s -o /dev/null "http://127.0.0.1:${port}/" 2>/dev/null; do
+    sleep 1; t=$((t + 1))
+    [[ $t -ge 10 ]] && { echo "local port ${port} is used by another process; free it and re-run"; return 1; }
+  done
   t=0
   kubectl -n "$1" port-forward "$2" "$3" >/dev/null 2>&1 &
   PF_PIDS="${PF_PIDS} $!"
@@ -542,6 +545,7 @@ e_inference() {
   curl -sf http://127.0.0.1:18001/predict -H 'Content-Type: application/json' \
     -d "{\"samples\":[{\"machine_id\":\"cnc-01\",\"features\":${f}},{\"machine_id\":\"cnc-01\",\"features\":{\"SpikeData\":0,\"DipData\":-1000,\"PositiveTrendData\":0,\"NegativeTrendData\":0}}]}" || return 1
   echo; psql_edge "SELECT timestamp, model_version, label, round(score::numeric,4) FROM predictions ORDER BY id DESC LIMIT 4"
+  served_version > "${OUT}/state/version-before-drift.txt"
 }
 e_metrics() {
   port_forward monitoring svc/platform-prometheus-prometheus 19090:9090 || return 1
@@ -556,6 +560,7 @@ e_metrics() {
   echo "queries with data: ${n}/4"; [[ $n -ge 3 ]]
 }
 e_drift_inject() {
+  date -u +%Y-%m-%dT%H:%M:%SZ > "${OUT}/state/drift-start.txt"
   tmp_pod edge lab-e10 "${MQTT_IMAGE}" '
     i=0
     while [ $i -lt 300 ]; do
@@ -577,7 +582,16 @@ e_drift() {
   [[ $rc -eq 0 ]] && psql_ts "SELECT recommended FROM retraining_recommendations ORDER BY id DESC LIMIT 1" | grep -q t
 }
 e_retraining() {
-  local j; j=$(kubectl -n mlops get jobs --sort-by=.metadata.creationTimestamp -o name | grep 'platform-training-jobs-drift-' | tail -1)
+  # the scheduled drift check may start it before e2e-drift-1: accept any
+  # retraining Job created after the drift injection began
+  local since j; since=$(cat "${OUT}/state/drift-start.txt" 2>/dev/null)
+  j=$(kubectl -n mlops get jobs -o json | python3 -c '
+import json, sys
+since = sys.argv[1]
+jobs = sorted((x["metadata"]["creationTimestamp"], x["metadata"]["name"]) for x in json.load(sys.stdin)["items"]
+              if x["metadata"]["name"].startswith("platform-training-jobs-drift-") and x["metadata"]["creationTimestamp"] >= since)
+print("job.batch/" + jobs[-1][1] if jobs else "")' "${since:-9999}")
+  echo "drift injection started at ${since:-unknown}"
   echo "retraining job started by the recommendation: ${j:-none}"
   [[ -n "$j" ]] || return 1
   kubectl -n mlops wait "$j" --for=condition=complete --timeout=900s; local rc=$?
@@ -586,9 +600,11 @@ e_retraining() {
 }
 e_new_version() {
   port_forward edge svc/edge-fastapi-model 18001:8000 || return 1
-  local before after; before=$(served_version)
+  # the edge-mlflow-sync CronJob may already have propagated it: compare
+  # with the version served before the drift (E08)
+  local before after; before=$(cat "${OUT}/state/version-before-drift.txt" 2>/dev/null)
   job_from edge edge-mlflow-sync e2e-vsync-2; kubectl -n edge logs job/e2e-vsync-2
-  after=$(served_version); echo "served version: ${before} -> ${after}"
+  after=$(served_version); echo "served version before the drift: ${before:-unknown}, now: ${after}"
   curl -sf http://127.0.0.1:18001/predict -H 'Content-Type: application/json' \
     -d '{"samples":[{"machine_id":"cnc-01","features":{"SpikeData":0,"DipData":0,"PositiveTrendData":100,"NegativeTrendData":100}}]}'; echo
   [[ -n "$after" && "$after" != "$before" ]]
