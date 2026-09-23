@@ -21,12 +21,14 @@ keycloak:
   commonLabels: *iso42001Labels
 
   # Bitnami versioned images now live in docker.io/bitnamilegacy (frozen,
-  # no new security patches); 24.0.0 was never published there, 24.0.5 is
-  # the closest patch release. Replace with a maintained image in production.
+  # no new security patches). The tag is the one the chart was built for:
+  # older images still expect the removed KEYCLOAK_PROXY variable and refuse
+  # to start in production mode without TLS. Replace with a maintained
+  # image in production.
   image:
     registry: docker.io
     repository: bitnamilegacy/keycloak
-    tag: 24.0.5-debian-12-r0
+    tag: 25.0.6-debian-12-r0
 
   # Admin credentials: Secret created by install.sh (key admin-password).
   auth:
@@ -35,7 +37,8 @@ keycloak:
     passwordSecretKey: admin-password
 
   production: true
-  proxy: edge                          # TLS terminated by the ingress
+  # TLS terminated by the ingress; Keycloak trusts the X-Forwarded-* headers.
+  proxyHeaders: xforwarded
   # Reachable through port-forward in the laboratory; enable the ingress
   # with TLS for users.
   ingress:
