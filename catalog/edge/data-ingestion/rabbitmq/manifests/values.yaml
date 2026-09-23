@@ -20,7 +20,7 @@ iso42001Labels: &iso42001Labels
 replicaCount: 1
 
 image:
-  repository: rabbitmq
+  repository: public.ecr.aws/docker/library/rabbitmq   # Docker official image, public ECR mirror
   pullPolicy: IfNotPresent
   # 'management' variant ships the Management UI + Prometheus plugin.
   tag: "3.13-management"
