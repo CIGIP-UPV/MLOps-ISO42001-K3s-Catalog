@@ -38,8 +38,10 @@ helm.sh/chart: {{ include "edge-rabbitmq.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-tier: edge
-ra-component: input-data-monitoring
+app.kubernetes.io/part-of: iso42001-ai-system
+{{- with .Values.iso42001Labels }}
+{{ toYaml . }}
+{{- end }}
 {{- end }}
 
 {{/*

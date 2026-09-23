@@ -1,5 +1,5 @@
 # =============================================================================
-# Rancher Questions — RabbitMQ (Edge AMQP Broker)
+# Rancher Questions: RabbitMQ (Edge AMQP Broker)
 # ISO/IEC 42001: B.6.2.6.4, B.6.2.8.1
 # =============================================================================
 categories:
@@ -58,21 +58,13 @@ questions:
     group: "Broker Configuration"
 
   # ---- Credentials ----
-  - variable: auth.username
-    label: "Default Username"
+  - variable: auth.existingSecret
+    label: "Credentials Secret"
+    description: "Keys RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS and RABBITMQ_ERLANG_COOKIE (created by install.sh)"
     type: string
-    default: "edge"
-    group: "Credentials"
+    default: "edge-rabbitmq-auth"
+    group: "Authentication"
 
-  - variable: auth.password
-    label: "Default Password"
-    description: "Set a strong password for production (ISO 42001: B.6.1.3.1)"
-    type: password
-    default: ""
-    required: true
-    group: "Credentials"
-
-  # ---- Service ----
   - variable: service.type
     label: "Service Type"
     type: enum
