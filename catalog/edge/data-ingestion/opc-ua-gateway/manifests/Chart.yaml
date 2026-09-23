@@ -4,7 +4,7 @@ apiVersion: v2
 name: edge-opc-ua-gateway
 type: application
 version: 0.2.0
-appVersion: '2.9'
+appVersion: 1.32.3
 kubeVersion: '>=1.24.0-0'
 description: OPC-UA to MQTT/Kafka bridge (EMQX Neuron) that pulls tags from PLC/SCADA endpoints and forwards them into the
   edge event bus.

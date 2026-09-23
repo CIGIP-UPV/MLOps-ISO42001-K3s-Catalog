@@ -35,4 +35,4 @@ data:
     password_file /mosquitto/config/passwords.txt
 
     # Max message size (prevent oversized payloads)
-    message_size_limit {{ .Values.config.messageSizeLimit }}
+    message_size_limit {{ .Values.config.messageSizeLimit | int64 }}

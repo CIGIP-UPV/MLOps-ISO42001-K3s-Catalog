@@ -1,17 +1,18 @@
+# =============================================================================
+# OPC UA Gateway metrics Service (Telegraf prometheus_client output)
+# =============================================================================
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-opcua-gateway
+  name: {{ include "edge-opc-ua-gateway.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "edge-opc-ua-gateway.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: ClusterIP
   ports:
-    - name: web
-      port: {{ .Values.service.webPort }}
-      targetPort: web
-    - name: api
-      port: {{ .Values.service.apiPort }}
-      targetPort: api
+    - name: metrics
+      port: 9273
+      targetPort: metrics
   selector:
     {{- include "edge-opc-ua-gateway.selectorLabels" . | nindent 4 }}

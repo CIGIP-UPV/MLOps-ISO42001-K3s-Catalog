@@ -1,31 +1,78 @@
+# =============================================================================
+# Telegraf configuration: OPC UA inputs -> MQTT (and optionally Kafka)
+# ISO/IEC 42001: B.6.1.3.1, B.6.2.6.4
+# Credentials are resolved by Telegraf from environment variables.
+# =============================================================================
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-opcua-config
+  name: {{ include "edge-opc-ua-gateway.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "edge-opc-ua-gateway.labels" . | nindent 4 }}
 data:
-  neuron.json: |
-    {
-      "endpoints": {{ toJson .Values.opcua.endpoints }},
-      "sampling_interval_ms": {{ .Values.opcua.samplingIntervalMs }},
-      "publishing_interval_ms": {{ .Values.opcua.publishingIntervalMs }},
-      "downstream": {
-        "mqtt": {
-          "enabled": {{ .Values.downstream.mqtt.enabled }},
-          "host":    "{{ .Values.downstream.mqtt.host }}",
-          "port":    {{ .Values.downstream.mqtt.port }},
-          "topic_prefix": "{{ .Values.downstream.mqtt.topicPrefix }}",
-          "qos":     {{ .Values.downstream.mqtt.qos }}
-        },
-        "kafka": {
-          "enabled": {{ .Values.downstream.kafka.enabled }},
-          "brokers": "{{ .Values.downstream.kafka.brokers }}",
-          "topic":   "{{ .Values.downstream.kafka.topic }}"
-        }
-      },
-      "audit": {
-        "enabled": {{ .Values.auditLogs.enabled }},
-        "level":   "{{ .Values.auditLogs.level }}"
-      }
-    }
+  telegraf.conf: |
+    [global_tags]
+      site_id = "{{ .Values.siteId }}"
+
+    [agent]
+      interval = "{{ .Values.opcua.interval }}"
+      flush_interval = "{{ .Values.opcua.interval }}"
+      omit_hostname = true
+      debug = {{ .Values.debug }}
+
+    {{- range $i, $ep := .Values.opcua.endpoints }}
+
+    # OPC UA endpoint: {{ $ep.name }}
+    [[inputs.opcua]]
+      name = "opcua"
+      endpoint = "{{ $ep.url }}"
+      security_policy = "{{ $ep.securityPolicy }}"
+      security_mode = "{{ $ep.securityMode }}"
+      auth_method = "{{ $ep.authMethod }}"
+      {{- if eq $ep.authMethod "UserName" }}
+      username = "${OPCUA_{{ $i }}_USERNAME}"
+      password = "${OPCUA_{{ $i }}_PASSWORD}"
+      {{- end }}
+      timestamp = "{{ $.Values.opcua.timestamp }}"
+      [inputs.opcua.tags]
+        machine_id = "{{ $ep.machineId }}"
+      {{- range $ep.nodes }}
+      [[inputs.opcua.nodes]]
+        name = "{{ .name }}"
+        namespace = "{{ .namespace }}"
+        identifier_type = "{{ .identifierType }}"
+        identifier = "{{ .identifier }}"
+      {{- end }}
+    {{- end }}
+
+    {{- if .Values.downstream.mqtt.enabled }}
+
+    # Edge event bus: one JSON message per sample on <prefix>/<machine_id>/opcua
+    [[outputs.mqtt]]
+      namepass = ["opcua"]
+      servers = ["tcp://{{ .Values.downstream.mqtt.host }}:{{ .Values.downstream.mqtt.port }}"]
+      topic = '{{ .Values.downstream.mqtt.topicPrefix }}/{{ `{{ .Tag "machine_id" }}` }}/opcua'
+      qos = {{ .Values.downstream.mqtt.qos }}
+      username = "${MQTT_USERNAME}"
+      password = "${MQTT_PASSWORD}"
+      data_format = "json"
+    {{- end }}
+
+    {{- if .Values.downstream.kafka.enabled }}
+
+    [[outputs.kafka]]
+      namepass = ["opcua"]
+      brokers = [{{ range $j, $b := .Values.downstream.kafka.brokers }}{{ if $j }}, {{ end }}"{{ $b }}"{{ end }}]
+      topic = "{{ .Values.downstream.kafka.topic }}"
+      data_format = "json"
+    {{- end }}
+
+    # Gateway health (read errors, gathered and written metrics) for the
+    # edge Prometheus Agent.
+    [[inputs.internal]]
+      collect_memstats = false
+
+    [[outputs.prometheus_client]]
+      listen = ":9273"
+      metric_version = 2
