@@ -1,0 +1,227 @@
+[
+  {
+    "id": "zdm-tab",
+    "type": "tab",
+    "label": "ZDM ingestion (CMP-01)",
+    "disabled": false,
+    "info": "Managed by the edge-node-red chart (files/flows.json). Changes made in the editor are replaced at the next restart."
+  },
+  {
+    "id": "broker",
+    "type": "mqtt-broker",
+    "name": "edge-mosquitto",
+    "broker": "${MQTT_HOST}",
+    "port": "${MQTT_PORT}",
+    "clientid": "",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "pgcfg",
+    "type": "postgreSQLConfig",
+    "name": "edge-postgresql",
+    "host": "PGHOST",
+    "hostFieldType": "env",
+    "port": "PGPORT",
+    "portFieldType": "env",
+    "database": "PGDATABASE",
+    "databaseFieldType": "env",
+    "ssl": "false",
+    "sslFieldType": "bool",
+    "applicationName": "edge-node-red",
+    "applicationNameType": "str",
+    "max": "5",
+    "maxFieldType": "num",
+    "idle": "1000",
+    "idleFieldType": "num",
+    "connectionTimeout": "10000",
+    "connectionTimeoutFieldType": "num",
+    "user": "",
+    "userFieldType": "env",
+    "password": "",
+    "passwordFieldType": "env",
+    "userEnv": "PGUSER",
+    "passwordEnv": "PGPASSWORD"
+  },
+  {
+    "id": "mqttin",
+    "type": "mqtt in",
+    "z": "zdm-tab",
+    "name": "OPC UA samples",
+    "topic": "${MQTT_TOPIC}",
+    "qos": "1",
+    "datatype": "json",
+    "broker": "broker",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 140,
+    "y": 100,
+    "wires": [
+      [
+        "validate"
+      ]
+    ]
+  },
+  {
+    "id": "validate",
+    "type": "function",
+    "z": "zdm-tab",
+    "name": "Validate input data",
+    "func": "// Input Data Monitoring (CMP-01): validate each OPC UA sample published by\n// the gateway before it reaches the edge data stock.\nconst p = msg.payload || {};\nconst fields = p.fields || {};\nconst tags = p.tags || {};\nconst machine = tags.machine_id || 'unknown';\nconst maxAbs = Number(env.get('INPUT_MAX_ABS') || 1e6);\nconst maxAgeS = Number(env.get('INPUT_MAX_AGE_S') || 86400);\nconst nowS = Date.now() / 1000;\nconst tsS = Number(p.timestamp || nowS);\n\nconst stats = flow.get('stats') || { valid: 0, rejected: {}, samples: 0, db_errors: 0, last_ts: 0 };\nfunction reject(reason) {\n    stats.rejected[reason] = (stats.rejected[reason] || 0) + 1;\n    flow.set('stats', stats);\n    node.warn(JSON.stringify({ component: 'edge-node-red', event: 'sample_rejected', reason, machine_id: machine, topic: msg.topic }));\n    return [null, { topic: `plant/${machine}/rejected`, payload: { reason, sample: p } }];\n}\n\nif (typeof p !== 'object' || !p.fields) return reject('malformed');\nif (fields.Quality && !String(fields.Quality).includes('Good')) return reject('bad_quality');\nif (tsS > nowS + 60 || tsS < nowS - maxAgeS) return reject('implausible_timestamp');\n\nconst ts = [], machines = [], names = [], values = [];\nfor (const [k, v] of Object.entries(fields)) {\n    if (k === 'Quality') continue;\n    if (typeof v !== 'number' || !Number.isFinite(v)) return reject('not_numeric');\n    if (Math.abs(v) > maxAbs) return reject('out_of_range');\n    ts.push(new Date(tsS * 1000).toISOString()); machines.push(machine); names.push(k); values.push(v);\n}\nif (values.length === 0) return reject('empty');\n\nstats.valid += 1; stats.samples += values.length; stats.last_ts = tsS;\nflow.set('stats', stats);\nmsg.params = [ts, machines, names, values];\nreturn [msg, null];",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 100,
+    "wires": [
+      [
+        "pgwrite"
+      ],
+      [
+        "rejectout"
+      ]
+    ]
+  },
+  {
+    "id": "pgwrite",
+    "type": "postgresql",
+    "z": "zdm-tab",
+    "name": "sensor_features",
+    "query": "INSERT INTO sensor_features (timestamp, machine_id, feature_name, value)\nSELECT * FROM unnest($1::timestamptz[], $2::text[], $3::text[], $4::float8[]);",
+    "postgreSQLConfig": "pgcfg",
+    "split": false,
+    "rowsPerMsg": 1,
+    "outputs": 1,
+    "x": 600,
+    "y": 80,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "rejectout",
+    "type": "mqtt out",
+    "z": "zdm-tab",
+    "name": "rejected samples",
+    "topic": "",
+    "qos": "1",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "broker",
+    "x": 610,
+    "y": 140,
+    "wires": []
+  },
+  {
+    "id": "catch",
+    "type": "catch",
+    "z": "zdm-tab",
+    "name": "DB errors",
+    "scope": [
+      "pgwrite"
+    ],
+    "uncaught": false,
+    "x": 140,
+    "y": 200,
+    "wires": [
+      [
+        "dberr"
+      ]
+    ]
+  },
+  {
+    "id": "dberr",
+    "type": "function",
+    "z": "zdm-tab",
+    "name": "Count DB errors",
+    "func": "const stats = flow.get('stats') || { valid: 0, rejected: {}, samples: 0, db_errors: 0, last_ts: 0 };\nstats.db_errors += 1;\nflow.set('stats', stats);\nnode.warn(JSON.stringify({ component: 'edge-node-red', event: 'db_write_failed', error: String(msg.error && msg.error.message) }));\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 200,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "metricsin",
+    "type": "http in",
+    "z": "zdm-tab",
+    "name": "GET /metrics",
+    "url": "/metrics",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 150,
+    "y": 280,
+    "wires": [
+      [
+        "metricsfn"
+      ]
+    ]
+  },
+  {
+    "id": "metricsfn",
+    "type": "function",
+    "z": "zdm-tab",
+    "name": "Prometheus exposition",
+    "func": "// Prometheus exposition of the input data monitoring counters.\nconst s = flow.get('stats') || { valid: 0, rejected: {}, samples: 0, db_errors: 0, last_ts: 0 };\nconst lines = [\n  '# HELP ingest_messages_valid_total Samples that passed validation',\n  '# TYPE ingest_messages_valid_total counter',\n  `ingest_messages_valid_total ${s.valid}`,\n  '# HELP ingest_values_written_total Values sent to the edge data stock',\n  '# TYPE ingest_values_written_total counter',\n  `ingest_values_written_total ${s.samples}`,\n  '# HELP ingest_messages_rejected_total Samples rejected by validation',\n  '# TYPE ingest_messages_rejected_total counter',\n];\nfor (const [r, n] of Object.entries(s.rejected)) lines.push(`ingest_messages_rejected_total{reason=\"${r}\"} ${n}`);\nlines.push('# HELP ingest_db_errors_total Failed writes to the edge data stock',\n           '# TYPE ingest_db_errors_total counter', `ingest_db_errors_total ${s.db_errors}`,\n           '# HELP ingest_last_sample_timestamp_seconds Timestamp of the last valid sample',\n           '# TYPE ingest_last_sample_timestamp_seconds gauge', `ingest_last_sample_timestamp_seconds ${s.last_ts}`);\nmsg.payload = lines.join('\\n') + '\\n';\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 280,
+    "wires": [
+      [
+        "metricsresp"
+      ]
+    ]
+  },
+  {
+    "id": "metricsresp",
+    "type": "http response",
+    "z": "zdm-tab",
+    "name": "",
+    "statusCode": "200",
+    "headers": {
+      "content-type": "text/plain; version=0.0.4"
+    },
+    "x": 600,
+    "y": 280,
+    "wires": []
+  }
+]
