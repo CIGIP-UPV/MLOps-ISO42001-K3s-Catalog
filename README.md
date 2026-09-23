@@ -19,109 +19,168 @@ The catalog organises solutions along **two dimensions**:
 
 | Dimension | Values |
 |-----------|--------|
-| **Deployment Tier** | Edge · Platform · Enterprise |
-| **Functional Category** | Data Ingestion · AI Inference · Monitoring · Security · Storage · AI Lifecycle · Access Management · Helpdesk · Dashboards |
+| **Deployment Tier** | Edge · Platform · Enterprise (the Device tier is reached through protocol adapters) |
+| **Functional Category** | Data Ingestion · AI Inference · Version Control · AI Lifecycle · Monitoring · Security · Storage · Data Management · Orchestration · Access Management · Helpdesk · Document Store · Dashboards |
 
-Every solution entry maps to one or more **ISO/IEC 42001 Annex B requirements** and includes a **deployment questionnaire** to guide configuration decisions before installation.
+Each solution is a Helm chart that K3s can deploy, with a Rancher questionnaire (`questions.yaml`), explicit mappings to the components of the reference architecture (AR-MLOps-ZDM, Annex A of the thesis) and to **ISO/IEC 42001 Annex B** requirements, and traceability labels on every Kubernetes object it creates.
 
 ---
 
 ## Architecture Overview
 
+The catalog provides **30 charts**:
+
+| Tier | Charts |
+|------|--------|
+| **Edge** (13) | `edge-fastapi-model`, `edge-kafka`, `edge-mosquitto`, `edge-rabbitmq`, `edge-node-red`, `edge-opc-ua-gateway`, `edge-fluent-bit`, `edge-prometheus-agent`, `edge-falco`, `edge-mongodb`, `edge-postgresql`, `edge-postgresql-sync`, `edge-mlflow-sync` |
+| **Platform** (13) | `platform-mlflow`, `platform-training-jobs`, `platform-evidently`, `platform-minio`, `platform-postgresql`, `platform-timescaledb`, `platform-grafana`, `platform-loki`, `platform-prometheus`, `platform-rancher`, `platform-argocd`, `platform-openbao`, `platform-cert-manager` |
+| **Enterprise** (4) | `enterprise-keycloak`, `enterprise-grafana-dashboards`, `enterprise-minio-overlay`, `enterprise-zammad` |
+
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  ENTERPRISE TIER    Keycloak · Zammad · MinIO · Grafana     │
-├─────────────────────────────────────────────────────────────┤
-│  PLATFORM TIER      Rancher · MLflow · Prometheus · Loki    │
-│                     Grafana · MinIO · TimescaleDB           │
-├─────────────────────────────────────────────────────────────┤
-│  EDGE TIER          Node-RED · FastAPI Model · Fluent Bit   │
-│                     Falco · PostgreSQL · Prometheus Agent   │
-├─────────────────────────────────────────────────────────────┤
-│  DEVICE TIER        Sensors · CNC · IoT · PLCs              │
-│                     (outside K3S scope — protocol adapters) │
-└─────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------------------+
+|  ENTERPRISE  Keycloak · Zammad · document store (MinIO) · dashboards         |
++-----------------------------------------------------------------------------+
+|  PLATFORM    MLflow · training jobs · Evidently · Prometheus · Loki · Grafana|
+|              MinIO · PostgreSQL · TimescaleDB · Argo CD · OpenBao ·           |
+|              cert-manager · Rancher                                          |
++-----------------------------------------------------------------------------+
+|  EDGE        OPC UA gateway · Mosquitto · Kafka · RabbitMQ · Node-RED ·      |
+|              PostgreSQL · MongoDB · data consolidation · model server ·     |
+|              version sync · Prometheus Agent · Fluent Bit · Falco            |
++-----------------------------------------------------------------------------+
+|  DEVICE      Sensors · CNC · PLCs (outside K3s, reached over OPC UA / MQTT)  |
++-----------------------------------------------------------------------------+
 ```
 
 ![catalog.png](docs/catalog.png)
 
-All tiers run on **K3S** (lightweight Kubernetes), which is the orchestration layer assumed throughout this catalog. The Platform tier may be managed via **Rancher**.
+The two data and version flows of the architecture are implemented end to end:
 
+- **Data consolidation** (Data Stock edge to Data Stock platform): `edge-postgresql-sync` pushes the new edge rows to TimescaleDB in idempotent, logged batches.
+- **Version propagation** (Version Control platform to Version Control edge): `platform-training-jobs` registers and promotes model versions in MLflow; `edge-mlflow-sync` brings the promoted version to the edge and hot-reloads `edge-fastapi-model`.
+
+All tiers run on **K3s**; the platform may be managed with **Rancher**.
 
 ---
 
-## Installation as a Helm repository
+## Installation
 
-The catalog is published as a Helm chart repository via GitHub Pages. To use it:
+### Whole catalog (recommended order)
 
 ```bash
-helm repo add zdmp-iso42001 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/
-helm repo update
-helm search repo zdmp-iso42001
+git clone https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+cd MLOps-ISO42001-K3s-Catalog
+kubectl label node <edge-node> node-role.kubernetes.io/edge=true
+./infrastructure/install.sh                 # base, security, data, edge, enterprise
+./infrastructure/install.sh --help          # phases, --source repo, --only/--skip, ...
 ```
 
-Refer to each solution's individual `README.md` under `catalog/<tier>/<category>/<solution>/` for installation values and ISO/IEC 42001 requirement coverage.
+`install.sh` creates the namespaces and NetworkPolicies, generates the Secrets the charts read (never printed), and installs the charts of this catalog in order with `helm upgrade --install --wait` and the `iso42001` post-renderer. It keeps an existing Rancher and cert-manager untouched and writes one JSON line per release (result, time, ready pods).
+
+### Individual charts from the Helm repository
+
+```bash
+helm repo add cigip-upv https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/
+helm repo update
+helm search repo cigip-upv
+helm install edge-postgresql cigip-upv/edge-postgresql -n edge
+```
+
+The repository is built from `main` by the GitHub Pages workflow (`infrastructure/publish.py`: `helm dependency build` from the committed `Chart.lock` files, then `helm package`). Each chart README (`catalog/<tier>/<category>/<solution>/README.md`) lists its namespace, Secrets and configuration.
+
+### Node preparation
+
+`infrastructure/setup-ubuntu.sh` prepares Ubuntu 24.04 nodes (K3s, Helm, Rancher CLI) and enables the Kubernetes API audit log with `infrastructure/audit-policy.yaml`; `infrastructure/enable-audit.sh` does the same on an existing K3s server.
 
 ---
 
 ## Repository Structure
 
 ```
-k3s-iso42001-catalog/
+MLOps-ISO42001-K3s-Catalog/
 ├── catalog/
-│   ├── edge/                  # Edge tier solutions
-│   │   ├── data-ingestion/    # Node-RED, Kafka, Mosquitto
-│   │   ├── ai-inference/      # FastAPI model server
-│   │   ├── monitoring/        # Fluent Bit, Prometheus Agent
-│   │   ├── security/          # Falco
-│   │   └── storage/           # PostgreSQL, MongoDB
-│   ├── platform/              # Platform tier solutions
-│   │   ├── ai-lifecycle/      # MLflow, Training Jobs
-│   │   ├── monitoring/        # Prometheus, Grafana, Loki
-│   │   ├── data-management/   # MinIO, TimescaleDB, PostgreSQL
-│   │   └── orchestration/     # Rancher
-│   └── enterprise/            # Enterprise tier solutions
-│       ├── access-management/ # Keycloak
-│       ├── helpdesk/          # Zammad
-│       ├── document-store/    # MinIO
-│       └── dashboards/        # Grafana
-
+│   ├── edge/          data-ingestion/ ai-inference/ version-control/ monitoring/ security/ storage/
+│   ├── platform/      ai-lifecycle/ data-management/ monitoring/ orchestration/ security/
+│   └── enterprise/    access-management/ helpdesk/ document-store/ dashboards/
+│       └── <solution>/README.md, manifests/{Chart.yaml, Chart.lock, values.yaml, questions.yaml, templates/, files/}
+├── infrastructure/
+│   ├── 00-namespaces.yaml, 01-network-policies.yaml, 03-network-policies-shared.yaml
+│   ├── audit-policy.yaml, setup-ubuntu.sh, enable-audit.sh
+│   ├── install.sh                 installer (phases, Secrets, post-renderer, run log)
+│   ├── publish.py                 CHART_META (single source of metadata) and Helm repository build
+│   ├── verify_charts.py           lint, render, kubeconform, labels, questionnaires, values keys
+│   └── iso42001-postrender.py     traceability labels on every rendered object
+└── docs/                          GitHub Pages site and Helm repository (index.yaml, icons/)
 ```
+
+---
+
+## Reference Architecture Coverage
+
+| Component | Name | Charts (tier) |
+|-----------|------|---------------|
+| CMP-01 | Input Data Monitoring | `edge-kafka` (edge), `edge-mosquitto` (edge), `edge-rabbitmq` (edge), `edge-node-red` (edge), `edge-opc-ua-gateway` (edge) |
+| CMP-02 | Data Stock | `edge-mongodb` (edge), `edge-postgresql` (edge), `edge-postgresql-sync` (edge), `platform-minio` (platform), `platform-postgresql` (platform), `platform-timescaledb` (platform) |
+| CMP-03 | Version Control | `edge-mlflow-sync` (edge), `platform-mlflow` (platform), `platform-argocd` (platform) |
+| CMP-04 | Model | `edge-fastapi-model` (edge), `platform-training-jobs` (platform) |
+| CMP-05 | Document Store | `platform-minio` (platform), `enterprise-minio-overlay` (enterprise) |
+| CMP-06 | Information Centre | `platform-grafana` (platform), `enterprise-grafana-dashboards` (enterprise) |
+| CMP-07 | User Access & Oversight | `platform-openbao` (platform), `enterprise-keycloak` (enterprise) |
+| CMP-08 | Infrastructure Technical Monitoring | `edge-prometheus-agent` (edge), `platform-prometheus` (platform) |
+| CMP-09 | Logger | `edge-fluent-bit` (edge), `platform-loki` (platform) |
+| CMP-10 | Model Technical Performance Monitoring | `edge-fastapi-model` (edge), `edge-prometheus-agent` (edge), `platform-evidently` (platform), `platform-grafana` (platform), `platform-prometheus` (platform) |
+| CMP-11 | Goal-Oriented Monitoring | `platform-timescaledb` (platform), `platform-grafana` (platform), `platform-prometheus` (platform), `enterprise-grafana-dashboards` (enterprise) |
+| CMP-12 | Feedback Interface | **not covered** |
+| CMP-13 | AI Helpdesk | `enterprise-zammad` (enterprise) |
+| CMP-14 | Retraining Recommendation | `platform-training-jobs` (platform), `platform-evidently` (platform) |
+| CMP-15 | Security Monitoring | `edge-falco` (edge), `platform-openbao` (platform), `platform-cert-manager` (platform) |
+
+The Feedback Interface (CMP-12) has no capture interface in this version: the edge data stock provides the `operator_feedback` table and the dashboards show it, but no chart lets operators record feedback.
 
 ---
 
 ## ISO/IEC 42001 Coverage Summary
 
-| Requirement | Keyword | Primary Component(s) |
-|-------------|---------|----------------------|
-| B.6.1.2.2 | Performance Monitoring | Prometheus, Grafana |
-| B.6.1.3.1 | Human Oversight | Keycloak, Grafana Feedback |
-| B.6.1.3.2 | Version Control | MLflow |
-| B.6.1.3.3 | Usability & Controllability | Grafana, Information Centre |
-| B.6.1.3.4 | Release Criteria | MLflow, GitOps |
-| B.6.2.3.1 | Architecture Documentation | MinIO (Document Store) |
-| B.6.2.5.1 | Deployment Plan | MinIO (Document Store) |
-| B.6.2.6.1 | Error Monitoring | Prometheus, Loki |
-| B.6.2.6.2 | Technical Performance Monitoring | Prometheus, Grafana |
-| B.6.2.6.3 | Goal-oriented Performance Monitoring | Grafana, TimescaleDB |
-| B.6.2.6.4 | Retraining Monitoring | Node-RED, MLflow |
-| B.6.2.6.5 | Update & Repair Plan | MinIO (Document Store) |
-| B.6.2.6.6 | AI Helpdesk | Zammad |
-| B.6.2.6.7 | Threat Detection | Falco, Keycloak |
-| B.6.2.8.1 | Event Logs | Fluent Bit, Loki |
-| B.8.0.2.1 | User Information | Keycloak, Grafana |
-| B.8.0.4.1 | Adverse Treatment | Zammad |
-| B.8.0.5.1 | Incident Communication | Zammad, Grafana Alerting |
+| Requirement | Label | Charts |
+|-------------|-------|--------|
+| B.6.1.2.2 | Resources: Monitoring Performance | `edge-prometheus-agent`, `platform-prometheus` |
+| B.6.1.3.1 | Resources: Access Control | `edge-mosquitto`, `edge-opc-ua-gateway`, `platform-grafana`, `enterprise-keycloak` |
+| B.6.1.3.2 | Resources: Version Control | `edge-mlflow-sync`, `platform-mlflow` |
+| B.6.1.3.3 | Resources: Human Oversight / Feedback | `platform-grafana`, `platform-openbao`, `enterprise-grafana-dashboards` |
+| B.6.1.3.4 | Resources: Inventory / Registry | `platform-mlflow`, `platform-postgresql` |
+| B.6.1.4.1 | Resources: Security of AI Assets | `platform-openbao`, `platform-cert-manager` |
+| B.6.2.3.1 | Planning: System Documentation | `platform-minio`, `platform-cert-manager`, `enterprise-minio-overlay` |
+| B.6.2.5.1 | Planning: Deployment Plan | `platform-minio`, `platform-rancher`, `platform-argocd` |
+| B.6.2.6.1 | Operation: Infrastructure Monitoring | `edge-prometheus-agent`, `edge-mongodb`, `edge-postgresql`, `edge-postgresql-sync`, `platform-timescaledb` |
+| B.6.2.6.2 | Operation: Model Performance | `edge-fastapi-model`, `platform-evidently`, `platform-grafana`, `platform-prometheus`, `enterprise-grafana-dashboards` |
+| B.6.2.6.3 | Operation: KPI Assessment (OEE) | `edge-postgresql`, `platform-timescaledb` |
+| B.6.2.6.4 | Operation: Retraining / Lifecycle | `edge-fastapi-model`, `edge-kafka`, `edge-mosquitto`, `edge-rabbitmq`, `edge-node-red`, `edge-opc-ua-gateway`, `edge-mlflow-sync`, `platform-mlflow`, `platform-training-jobs`, `platform-argocd` |
+| B.6.2.6.5 | Operation: Update & Repair Plan | `enterprise-minio-overlay` |
+| B.6.2.6.6 | Operation: Incident Communication | `enterprise-zammad` |
+| B.6.2.6.7 | Operation: Security Monitoring | `edge-falco` |
+| B.6.2.8.1 | Operation: Logging / Audit Trail | `edge-kafka`, `edge-rabbitmq`, `edge-fluent-bit`, `edge-falco`, `edge-postgresql`, `edge-postgresql-sync`, `edge-mlflow-sync`, `platform-evidently`, `platform-loki`, `platform-argocd` |
+| B.8.0.2.1 | Continual Improvement: Roles | `platform-openbao`, `enterprise-keycloak` |
+| B.8.0.4.1 | Continual Improvement: Helpdesk | `enterprise-zammad` |
+| B.8.0.5.1 | Continual Improvement: Alerts | `platform-evidently`, `platform-prometheus`, `enterprise-zammad` |
+
+Every object created by a chart carries the label `iso42001: "true"` plus one label per clause and component, so the evidence for a requirement can be listed directly from the cluster:
+
+```bash
+kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.8.1
+kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-03
+```
+
+`infrastructure/verify_charts.py` checks, for every chart, that the rendered objects and pod templates carry these labels.
 
 ---
 
 ## Related Standards
 
-- **ISO/IEC 42001:2023** — AI Management Systems
-- **ISO/IEC 42010** — Architecture Description
-- **ISA/IEC 62443** — Industrial Cybersecurity
-- **EU AI Act** — Risk-based AI regulation
-- **ALTAI** — Assessment List for Trustworthy AI
+- **ISO/IEC 42001:2023**: AI management systems
+- **ISO/IEC 42010**: architecture description
+- **ISA/IEC 62443**: industrial cybersecurity (zones and conduits in `01-network-policies.yaml`)
+- **EU AI Act**: risk-based AI regulation
+- **ALTAI**: assessment list for trustworthy AI
 
 ---
 
@@ -137,7 +196,7 @@ If you use this catalog in academic work, please cite the catalog itself and the
   title        = {K3s Solution Catalog for ISO/IEC 42001-Compliant Industrial AI Systems},
   year         = {2026},
   publisher    = {Zenodo},
-  version      = {v1.0.0},
+  version      = {v1.0.1},
   doi          = {10.5281/zenodo.19882677},
   url          = {https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog}
 }
