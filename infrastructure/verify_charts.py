@@ -66,7 +66,7 @@ FREE_FORM = {"labels", "podLabels", "commonLabels", "extraLabels", "additionalLa
              "annotations", "podAnnotations", "extraEnvVars", "env", "extraEnv",
              "nodeSelector", "limits_config", "config", "configs", "params", "cm",
              "rbac", "extraArgs", "ini", "datasources", "dashboards", "dashboardProviders",
-             "livenessProbe", "readinessProbe", "startupProbe", "resources"}
+             "livenessProbe", "readinessProbe", "startupProbe", "resources", "grafana.ini"}
 
 
 def sh(cmd, cwd=None, stdin=None, env=None):
@@ -281,7 +281,12 @@ def verify(chart_name: str, post_render: bool, workdir: pathlib.Path):
         out["kubeconform_errors"] = ["unparseable output"]
 
     required = publish.iso_labels(chart_name)
-    docs = [d for d in yaml.safe_load_all(rendered) if isinstance(d, dict) and d.get("kind")]
+    docs = []
+    for d in yaml.safe_load_all(rendered):
+        if isinstance(d, dict) and d.get("kind", "").endswith("List") and isinstance(d.get("items"), list):
+            docs += [i for i in d["items"] if isinstance(i, dict) and i.get("kind")]
+        elif isinstance(d, dict) and d.get("kind"):
+            docs.append(d)
     # helm test hooks are only created by "helm test": reported, not counted.
     is_test = lambda d: "test" in ((d.get("metadata") or {}).get("annotations") or {}).get("helm.sh/hook", "")
     out["test_hooks"] = [f"{d['kind']}/{d['metadata'].get('name')}" for d in docs if is_test(d)]
