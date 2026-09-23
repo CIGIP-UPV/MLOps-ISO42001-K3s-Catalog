@@ -120,15 +120,18 @@ wait_for() {
 PF_PIDS=""
 port_forward() {
   # port_forward NS TARGET LOCAL:REMOTE
+  local port=${3%%:*} t=0
+  # a port-forward that is still closing must not answer for the new one
+  while curl -s -o /dev/null "http://127.0.0.1:${port}/" 2>/dev/null && [[ $t -lt 10 ]]; do sleep 1; t=$((t + 1)); done
+  t=0
   kubectl -n "$1" port-forward "$2" "$3" >/dev/null 2>&1 &
   PF_PIDS="${PF_PIDS} $!"
-  local port=${3%%:*} t=0
   until curl -s -o /dev/null "http://127.0.0.1:${port}/" 2>/dev/null; do
     sleep 1; t=$((t + 1)); [[ $t -ge 30 ]] && return 1
   done
   return 0
 }
-cleanup_pf() { for p in ${PF_PIDS}; do kill "$p" 2>/dev/null; done; PF_PIDS=""; }
+cleanup_pf() { for p in ${PF_PIDS}; do kill "$p" 2>/dev/null; wait "$p" 2>/dev/null; done; PF_PIDS=""; }
 trap cleanup_pf EXIT
 
 secret_env() {
@@ -603,6 +606,7 @@ e_loki() {
 }
 e_evidently_ui() {
   port_forward mlops svc/platform-evidently 18000:8000 || return 1
+  wait_for 60 curl -sf -o /dev/null http://127.0.0.1:18000/api/projects
   curl -sf http://127.0.0.1:18000/api/projects | python3 -c 'import json,sys; p=json.load(sys.stdin); print("projects:", [x["name"] for x in p]); sys.exit(0 if p else 1)'
 }
 
@@ -657,6 +661,8 @@ phase_netpol() {
   log "=== 7. Network policies ==="
   kubectl get networkpolicy -A > "${OUT}/netpol/policies.txt"
   kubectl create namespace lab-np-outside --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+  # control: without it, a "deny" towards the Internet proves nothing
+  nc_test N00 "namespace outside the catalog -> Internet (control, no policy)" lab-np-outside github.com 443 allow
   nc_test N01 "edge -> platform TimescaleDB (consolidation conduit)" edge platform-timescaledb.platform.svc.cluster.local 5432 allow
   nc_test N02 "edge -> MLflow (version sync conduit)" edge platform-mlflow.mlops.svc.cluster.local 5000 allow
   nc_test N03 "edge -> edge PostgreSQL (same namespace)" edge edge-postgresql.edge.svc.cluster.local 5432 allow
@@ -664,10 +670,10 @@ phase_netpol() {
   nc_test N05 "edge -> Zammad (no conduit)" edge enterprise-zammad.helpdesk.svc.cluster.local 8080 deny
   nc_test N06 "namespace outside the catalog -> edge PostgreSQL (default deny ingress)" lab-np-outside edge-postgresql.edge.svc.cluster.local 5432 deny
   nc_test N07 "mlops -> MinIO (artefact conduit)" mlops platform-minio.minio.svc.cluster.local 9000 allow
-  nc_test N08 "mlops -> Internet (default deny egress)" mlops 1.1.1.1 443 deny
+  nc_test N08 "mlops -> Internet (default deny egress)" mlops github.com 443 deny
   nc_test N09 "security -> platform PostgreSQL (Keycloak database)" security platform-postgresql.platform.svc.cluster.local 5432 allow
   nc_test N10 "helpdesk -> MLflow (no conduit)" helpdesk platform-mlflow.mlops.svc.cluster.local 5000 deny
-  nc_test N11 "argocd -> Internet 443 (Git and Helm repositories)" argocd 1.1.1.1 443 allow
+  nc_test N11 "argocd -> Internet 443 (Git and Helm repositories)" argocd github.com 443 allow
   nc_test N12 "logging -> Loki (log conduit)" logging platform-loki.monitoring.svc.cluster.local 3100 allow
   kubectl delete namespace lab-np-outside --wait=false >/dev/null
 }

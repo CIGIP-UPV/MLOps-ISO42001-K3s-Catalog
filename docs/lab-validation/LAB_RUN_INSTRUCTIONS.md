@@ -16,7 +16,7 @@ so that the analysis and the report can be completed.
 | 4 | Smoke test of every chart (S01 to S20) | `smoke/` |
 | 5 | End-to-end test (E01 to E16): OPC UA simulator, gateway, ingestion, consolidation, training, MLflow, propagation to the edge, inference, metrics, induced drift, Evidently, retraining recommendation, new version at the edge, logs in Loki | `e2e/` |
 | 6 | Traceability queries per ISO/IEC 42001 clause and component, label coverage per namespace | `trace/` |
-| 7 | NetworkPolicy tests (N01 to N12): default deny and allowed conduits | `netpol/` |
+| 7 | NetworkPolicy tests (N00 control, N01 to N12): default deny and allowed conduits | `netpol/` |
 
 Every test writes one line to `results.jsonl` and `summary.md` lists them all.
 The script never prints or saves the value of a Secret.
