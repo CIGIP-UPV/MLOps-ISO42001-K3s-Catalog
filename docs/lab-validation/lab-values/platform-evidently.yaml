@@ -1,0 +1,7 @@
+# Laboratory setting: same 1-second feature vectors as the training job and
+# a short window of recent data for the end-to-end drift test.
+driftCheck:
+  bucket: "1 second"
+  currentWindow: "4 minutes"
+  minCurrentRows: 60
+  schedule: "*/10 * * * *"

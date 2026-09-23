@@ -1,0 +1,2 @@
+# Laboratory setting: check the registry every minute.
+schedule: "* * * * *"

@@ -1,0 +1,2 @@
+# Laboratory setting: consolidate every 2 minutes.
+schedule: "*/2 * * * *"
