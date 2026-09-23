@@ -18,6 +18,10 @@ iso42001Labels: &iso42001Labels
 # END iso42001-labels
 
 postgresql:
+  # The chart's own NetworkPolicy allows ingress from every namespace and all
+  # egress; policies add up, so it would open the default deny of the catalog
+  # (infrastructure/01-network-policies.yaml), which defines the conduits.
+  # This chart sets it per role (primary.networkPolicy, readReplicas.networkPolicy).
   commonLabels: *iso42001Labels
 
   # Bitnami versioned images now live in docker.io/bitnamilegacy (frozen,
@@ -37,6 +41,8 @@ postgresql:
     existingSecret: platform-postgresql-auth
 
   primary:
+    networkPolicy:
+      enabled: false
     persistence:
       enabled: true
       storageClass: local-path
