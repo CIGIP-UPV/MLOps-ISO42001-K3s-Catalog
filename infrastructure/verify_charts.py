@@ -57,9 +57,9 @@ LABEL_VALUE = re.compile(r"^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$")
 # render without a secret. They are never used for an installation.
 RENDER_ONLY = {}
 
-# Render as a cluster with the Prometheus Operator CRDs installed (the
-# catalog installs platform-prometheus before the charts that use them).
-API_VERSIONS = ["monitoring.coreos.com/v1"]
+# Render as a cluster with the Prometheus Operator and cert-manager CRDs
+# installed (install.sh installs them before the charts that use them).
+API_VERSIONS = ["monitoring.coreos.com/v1", "cert-manager.io/v1"]
 
 # Free-form maps: their keys are not declared in the upstream defaults.
 FREE_FORM = {"labels", "podLabels", "commonLabels", "extraLabels", "additionalLabels",

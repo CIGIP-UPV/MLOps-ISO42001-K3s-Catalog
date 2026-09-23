@@ -4,7 +4,7 @@ apiVersion: v2
 name: platform-cert-manager
 type: application
 version: 0.2.0
-appVersion: '1.14'
+appVersion: v1.17.4
 kubeVersion: '>=1.24.0-0'
 description: Automated X.509 certificate provisioning and renewal (ACME, self-signed, OpenBao PKI) for every ingress endpoint
   in the reference architecture.
@@ -36,7 +36,7 @@ annotations:
   mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.4.1, B.6.2.3.1
 dependencies:
 - name: cert-manager
-  version: ~1.14.0
+  version: v1.17.4
   repository: https://charts.jetstack.io
   condition: cert-manager.enabled
   alias: cert-manager

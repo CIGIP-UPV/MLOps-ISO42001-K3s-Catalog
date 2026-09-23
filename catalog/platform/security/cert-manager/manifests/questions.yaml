@@ -1,53 +1,52 @@
+# =============================================================================
+# Rancher Questions: cert-manager (platform PKI)
+# ISO/IEC 42001: B.6.1.4.1, B.6.2.3.1
+# =============================================================================
 categories:
-  - Security
+  - "Platform"
+  - "Security"
+
 questions:
-  - variable: cert-manager.installCRDs
-    default: true
-    description: "Install cert-manager CRDs. Disable only if another release already owns them."
+  - variable: cert-manager.enabled
+    label: "Install cert-manager"
+    description: "Disable when the cluster already runs cert-manager (for example with Rancher): only the issuers are created"
     type: boolean
-    label: Install CRDs
-    group: "Core"
-  - variable: issuers.letsencryptStaging.enabled
     default: true
-    description: "Provision the Let's Encrypt staging ClusterIssuer (safe for testing)."
+    group: "cert-manager"
+
+  - variable: issuers.platformCA.enabled
+    label: "Create the Platform Internal CA"
     type: boolean
-    label: Let's Encrypt staging
-    group: "ClusterIssuers"
-  - variable: issuers.letsencryptStaging.email
-    default: "admin@example.com"
-    description: "Contact e-mail for Let's Encrypt staging ACME account."
+    default: true
+    group: "Issuers"
+
+  - variable: issuers.platformCA.commonName
+    label: "CA Common Name"
     type: string
-    label: LE staging e-mail
-    show_if: "issuers.letsencryptStaging.enabled=true"
-    group: "ClusterIssuers"
-  - variable: issuers.letsencryptProd.enabled
-    default: false
-    description: "Provision the Let's Encrypt production ClusterIssuer (only enable once staging succeeds)."
+    default: "ZDM MLOps platform CA"
+    show_if: "issuers.platformCA.enabled=true"
+    group: "Issuers"
+
+  - variable: issuers.letsencrypt.enabled
+    label: "Create a Let's Encrypt ClusterIssuer"
+    description: "Needs a public DNS name reachable on port 80"
     type: boolean
-    label: Let's Encrypt production
-    group: "ClusterIssuers"
-  - variable: issuers.letsencryptProd.email
-    default: "admin@example.com"
-    description: "Contact e-mail for Let's Encrypt production ACME account."
+    default: false
+    group: "Issuers"
+
+  - variable: issuers.letsencrypt.email
+    label: "ACME Account E-mail"
     type: string
-    label: LE prod e-mail
-    show_if: "issuers.letsencryptProd.enabled=true"
-    group: "ClusterIssuers"
-  - variable: issuers.selfSignedCA.enabled
-    default: true
-    description: "Provision a cluster-internal self-signed CA ClusterIssuer (useful for internal services)."
-    type: boolean
-    label: Self-signed internal CA
-    group: "ClusterIssuers"
-  - variable: issuers.openbaoInternal.enabled
-    default: false
-    description: "Provision an OpenBao-backed PKI ClusterIssuer (requires platform-openbao with PKI engine configured)."
-    type: boolean
-    label: OpenBao-backed internal CA
-    group: "ClusterIssuers"
-  - variable: cert-manager.prometheus.enabled
-    default: true
-    description: "Expose cert-manager Prometheus metrics."
-    type: boolean
-    label: Prometheus metrics
-    group: "Observability"
+    default: ""
+    show_if: "issuers.letsencrypt.enabled=true"
+    group: "Issuers"
+
+  - variable: issuers.letsencrypt.server
+    label: "ACME Server"
+    type: enum
+    default: "https://acme-staging-v02.api.letsencrypt.org/directory"
+    options:
+      - "https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "https://acme-v02.api.letsencrypt.org/directory"
+    show_if: "issuers.letsencrypt.enabled=true"
+    group: "Issuers"

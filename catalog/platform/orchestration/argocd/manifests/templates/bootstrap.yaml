@@ -1,0 +1,61 @@
+# =============================================================================
+# GitOps bootstrap: AppProject and Applications of the catalog
+# ISO/IEC 42001: B.6.2.5.1 (declarative deployment plan), B.6.2.8.1 (every
+# sync is recorded by Argo CD)
+# =============================================================================
+{{- if .Values.bootstrap.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ .Values.bootstrap.project }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "platform-argocd.labels" . | nindent 4 }}
+spec:
+  description: Charts of the ISO/IEC 42001 K3s catalog
+  sourceRepos:
+    {{- toYaml .Values.bootstrap.sourceRepos | nindent 4 }}
+  destinations:
+    {{- range .Values.bootstrap.destinationNamespaces }}
+    - server: https://kubernetes.default.svc
+      namespace: {{ . }}
+    {{- end }}
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+{{- range .Values.bootstrap.applications }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "platform-argocd.labels" $ | nindent 4 }}
+spec:
+  project: {{ $.Values.bootstrap.project }}
+  source:
+    repoURL: {{ .repoURL }}
+    targetRevision: {{ .targetRevision | quote }}
+    {{- if .chart }}
+    chart: {{ .chart }}
+    {{- else }}
+    path: {{ .path }}
+    {{- end }}
+    helm:
+      releaseName: {{ .name }}
+      {{- with .values }}
+      values: |
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ .namespace }}
+  syncPolicy:
+    automated:
+      prune: {{ .prune | default false }}
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+{{- end }}
+{{- end }}
