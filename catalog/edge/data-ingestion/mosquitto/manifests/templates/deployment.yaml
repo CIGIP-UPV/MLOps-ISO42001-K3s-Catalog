@@ -1,7 +1,7 @@
 # =============================================================================
 # Eclipse Mosquitto Deployment
-# Tier: Edge | RA Component: Input Data Monitoring
-# ISO/IEC 42001: B.6.2.6.4
+# Tier: Edge | RA Component: Input Data Monitoring (CMP-01)
+# ISO/IEC 42001: B.6.1.3.1, B.6.2.6.4
 # =============================================================================
 apiVersion: apps/v1
 kind: Deployment
@@ -22,8 +22,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "edge-mosquitto.selectorLabels" . | nindent 8 }}
-        tier: edge
+        {{- include "edge-mosquitto.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -45,6 +44,30 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      # Builds the hashed password file from the plain credentials Secret
+      # (one key per MQTT user) with mosquitto_passwd; nothing is hashed or
+      # stored in the chart itself.
+      initContainers:
+        - name: passwords
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              umask 077
+              : > /work/passwords.txt
+              for f in /users/*; do
+                mosquitto_passwd -b /work/passwords.txt "$(basename "$f")" "$(cat "$f")"
+              done
+              chmod 0700 /work/passwords.txt
+          volumeMounts:
+            - name: users
+              mountPath: /users
+              readOnly: true
+            - name: passwords
+              mountPath: /work
       containers:
         - name: mosquitto
           {{- with .Values.securityContext }}
@@ -69,6 +92,7 @@ spec:
             - name: passwords
               mountPath: /mosquitto/config/passwords.txt
               subPath: passwords.txt
+              readOnly: true
             {{- if .Values.persistence.enabled }}
             - name: data
               mountPath: /mosquitto/data
@@ -89,9 +113,12 @@ spec:
         - name: config
           configMap:
             name: {{ include "edge-mosquitto.fullname" . }}-config
-        - name: passwords
+        - name: users
           secret:
-            secretName: {{ include "edge-mosquitto.fullname" . }}-passwords
+            secretName: {{ .Values.auth.usersSecret }}
+        - name: passwords
+          emptyDir:
+            medium: Memory
         {{- if .Values.persistence.enabled }}
         - name: data
           persistentVolumeClaim:
