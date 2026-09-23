@@ -1,0 +1,6 @@
+# Laboratory setting: one feature vector per second, so the end-to-end test
+# can train after a few minutes of simulated plant data (production default:
+# 10 seconds over 24 hours).
+training:
+  bucket: "1 second"
+  window: "2 hours"
