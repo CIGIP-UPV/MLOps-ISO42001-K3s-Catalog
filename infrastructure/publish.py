@@ -147,8 +147,8 @@ CHART_META: dict[str, dict[str, Any]] = {
         "components": ["CMP-01"],
         "iso_clauses": ["B.6.1.3.1", "B.6.2.6.4"],
         "ah_category": "integration-delivery",
-        "tagline": "OPC-UA to MQTT/Kafka bridge (EMQX Neuron) that pulls tags from PLC/SCADA endpoints and forwards them into the edge event bus.",
-        "keywords": ["iso42001", "edge", "data-ingestion", "opc-ua", "gateway", "neuron", "plc", "scada"],
+        "tagline": "OPC UA to MQTT/Kafka bridge (Telegraf) that reads tags from PLC/SCADA endpoints and forwards them into the edge event bus.",
+        "keywords": ["iso42001", "edge", "data-ingestion", "opc-ua", "gateway", "telegraf", "plc", "scada"],
     },
     "edge-fluent-bit": {
         "path": "catalog/edge/monitoring/fluent-bit",

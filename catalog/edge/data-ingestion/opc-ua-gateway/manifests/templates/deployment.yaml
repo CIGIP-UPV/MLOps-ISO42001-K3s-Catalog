@@ -1,11 +1,17 @@
+# =============================================================================
+# OPC UA Gateway (Telegraf)
+# Tier: Edge | RA subcomponent: Industrial Protocol Gateway
+# ISO/IEC 42001: B.6.1.3.1, B.6.2.6.4
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-opcua-gateway
+  name: {{ include "edge-opc-ua-gateway.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "edge-opc-ua-gateway.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "edge-opc-ua-gateway.selectorLabels" . | nindent 6 }}
@@ -14,40 +20,71 @@ spec:
       labels:
         {{- include "edge-opc-ua-gateway.labels" . | nindent 8 }}
       annotations:
-        mlops-iso42001.cigip-upv.es/audit-logs: "{{ .Values.auditLogs.enabled }}"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9273"
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
-        - name: neuron
+        - name: telegraf
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["--config", "/etc/telegraf/telegraf.conf"]
+          env:
+            {{- if .Values.downstream.mqtt.enabled }}
+            - name: MQTT_USERNAME
+              value: {{ .Values.downstream.mqtt.username | quote }}
+            - name: MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.downstream.mqtt.existingSecret }}
+                  key: {{ .Values.downstream.mqtt.username }}
+            {{- end }}
+            {{- range $i, $ep := .Values.opcua.endpoints }}
+            {{- if eq $ep.authMethod "UserName" }}
+            - name: OPCUA_{{ $i }}_USERNAME
+              valueFrom:
+                secretKeyRef: { name: {{ $ep.existingSecret }}, key: username }
+            - name: OPCUA_{{ $i }}_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ $ep.existingSecret }}, key: password }
+            {{- end }}
+            {{- end }}
           ports:
-            - name: web
-              containerPort: 7000
-            - name: api
-              containerPort: 7001
-          volumeMounts:
-            - name: config
-              mountPath: /opt/neuron/config
-            - name: data
-              mountPath: /opt/neuron/persistence
+            - name: metrics
+              containerPort: 9273
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false   # Telegraf writes self-signed OPC UA certificates when security is on
+            capabilities:
+              drop: ["ALL"]
+          livenessProbe:
+            httpGet: { path: /metrics, port: metrics }
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          readinessProbe:
+            httpGet: { path: /metrics, port: metrics }
+            initialDelaySeconds: 5
+            periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          livenessProbe:
-            tcpSocket: { port: web }
-            initialDelaySeconds: 20
-            periodSeconds: 15
-          readinessProbe:
-            tcpSocket: { port: api }
-            initialDelaySeconds: 10
-            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /etc/telegraf
+              readOnly: true
       volumes:
         - name: config
           configMap:
-            name: {{ .Release.Name }}-opcua-config
-        - name: data
-          {{- if .Values.persistence.enabled }}
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-opcua-data
-          {{- else }}
-          emptyDir: {}
-          {{- end }}
+            name: {{ include "edge-opc-ua-gateway.fullname" . }}
