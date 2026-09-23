@@ -5,3 +5,5 @@ driftCheck:
   currentWindow: "4 minutes"
   minCurrentRows: 60
   schedule: "*/10 * * * *"
+  # Short enough for re-running the end-to-end test (--phases) the same day.
+  cooldown: "15 minutes"
