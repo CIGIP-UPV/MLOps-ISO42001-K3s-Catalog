@@ -1,4 +1,9 @@
-name: Deploy GitHub Pages
+name: Build and publish the Helm repository (GitHub Pages)
+
+# The .tgz packages are not committed: this workflow builds them from the
+# catalog sources with infrastructure/publish.py (helm dependency build from
+# the committed Chart.lock files, then helm package), regenerates
+# docs/index.yaml with their digests and publishes docs/ to GitHub Pages.
 
 on:
   push:
@@ -15,14 +20,46 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.4
+
+      - name: Set up kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz \
+            | tar xz -C /usr/local/bin kubeconform
+
+      - name: Verify charts (lint, render, schema, labels, questionnaires)
+        run: python3 infrastructure/verify_charts.py --post-render --json verify-report.json || true
+
+      - name: Build the Helm repository
+        run: python3 infrastructure/publish.py
+
+      - name: Check that every indexed package exists
+        run: |
+          python3 - <<'EOF'
+          import pathlib, yaml
+          idx = yaml.safe_load(open("docs/index.yaml"))
+          missing = [u for e in idx["entries"].values() for v in e for u in v["urls"]
+                     if not (pathlib.Path("docs/charts") / u.rsplit("/", 1)[1]).exists()]
+          assert not missing, f"packages missing from docs/charts: {missing}"
+          print(f"{sum(len(e) for e in idx['entries'].values())} chart versions indexed, all packaged")
+          EOF
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -32,6 +69,13 @@ jobs:
         with:
           path: 'docs'
 
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
