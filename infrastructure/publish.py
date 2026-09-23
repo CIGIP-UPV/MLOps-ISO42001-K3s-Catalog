@@ -45,6 +45,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
 import pathlib
 import re
 import shutil
@@ -65,7 +66,8 @@ DOCS = ROOT / "docs"
 CHARTS_DIR = DOCS / "charts"
 ICONS_DIR = DOCS / "icons"
 
-REPO_URL = "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"
+# CATALOG_REPO_URL overrides the published URL (e.g. to test a local copy).
+REPO_URL = os.environ.get("CATALOG_REPO_URL", "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog").rstrip("/")
 REPO_ALIAS = "cigip-upv"
 SOURCE_REPO = "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"
 MAINTAINER = {
