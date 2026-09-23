@@ -3,7 +3,7 @@
 apiVersion: v2
 name: platform-postgresql
 type: application
-version: 0.2.0
+version: 0.3.0
 appVersion: '15.0'
 kubeVersion: '>=1.24.0-0'
 description: Shared metadata store initialised with databases for MLflow, Keycloak, Zammad and Grafana.
@@ -28,8 +28,10 @@ annotations:
   artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name": "catalog",
     "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
   mlops-iso42001.cigip-upv.es/tier: platform
+  mlops-iso42001.cigip-upv.es/namespace: platform
   mlops-iso42001.cigip-upv.es/display-name: PostgreSQL (Platform)
   mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.4
+  mlops-iso42001.cigip-upv.es/ra-components: CMP-02
 dependencies:
 - name: postgresql
   version: ~15
