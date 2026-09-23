@@ -1,30 +1,33 @@
-# MinIO — S3-Compatible Object Storage
+# MinIO: S3-Compatible Object Storage
 
 | Field | Value |
 |-------|-------|
-| **Tier** | Platform · Enterprise |
+| **Chart** | `platform-minio` |
+| **Tier** | Platform |
+| **Namespace** | `minio` |
 | **Category** | Storage · Data Management |
-| **RA Component** | Data Stock (Platform) · Document Store |
-| **ISO/IEC 42001** | B.6.2.3.1 · B.6.2.5.1 · B.6.2.6.5 · B.6.2.8.1 |
-| **Helm Chart** | `minio/minio` |
+| **RA Components** | Data Stock (CMP-02, platform); storage backend of the Document Store (CMP-05) |
+| **ISO/IEC 42001** | B.6.2.3.1 · B.6.2.5.1 |
+| **Helm Chart** | `minio/minio` (wrapped), images from `quay.io/minio` |
 | **K3S Compatible** | Yes |
 
 ---
 
 ## Description
 
-MinIO is a **high-performance, S3-compatible object storage system** that serves two roles in the reference architecture:
+MinIO is an **S3-compatible object storage system** (standalone mode, one volume) that serves the platform and, through the enterprise overlay, the document store.
 
-1. **Platform Data Lake**: stores raw and processed datasets, model artefacts (MLflow backend), and training data for the AI lifecycle.
-2. **Document Store**: provides governed, versioned storage for ISO/IEC 42001-required documents (system architecture documentation, deployment plans, update/repair plans, audit reports).
+Platform buckets created by this chart:
 
-Its key capabilities in the reference architecture are:
+| Bucket | Contents | Versioning | Used by |
+|--------|----------|------------|---------|
+| `mlflow-artifacts` | Model files, reference data, drift reports | Enabled | `platform-mlflow` (proxied artefacts) |
+| `datasets` | Curated training and validation datasets (Dataset Catalogue) | Enabled | operators and data scientists |
+| `loki-logs` | Loki chunks and index: long-term log archive | Disabled | `platform-loki` |
 
-- **MLflow artefact backend**: stores model files, evaluation notebooks, and training artefacts under a `mlflow-artifacts` bucket.
-- **Dataset catalogue backend**: stores structured datasets available for model training under a `datasets` bucket.
-- **Document Store**: an `iso42001-docs` bucket holds compliance documents with versioning enabled, providing an immutable audit trail.
-- **Log archive**: an `audit-logs` bucket archives Loki log exports for long-term retention.
-- **Model artefact registry**: serves model files to the edge tier when connectivity allows.
+The document store buckets (`iso42001-docs`, `model-cards`, `audit-evidence`, with object locking and retention) are created in this same MinIO by [`enterprise-minio-overlay`](../../../enterprise/document-store/minio/README.md). The buckets `model-registry` and `audit-logs` of earlier versions were removed: nothing used them.
+
+Access: least-privilege service users `mlflow` (read and write on `mlflow-artifacts`) and `loki` (read and write on `loki-logs`). The upstream chart's default `console` user (fixed password, `consoleAdmin`) is replaced by this list. Root credentials come from a Secret; no password is written in the chart.
 
 ---
 
@@ -32,56 +35,40 @@ Its key capabilities in the reference architecture are:
 
 | Clause | Requirement | How MinIO Addresses It |
 |--------|-------------|------------------------|
-| B.6.2.3.1 | Architecture Documentation | `iso42001-docs` bucket stores system architecture documents |
-| B.6.2.5.1 | Deployment Plan | Deployment plan documents stored with versioning |
-| B.6.2.6.5 | Update & Repair Plan | Maintenance and repair procedures stored and versioned |
-| B.6.2.8.1 | Event Logs | Long-term archive of audit log exports |
-
----
-
-## Recommended Bucket Structure
-
-| Bucket | Contents | Versioning |
-|--------|----------|------------|
-| `mlflow-artifacts` | Model files, evaluation artefacts | Enabled |
-| `datasets` | Training and validation datasets | Enabled |
-| `iso42001-docs` | Compliance documentation | Enabled (immutable) |
-| `audit-logs` | Long-term log archives | Enabled |
-| `model-registry` | Promoted edge model artefacts | Enabled |
+| B.6.2.3.1 | Planning: System Documentation | Versioned storage of artefacts and documentation (with the enterprise overlay) |
+| B.6.2.5.1 | Planning: Deployment Plan | Storage backend of the deployment plan documents and model artefacts |
 
 ---
 
 ## Prerequisites
 
-- K3S cluster with persistent volumes (minimum 100 GB recommended for production)
-- TLS certificate for HTTPS access (recommended via cert-manager)
-- Keycloak integration for access control (enterprise tier)
+- Secrets `platform-minio-root` (keys `rootUser`, `rootPassword`) and `platform-minio-users` (keys `mlflow`, `loki`), created by `infrastructure/install.sh`.
+- `platform-prometheus` first (the chart ships a ServiceMonitor; metrics are public inside the cluster).
 
 ---
 
 ## Deployment Questionnaire
 
-See [`questionnaire.md`](./questionnaire.md).
+The Rancher questionnaire is [`manifests/questions.yaml`](./manifests/questions.yaml).
 
 ---
 
-## Installation (K3S / Helm)
+## Installation (Helm)
 
 ```bash
-helm repo add minio https://charts.min.io/
-helm repo update
+helm repo add cigip-upv https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+helm install platform-minio cigip-upv/platform-minio -n minio
 
-helm install minio minio/minio \
-  --namespace minio \
-  --create-namespace \
-  -f values.yaml
+kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/chart=platform-minio
 ```
+
+The bucket, policy and user provisioning runs in a post-install hook Job of the upstream chart; Helm does not pass hooks through the post-renderer, so that Job carries no iso42001 labels.
 
 ---
 
 ## Related Solutions
 
-- [MLflow](../../ai-lifecycle/mlflow/README.md) — uses MinIO as artefact backend
-- [Loki](../loki/README.md) — uses MinIO for long-term log storage
-- [Keycloak](../../../enterprise/access-management/keycloak/README.md) — access control for MinIO
-- [TimescaleDB](../timescaledb/README.md) — complementary time-series storage
+- [MLflow](../../ai-lifecycle/mlflow/README.md): artefact backend
+- [Loki](../../monitoring/loki/README.md): log archive
+- [MinIO Docs Overlay](../../../enterprise/document-store/minio/README.md): document store buckets
+- [TimescaleDB](../timescaledb/README.md): complementary time-series storage

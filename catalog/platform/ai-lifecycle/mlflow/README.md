@@ -1,26 +1,30 @@
-# MLflow — AI Lifecycle & Version Control
+# MLflow: Experiment Tracking and Model Registry
 
 | Field | Value |
 |-------|-------|
+| **Chart** | `platform-mlflow` |
 | **Tier** | Platform |
+| **Namespace** | `mlops` |
 | **Category** | AI Lifecycle |
-| **RA Component** | Version Control · Retraining Recommendation |
+| **RA Component** | Version Control (CMP-03, platform) |
 | **ISO/IEC 42001** | B.6.1.3.2 · B.6.1.3.4 · B.6.2.6.4 |
-| **Helm Chart** | `community-charts/mlflow` |
+| **Helm Chart** | `community-charts/mlflow` 0.18.0 (MLflow 2.22.1, wrapped), image `ghcr.io/burakince/mlflow:2.22.1` |
 | **K3S Compatible** | Yes |
 
 ---
 
 ## Description
 
-MLflow is the **AI lifecycle management** platform implementing the **Version Control** and **Retraining Recommendation** components in the reference architecture. It provides end-to-end tracking of experiments, model versions, and deployment states.
+MLflow is the **AI lifecycle** platform implementing the platform **Version Control** component: it tracks experiments and keeps the registry of model versions that the edge follows.
 
-Its key roles in the reference architecture are:
+Its roles in the reference architecture are:
 
-- **Experiment tracking**: logs training runs (hyperparameters, metrics, artefacts) for reproducibility and comparison, satisfying the documentation requirements of ISO/IEC 42001.
-- **Model registry**: manages the lifecycle of model versions (Staging → Production → Archived), implementing the release criteria gate (B.6.1.3.4) before any model is promoted to the edge inference service.
-- **Artefact store**: stores model files, training notebooks, and evaluation reports in MinIO (S3-compatible), creating a governed audit trail.
-- **Retraining trigger integration**: scheduled Python jobs evaluate drift metrics and log new training runs; MLflow tracks their outcomes and supports the retraining recommendation decision.
+- **Experiment tracking**: `platform-training-jobs` logs every run (parameters, metrics, training frame as reference data, data provenance tags); `platform-evidently` logs every drift report in the experiment `zdm-drift-monitoring`.
+- **Model registry**: each run registers a version of `zdm-anomaly-detector`; the serving alias (`champion`) marks the version released to the edge. `edge-mlflow-sync` follows that alias.
+- **Artefact store**: model files and reports in the MinIO bucket `mlflow-artifacts`, **served through the MLflow server** (`--serve-artifacts`): clients, including the edge, upload and download over HTTP and never hold object storage credentials.
+- **Metadata**: PostgreSQL database `mlflow` on `platform-postgresql`, with schema migration at start-up.
+
+The image `ghcr.io/burakince/mlflow` bundles the PostgreSQL (psycopg2) and S3 (boto3) drivers missing from the official image; the tag 2.14.0 referenced before does not exist. It is also the runtime of the catalog's training, drift, edge sync and model server code.
 
 ---
 
@@ -28,74 +32,68 @@ Its key roles in the reference architecture are:
 
 | Clause | Requirement | How MLflow Addresses It |
 |--------|-------------|--------------------------|
-| B.6.1.3.2 | Version Control | Full model and artefact versioning with stage transitions |
-| B.6.1.3.4 | Release Criteria | Model registry staging gates; requires approval before Production promotion |
-| B.6.2.6.4 | Retraining Monitoring | Tracks drift-triggered retraining runs; links performance metrics to model versions |
+| B.6.1.3.2 | Resources: Version Control | Versioned models and artefacts; alias per environment |
+| B.6.1.3.4 | Resources: Inventory / Registry | Registry of every model version with its run, data provenance and release criteria tag |
+| B.6.2.6.4 | Operation: Retraining / Lifecycle | Scheduled, manual and drift-triggered runs linked to their versions |
 
 ---
 
 ## Prerequisites
 
-- K3S cluster (platform tier) with at least 2 CPU cores, 4 GB RAM
-- MinIO deployed and accessible (artefact storage backend)
-- PostgreSQL deployed (MLflow metadata backend)
-- S3-compatible endpoint configured (MinIO)
+- `platform-postgresql` (database `mlflow`) and `platform-minio` (bucket `mlflow-artifacts`, user `mlflow`).
+- Secrets `platform-mlflow-db` (keys `username`, `password`) and `platform-mlflow-s3` (keys `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`), created by `infrastructure/install.sh`.
+- `platform-prometheus` first (the chart ships a ServiceMonitor for `/mlflow/metrics`).
 
 ---
 
 ## Deployment Questionnaire
 
-See [`questionnaire.md`](./questionnaire.md).
+The Rancher questionnaire is [`manifests/questions.yaml`](./manifests/questions.yaml).
 
 ---
 
-## Installation (K3S / Helm)
+## Installation (Helm)
 
 ```bash
-helm repo add community-charts https://community-charts.github.io/helm-charts
-helm repo update
+helm repo add cigip-upv https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+helm install platform-mlflow cigip-upv/platform-mlflow -n mlops
 
-helm install mlflow community-charts/mlflow \
-  --namespace mlops \
-  --create-namespace \
-  -f values.yaml
+kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/chart=platform-mlflow
 ```
+
+The upstream chart has no pod label hook: `infrastructure/install.sh` adds the iso42001 labels with its post-renderer.
 
 ---
 
 ## Key Configuration Decisions
 
-| Decision | Options | Recommendation |
-|----------|---------|----------------|
-| Artefact backend | Local filesystem / MinIO / S3 | **MinIO** — S3-compatible, runs on-premises |
-| Metadata backend | SQLite / PostgreSQL | **PostgreSQL** — required for multi-user production use |
-| Authentication | None / Basic | Basic auth minimum; integrate with Keycloak via OIDC proxy for enterprise |
-| Model approval workflow | Automatic / Manual | **Manual** — approval by data scientist + compliance officer (B.6.1.3.4) |
-| Ingress | Traefik (K3S default) | Expose on internal subdomain; do not expose externally without authentication |
+| Decision | Options | Choice in this chart |
+|----------|---------|----------------------|
+| Artefact backend | Local filesystem / MinIO / S3 | **MinIO**, proxied by the MLflow server |
+| Metadata backend | SQLite / PostgreSQL | **PostgreSQL** on the platform |
+| Promotion | Stages / aliases | **Alias** `champion`, moved by the training job when the release criteria pass |
+| Authentication | None / basic / OIDC proxy | **None inside the cluster**, reachable only through the NetworkPolicies (edge, monitoring); add an OIDC proxy before exposing it |
+| Ingress | Enabled / disabled | **Disabled**; port-forward for operators |
 
 ---
 
 ## Model Promotion Workflow
 
 ```
-Training Job → MLflow Experiment (Staging)
-     ↓
-Performance Evaluation (metrics threshold check)
-     ↓
-Manual Approval (data scientist + compliance officer)
-     ↓
-MLflow Registry: Staging → Production
-     ↓
-Edge Version Control: pull new model artefact → redeploy FastAPI service
+platform-training-jobs -> MLflow run + registered version (release criteria tag)
+     |  criteria passed
+     v
+alias champion -> new version
+     |
+     v
+edge-mlflow-sync: download, verify, switch, reload edge-fastapi-model
 ```
-
-This workflow implements B.6.1.3.4 (Release Criteria) and provides a documented, auditable chain from training to deployment.
 
 ---
 
 ## Related Solutions
 
-- [Training Jobs](../training-jobs/README.md) — produces model runs logged in MLflow
-- [MinIO](../../data-management/minio/README.md) — artefact storage backend
-- [FastAPI Model Server](../../../edge/ai-inference/fastapi-model/README.md) — consumes promoted model versions
-- [Keycloak](../../../enterprise/access-management/keycloak/README.md) — authentication for MLflow UI
+- [Training Jobs](../training-jobs/README.md): produces the runs and versions
+- [Evidently](../evidently/README.md): drift reports logged to MLflow
+- [MinIO](../../data-management/minio/README.md): artefact storage backend
+- [Edge Version Control](../../../edge/version-control/mlflow-sync/README.md): propagates the promoted version

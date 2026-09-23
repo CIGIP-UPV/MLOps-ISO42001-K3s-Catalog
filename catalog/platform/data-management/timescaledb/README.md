@@ -1,26 +1,35 @@
-# TimescaleDB — Time-Series Data Warehouse
+# TimescaleDB: Platform Time-Series Data Stock
 
 | Field | Value |
 |-------|-------|
+| **Chart** | `platform-timescaledb` |
 | **Tier** | Platform |
+| **Namespace** | `platform` |
 | **Category** | Data Management |
-| **RA Component** | Data Stock (Platform) |
-| **ISO/IEC 42001** | B.6.2.6.3 · B.6.2.8.1 |
-| **Helm Chart** | `timescale/timescaledb-single` |
+| **RA Components** | Data Stock (CMP-02, platform); Goal-Oriented Monitoring (CMP-11) |
+| **ISO/IEC 42001** | B.6.2.6.1 · B.6.2.6.3 |
+| **Deployment** | Own templates (StatefulSet), image `timescale/timescaledb:2.17.2-pg16` |
 | **K3S Compatible** | Yes |
 
 ---
 
 ## Description
 
-TimescaleDB is a **time-series optimised relational database** (built on PostgreSQL) serving as the long-term **data warehouse** at the platform tier. It is designed for high-volume sensor data, prediction histories, and operational KPIs that require both SQL querying and time-series analytics.
+TimescaleDB is a **time-series optimised relational database** (PostgreSQL 16) serving as the **platform Data Stock**: the target of the data consolidation flow from the edge, the source of the training data and the store of goal-oriented KPIs.
 
-Its key roles in the reference architecture are:
+Earlier versions wrapped `timescale/timescaledb-single ~0.35`, a version that does not exist; the last release of that deprecated chart (0.33.1) rejects the catalog values. The chart now renders its own StatefulSet with the official image, a `postgres-exporter` sidecar (`quay.io/prometheuscommunity/postgres-exporter`) and a ServiceMonitor when the Prometheus Operator CRDs exist.
 
-- **Long-horizon analytics**: stores months or years of sensor readings, inference results, and KPI snapshots for trend analysis and model retraining.
-- **KPI persistence**: Goal-oriented performance metrics (OEE, availability, downtime hours) are stored and queried by Grafana dashboards.
-- **Training data source**: the retraining recommendation engine queries TimescaleDB for training data windows based on date ranges and equipment identifiers.
-- **Data sync target**: edge PostgreSQL data is periodically synced to TimescaleDB (batch or streaming via Kafka).
+Schema of the database `zdm_platform`, created on first start:
+
+| Table | Type | Written by |
+|-------|------|------------|
+| `sensor_readings` | hypertable, unique (site, source id, time) | `edge-postgresql-sync` |
+| `predictions` | hypertable, unique (site, source id, time) | `edge-postgresql-sync` |
+| `oee_kpis` | hypertable | plant systems (OEE source) |
+| `consolidation_batches` | table | `edge-postgresql-sync` (provenance of every batch) |
+| `retraining_recommendations` | table | `platform-evidently` (drift check) |
+
+Least-privilege roles: `sync` (insert consolidated data and the batch log), `ml` (read training data, write recommendations; used by training jobs and Evidently) and `grafana` (read only).
 
 ---
 
@@ -28,72 +37,39 @@ Its key roles in the reference architecture are:
 
 | Clause | Requirement | How TimescaleDB Addresses It |
 |--------|-------------|------------------------------|
-| B.6.2.6.3 | Goal-oriented Performance Monitoring | Persists long-term KPI data for Grafana business dashboards |
-| B.6.2.8.1 | Event Logs | Structured time-series event storage for audit queries |
+| B.6.2.6.1 | Operation: Infrastructure Monitoring | Exporter metrics; consolidation batch log |
+| B.6.2.6.3 | Operation: KPI Assessment (OEE) | Long-term KPI data for the Grafana business dashboards |
 
 ---
 
 ## Prerequisites
 
-- K3S platform cluster with persistent volumes (minimum 50 GB; scale based on data volume)
-- PostgreSQL client tools for schema management
-- Grafana deployed (primary data consumer for dashboards)
+- Secret `platform-timescaledb-auth` (keys `postgres-password`, `sync-password`, `ml-password`, `grafana-password`), created by `infrastructure/install.sh`.
 
 ---
 
-## Installation (K3S / Helm)
+## Deployment Questionnaire
+
+The Rancher questionnaire is [`manifests/questions.yaml`](./manifests/questions.yaml).
+
+---
+
+## Installation (Helm)
 
 ```bash
-helm repo add timescale https://charts.timescale.com
-helm repo update
+helm repo add cigip-upv https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+helm install platform-timescaledb cigip-upv/platform-timescaledb -n platform
 
-helm install timescaledb timescale/timescaledb-single \
-  --namespace platform \
-  -f values.yaml
+kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/chart=platform-timescaledb
 ```
 
----
-
-## Key Tables (Reference Schema)
-
-```sql
--- Sensor readings (compressed after 7 days)
-CREATE TABLE sensor_readings (
-  time        TIMESTAMPTZ NOT NULL,
-  machine_id  TEXT NOT NULL,
-  signal_name TEXT NOT NULL,
-  value       DOUBLE PRECISION
-);
-SELECT create_hypertable('sensor_readings', 'time');
-
--- Model predictions
-CREATE TABLE predictions (
-  time         TIMESTAMPTZ NOT NULL,
-  machine_id   TEXT NOT NULL,
-  model_version TEXT NOT NULL,
-  score        DOUBLE PRECISION,
-  label        TEXT,         -- operator feedback (correct/incorrect)
-  acknowledged BOOLEAN DEFAULT FALSE
-);
-SELECT create_hypertable('predictions', 'time');
-
--- OEE KPIs
-CREATE TABLE oee_kpis (
-  time        TIMESTAMPTZ NOT NULL,
-  machine_id  TEXT NOT NULL,
-  oee         DOUBLE PRECISION,
-  availability DOUBLE PRECISION,
-  performance  DOUBLE PRECISION,
-  quality      DOUBLE PRECISION
-);
-SELECT create_hypertable('oee_kpis', 'time');
-```
+The init script runs only on the first start of an empty volume.
 
 ---
 
 ## Related Solutions
 
-- [Grafana](../../monitoring/grafana/README.md) — dashboards querying TimescaleDB
-- [PostgreSQL Edge](../../../edge/storage/postgresql/README.md) — edge data source synced here
-- [Training Jobs](../../ai-lifecycle/training-jobs/README.md) — queries TimescaleDB for training datasets
-- [MinIO](../minio/README.md) — complementary document and artefact storage
+- [Edge Data Consolidation](../../../edge/storage/postgresql-sync/README.md): writes consolidated edge data
+- [Training Jobs](../../ai-lifecycle/training-jobs/README.md): reads the training windows
+- [Evidently](../../ai-lifecycle/evidently/README.md): reads recent data, writes recommendations
+- [Grafana](../../monitoring/grafana/README.md): dashboards querying TimescaleDB
