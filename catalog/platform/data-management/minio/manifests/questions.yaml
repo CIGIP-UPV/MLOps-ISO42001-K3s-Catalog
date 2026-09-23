@@ -1,132 +1,66 @@
 # =============================================================================
-# Rancher Questions — MinIO (S3-Compatible Object Storage)
-# ISO/IEC 42001: B.6.2.3.1, B.6.2.5.1, B.6.2.6.5, B.6.2.8.1
+# Rancher Questions: MinIO (Platform Object Storage)
+# ISO/IEC 42001: B.6.2.3.1, B.6.2.5.1
+# Variables are prefixed with the subchart name (minio.).
 # =============================================================================
 categories:
   - "Platform"
   - "Data Management"
 
 questions:
-
-  # ---- Architecture ----
-  - variable: mode
+  - variable: minio.mode
     label: "Deployment Mode"
-    description: "Standalone for single-node; distributed for HA (4+ nodes)"
     type: enum
     default: "standalone"
-    options:
-      - "standalone"
-      - "distributed"
-    group: "Architecture"
+    options: ["standalone", "distributed"]
+    group: "General"
 
-  # ---- Authentication ----
-  - variable: rootUser
-    label: "Root User"
+  - variable: minio.existingSecret
+    label: "Root Credentials Secret"
+    description: "Keys rootUser and rootPassword (created by install.sh)"
     type: string
-    default: "minioadmin"
+    default: "platform-minio-root"
     group: "Authentication"
 
-  - variable: rootPassword
-    label: "Root Password"
-    type: password
-    default: ""
-    required: true
-    group: "Authentication"
+  - variable: minio.persistence.size
+    label: "Volume Size"
+    type: string
+    default: "50Gi"
+    group: "Storage"
 
-  # ---- Persistence ----
-  - variable: persistence.storageClass
+  - variable: minio.persistence.storageClass
     label: "Storage Class"
     type: storageclass
     default: "local-path"
     group: "Storage"
 
-  - variable: persistence.size
-    label: "Volume Size"
-    description: "Total object storage capacity"
-    type: string
-    default: "100Gi"
-    group: "Storage"
-
-  # ---- API Networking ----
-  - variable: service.type
-    label: "API Service Type"
-    type: enum
-    default: "ClusterIP"
-    options:
-      - "ClusterIP"
-      - "NodePort"
-      - "LoadBalancer"
-    group: "Networking"
-
-  - variable: service.port
-    label: "API Port"
-    type: int
-    default: 9000
-    group: "Networking"
-
-  - variable: ingress.enabled
-    label: "Enable API Ingress"
+  - variable: minio.ingress.enabled
+    label: "Expose the S3 API through Ingress"
     type: boolean
-    default: true
+    default: false
     group: "Networking"
 
-  - variable: ingress.hosts[0]
-    label: "API Ingress Hostname"
-    type: hostname
-    default: "minio-api.platform.local"
-    show_if: "ingress.enabled=true"
-    group: "Networking"
-
-  # ---- Console Networking ----
-  - variable: consoleIngress.enabled
-    label: "Enable Console Ingress"
+  - variable: minio.consoleIngress.enabled
+    label: "Expose the Console through Ingress"
     type: boolean
-    default: true
-    group: "Console"
+    default: false
+    group: "Networking"
 
-  - variable: consoleIngress.hosts[0]
-    label: "Console Hostname"
-    type: hostname
-    default: "minio.platform.local"
-    show_if: "consoleIngress.enabled=true"
-    group: "Console"
-
-  # ---- Monitoring ----
-  - variable: metrics.serviceMonitor.enabled
-    label: "Enable Prometheus ServiceMonitor"
-    description: "Expose MinIO metrics (ISO 42001: B.6.1.2.2)"
+  - variable: minio.metrics.serviceMonitor.enabled
+    label: "Create ServiceMonitor"
+    description: "Requires the Prometheus Operator CRDs (platform-prometheus)"
     type: boolean
     default: true
     group: "Monitoring"
 
-  # ---- Resources ----
-  - variable: resources.requests.cpu
-    label: "CPU Request"
-    type: string
-    default: "250m"
-    group: "Resources"
-
-  - variable: resources.requests.memory
+  - variable: minio.resources.requests.memory
     label: "Memory Request"
     type: string
     default: "512Mi"
     group: "Resources"
 
-  - variable: resources.limits.cpu
-    label: "CPU Limit"
-    type: string
-    default: "1000m"
-    group: "Resources"
-
-  - variable: resources.limits.memory
+  - variable: minio.resources.limits.memory
     label: "Memory Limit"
     type: string
     default: "2Gi"
     group: "Resources"
-
-  # ---- Scheduling ----
-  - variable: nodeSelector.node-role\.kubernetes\.io/platform
-    label: "Pin to Platform Nodes"
-    type: string
-    default: "true"
-    group: "Scheduling"

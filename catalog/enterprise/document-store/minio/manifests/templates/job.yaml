@@ -1,0 +1,117 @@
+# =============================================================================
+# Document store provisioning Job (runs on every install and upgrade)
+# ISO/IEC 42001: B.6.2.3.1, B.6.2.6.5
+# =============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "enterprise-minio-overlay.fullname" . }}-provision-{{ .Release.Revision }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "enterprise-minio-overlay.labels" . | nindent 4 }}
+spec:
+  backoffLimit: {{ .Values.job.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.job.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "enterprise-minio-overlay.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: provision
+          image: "{{ .Values.mcImage.repository }}:{{ .Values.mcImage.tag }}"
+          command: ["/bin/sh", "/scripts/provision.sh"]
+          env:
+            - name: HOME
+              value: /tmp
+            - name: MC_CONFIG_DIR
+              value: /tmp/.mc
+            - name: ENDPOINT
+              value: {{ .Values.minio.endpoint | quote }}
+            - name: ROOT_USER
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.minio.rootSecret }}, key: rootUser }
+            - name: ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.minio.rootSecret }}, key: rootPassword }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            {{- toYaml .Values.job.resources | nindent 12 }}
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+      volumes:
+        - name: scripts
+          configMap:
+            name: {{ include "enterprise-minio-overlay.fullname" . }}-provision
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "enterprise-minio-overlay.fullname" . }}-provision
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "enterprise-minio-overlay.labels" . | nindent 4 }}
+data:
+  auditor-policy.json: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["s3:GetObject", "s3:GetObjectVersion", "s3:ListBucket", "s3:ListBucketVersions", "s3:GetBucketLocation"],
+          "Resource": [
+            {{- range $i, $b := .Values.auditorPolicy.buckets }}{{ if $i }},{{ end }}
+            "arn:aws:s3:::{{ $b }}", "arn:aws:s3:::{{ $b }}/*"
+            {{- end }}
+          ]
+        }
+      ]
+    }
+  provision.sh: |
+    #!/bin/sh
+    # Idempotent: existing buckets are kept; versioning and retention are
+    # (re)applied; object locking is only possible at creation time.
+    set -eu
+    i=0
+    until mc alias set store "${ENDPOINT}" "${ROOT_USER}" "${ROOT_PASSWORD}" >/dev/null 2>&1; do
+      i=$((i + 1)); [ "${i}" -ge 60 ] && { echo '{"event":"minio_unreachable"}'; exit 1; }
+      sleep 5
+    done
+    {{- range .Values.buckets }}
+    b="{{ .name }}"
+    if ! mc ls "store/${b}" >/dev/null 2>&1; then
+      mc mb {{ if .objectLocking }}--with-lock {{ end }}"store/${b}"
+      created=true
+    else
+      created=false
+    fi
+    {{- if .versioning }}
+    mc version enable "store/${b}" >/dev/null
+    {{- end }}
+    {{- if and .objectLocking .retention }}
+    if mc retention info --default "store/${b}" >/dev/null 2>&1; then
+      mc retention set --default {{ .retention.mode | upper }} {{ .retention.days }}d "store/${b}" >/dev/null
+      lock=enabled
+    else
+      lock="unavailable (bucket created without object locking)"
+    fi
+    {{- else }}
+    lock=disabled
+    {{- end }}
+    {{- range .folders }}
+    echo "Folder of the ISO/IEC 42001 document store." | mc pipe "store/${b}/{{ . }}/README.txt" >/dev/null
+    {{- end }}
+    echo "{\"component\":\"enterprise-minio-overlay\",\"event\":\"bucket_ready\",\"bucket\":\"${b}\",\"created\":${created},\"versioning\":{{ .versioning }},\"object_lock\":\"${lock}\"}"
+    {{- end }}
+    mc admin policy create store {{ .Values.auditorPolicy.name }} /scripts/auditor-policy.json >/dev/null
+    echo "{\"component\":\"enterprise-minio-overlay\",\"event\":\"policy_ready\",\"policy\":\"{{ .Values.auditorPolicy.name }}\"}"
