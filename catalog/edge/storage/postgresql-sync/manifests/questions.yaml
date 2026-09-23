@@ -1,0 +1,66 @@
+# =============================================================================
+# Rancher Questions: Edge Data Consolidation (edge -> platform data stock)
+# ISO/IEC 42001: B.6.2.6.1, B.6.2.8.1
+# =============================================================================
+categories:
+  - "Edge"
+  - "Storage"
+
+questions:
+
+  - variable: siteId
+    label: "Edge Site Identifier"
+    description: "Stored with every consolidated row for data provenance"
+    type: string
+    default: "edge-site-01"
+    required: true
+    group: "Consolidation"
+
+  - variable: schedule
+    label: "Schedule (cron)"
+    type: string
+    default: "*/5 * * * *"
+    group: "Consolidation"
+
+  - variable: batchSize
+    label: "Rows per Table and Batch"
+    type: int
+    default: 50000
+    group: "Consolidation"
+
+  - variable: tables.sensorFeatures
+    label: "Consolidate Sensor Readings"
+    type: boolean
+    default: true
+    group: "Consolidation"
+
+  - variable: tables.predictions
+    label: "Consolidate Predictions"
+    type: boolean
+    default: true
+    group: "Consolidation"
+
+  - variable: source.host
+    label: "Edge PostgreSQL Host"
+    type: string
+    default: "edge-postgresql.edge.svc.cluster.local"
+    group: "Source (edge)"
+
+  - variable: source.existingSecret
+    label: "Edge Credentials Secret"
+    type: string
+    default: "edge-postgresql-auth"
+    group: "Source (edge)"
+
+  - variable: target.host
+    label: "Platform TimescaleDB Host"
+    type: string
+    default: "platform-timescaledb.platform.svc.cluster.local"
+    group: "Target (platform)"
+
+  - variable: target.existingSecret
+    label: "Platform Credentials Secret"
+    description: "Secret in this namespace with the password of the sync role"
+    type: string
+    default: "edge-postgresql-sync-target"
+    group: "Target (platform)"

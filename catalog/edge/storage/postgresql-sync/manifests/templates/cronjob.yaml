@@ -1,0 +1,97 @@
+# =============================================================================
+# Edge data consolidation CronJob
+# ISO/IEC 42001: B.6.2.6.1, B.6.2.8.1
+# =============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "edge-postgresql-sync.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "edge-postgresql-sync.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  suspend: {{ .Values.suspend }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
+  jobTemplate:
+    metadata:
+      labels:
+        {{- include "edge-postgresql-sync.labels" . | nindent 8 }}
+    spec:
+      backoffLimit: {{ .Values.backoffLimit }}
+      activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
+      template:
+        metadata:
+          labels:
+            {{- include "edge-postgresql-sync.labels" . | nindent 12 }}
+          annotations:
+            checksum/scripts: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 70
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: sync
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["/bin/sh", "/scripts/sync.sh"]
+              env:
+                - name: SITE_ID
+                  value: {{ .Values.siteId | quote }}
+                - name: BATCH_SIZE
+                  value: {{ .Values.batchSize | quote }}
+                - name: TABLES
+                  value: {{ include "edge-postgresql-sync.tables" . | quote }}
+                - name: SRC_HOST
+                  value: {{ .Values.source.host | quote }}
+                - name: SRC_PORT
+                  value: {{ .Values.source.port | quote }}
+                - name: SRC_DB
+                  value: {{ .Values.source.database | quote }}
+                - name: SRC_USER
+                  value: {{ .Values.source.user | quote }}
+                - name: SRC_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.source.existingSecret }}
+                      key: {{ .Values.source.passwordKey }}
+                - name: DST_HOST
+                  value: {{ .Values.target.host | quote }}
+                - name: DST_PORT
+                  value: {{ .Values.target.port | quote }}
+                - name: DST_DB
+                  value: {{ .Values.target.database | quote }}
+                - name: DST_USER
+                  value: {{ .Values.target.user | quote }}
+                - name: DST_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.target.existingSecret }}
+                      key: {{ .Values.target.passwordKey }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
+          volumes:
+            - name: scripts
+              configMap:
+                name: {{ include "edge-postgresql-sync.fullname" . }}
