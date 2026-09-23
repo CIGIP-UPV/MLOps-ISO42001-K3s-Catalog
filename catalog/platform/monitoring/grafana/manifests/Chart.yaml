@@ -4,7 +4,7 @@ apiVersion: v2
 name: platform-grafana
 type: application
 version: 0.2.0
-appVersion: 11.0.0
+appVersion: 11.6.1
 kubeVersion: '>=1.24.0-0'
 description: Dashboards for OEE, model health, infrastructure and operator feedback; Keycloak OIDC ready.
 icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/platform-grafana.svg
