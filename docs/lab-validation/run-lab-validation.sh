@@ -44,7 +44,7 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 LAB="${ROOT}/docs/lab-validation"
 RUN_ID="lab-$(date +%Y%m%dT%H%M%S)"
-OUT="${LAB}/raw/${RUN_ID}"
+OUT="${LAB_OUT_DIR:-${LAB}/raw}/${RUN_ID}"
 RESULTS="${OUT}/results.jsonl"
 
 ENABLE_AUDIT=false
@@ -100,7 +100,8 @@ run_test() {
   local tid=$1 phase=$2 name=$3 ev=$4 shown=$5 fn=$6; shift 6
   local start rc out
   start=$(date +%s)
-  out=$("$fn" "$@" 2>&1); rc=$?
+  # port-forwards opened by FUNCTION live in this subshell: close them there
+  out=$("$fn" "$@" 2>&1; r=$?; cleanup_pf; exit $r); rc=$?
   { echo "# ${tid}: ${name}"; echo "\$ ${shown}"; echo "${out}"; echo "(exit ${rc})"; } > "${OUT}/${ev}"
   record "$tid" "$phase" "$name" "$([[ $rc -eq 0 ]] && echo PASS || echo FAIL)" "$(( $(date +%s) - start ))" "$ev" "$shown" \
     "$(printf '%s' "$out" | tail -4 | tr '\n' ' ')"
@@ -113,6 +114,7 @@ wait_for() {
   until "$@" >/dev/null 2>&1; do
     sleep 5; t=$((t + 5)); [[ $t -ge $limit ]] && return 1
   done
+  return 0
 }
 
 PF_PIDS=""
@@ -124,6 +126,7 @@ port_forward() {
   until curl -s -o /dev/null "http://127.0.0.1:${port}/" 2>/dev/null; do
     sleep 1; t=$((t + 1)); [[ $t -ge 30 ]] && return 1
   done
+  return 0
 }
 cleanup_pf() { for p in ${PF_PIDS}; do kill "$p" 2>/dev/null; done; PF_PIDS=""; }
 trap cleanup_pf EXIT
@@ -301,6 +304,7 @@ s_minio() {
 }
 s_kafka() {
   kubectl -n edge exec edge-kafka-controller-0 -c kafka -- bash -c '
+    unset JMX_PORT KAFKA_JMX_OPTS
     m="lab-smoke-$(date +%s)"
     kafka-topics.sh --bootstrap-server localhost:9092 --list
     echo "$m" | kafka-console-producer.sh --bootstrap-server localhost:9092 --topic alerts
