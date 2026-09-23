@@ -1,69 +1,102 @@
-{{- if .Values.cronJob.enabled }}
 # =============================================================================
-# CronJob — Scheduled Model Retraining
+# Scheduled retraining. The same job template is used for on-demand runs:
+#   kubectl -n mlops create job --from=cronjob/<release> <name>
+# and by the drift check of platform-evidently (TRIGGER=drift).
 # ISO/IEC 42001: B.6.2.6.4
 # =============================================================================
----
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ .Values.cronJob.name }}
-  namespace: {{ .Values.namespace }}
+  name: {{ include "platform-training-jobs.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "platform-training-jobs.labels" . | nindent 4 }}
-    {{- with .Values.labels }}
-    app: {{ .app }}
-    tier: {{ .tier }}
-    ra-component: {{ index . "ra-component" }}
-    {{- end }}
-  {{- with .Values.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
 spec:
-  schedule: {{ .Values.cronJob.schedule | quote }}
-  concurrencyPolicy: {{ .Values.cronJob.concurrencyPolicy }}
-  successfulJobsHistoryLimit: {{ .Values.cronJob.successfulJobsHistoryLimit }}
-  failedJobsHistoryLimit: {{ .Values.cronJob.failedJobsHistoryLimit }}
+  schedule: {{ .Values.schedule | quote }}
+  suspend: {{ .Values.suspend }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
   jobTemplate:
+    metadata:
+      labels:
+        {{- include "platform-training-jobs.labels" . | nindent 8 }}
     spec:
-      backoffLimit: {{ .Values.cronJob.backoffLimit }}
-      activeDeadlineSeconds: {{ .Values.cronJob.activeDeadlineSeconds }}
+      backoffLimit: {{ .Values.backoffLimit }}
+      activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
+      ttlSecondsAfterFinished: {{ .Values.ttlSecondsAfterFinished }}
       template:
         metadata:
           labels:
-            {{- with .Values.labels }}
-            app: {{ .app }}
-            {{- end }}
-            {{- include "platform-training-jobs.selectorLabels" . | nindent 12 }}
+            {{- include "platform-training-jobs.labels" . | nindent 12 }}
+          annotations:
+            checksum/script: {{ .Files.Get "files/train.py" | sha256sum }}
         spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+          {{- with .Values.nodeSelector }}
           nodeSelector:
-            {{- toYaml .Values.nodeSelector | nindent 12 }}
-          restartPolicy: {{ .Values.restartPolicy }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           containers:
-            - name: training
-              image: {{ .Values.container.image }}
-              imagePullPolicy: {{ .Values.container.imagePullPolicy }}
-              envFrom:
-                - configMapRef:
-                    name: {{ .Values.configMap.name }}
-                - secretRef:
-                    name: {{ .Values.secret.name }}
-              volumeMounts:
-                - name: training-workspace
-                  mountPath: /workspace
-              {{- with .Values.container.resources }}
+            - name: train
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["python", "/app/train.py"]
+              env:
+                - name: HOME
+                  value: /tmp
+                - name: GIT_PYTHON_REFRESH
+                  value: quiet
+                - name: TRIGGER
+                  value: {{ .Values.training.trigger | quote }}
+                - name: MLFLOW_TRACKING_URI
+                  value: {{ .Values.mlflow.trackingUri | quote }}
+                - name: EXPERIMENT
+                  value: {{ .Values.mlflow.experiment | quote }}
+                - name: MODEL_NAME
+                  value: {{ .Values.mlflow.modelName | quote }}
+                - name: MODEL_ALIAS
+                  value: {{ .Values.mlflow.alias | quote }}
+                - name: PROMOTE
+                  value: {{ .Values.mlflow.promote | quote }}
+                - name: WINDOW
+                  value: {{ .Values.training.window | quote }}
+                - name: BUCKET
+                  value: {{ .Values.training.bucket | quote }}
+                - name: CONTAMINATION
+                  value: {{ .Values.training.contamination | quote }}
+                - name: MIN_SAMPLES
+                  value: {{ .Values.releaseCriteria.minSamples | quote }}
+                - name: MAX_ANOMALY_RATE
+                  value: {{ .Values.releaseCriteria.maxAnomalyRate | quote }}
+                - name: DB_HOST
+                  value: {{ .Values.dataStock.host | quote }}
+                - name: DB_PORT
+                  value: {{ .Values.dataStock.port | quote }}
+                - name: DB_NAME
+                  value: {{ .Values.dataStock.database | quote }}
+                - name: DB_USER
+                  value: {{ .Values.dataStock.user | quote }}
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.dataStock.existingSecret }}
+                      key: {{ .Values.dataStock.passwordKey }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
               resources:
-                {{- toYaml . | nindent 16 }}
-              {{- end }}
-              {{- if .Values.container.gpuRequests }}
-              # GPU support
-              # resources:
-              #   limits:
-              #     nvidia.com/gpu: {{ .Values.container.gpuRequests }}
-              {{- end }}
+                {{- toYaml .Values.resources | nindent 16 }}
+              volumeMounts:
+                - name: app
+                  mountPath: /app
+                  readOnly: true
           volumes:
-            - name: training-workspace
-              persistentVolumeClaim:
-                claimName: {{ .Values.pvc.name }}
-{{- end }}
+            - name: app
+              configMap:
+                name: {{ include "platform-training-jobs.fullname" . }}

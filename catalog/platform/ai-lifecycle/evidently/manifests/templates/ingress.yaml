@@ -1,12 +1,18 @@
+# =============================================================================
+# Evidently UI Ingress (optional)
+# =============================================================================
 {{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}-evidently
+  name: {{ include "platform-evidently.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "platform-evidently.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
   annotations:
-    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:
@@ -17,12 +23,12 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Release.Name }}-evidently
+                name: {{ include "platform-evidently.fullname" . }}
                 port:
                   name: http
-  {{- if .Values.ingress.tls }}
+  {{- with .Values.ingress.tlsSecret }}
   tls:
-    - hosts: [ {{ .Values.ingress.host }} ]
-      secretName: {{ .Release.Name }}-evidently-tls
+    - hosts: [{{ $.Values.ingress.host }}]
+      secretName: {{ . }}
   {{- end }}
 {{- end }}
