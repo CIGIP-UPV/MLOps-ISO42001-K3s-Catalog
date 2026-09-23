@@ -1,76 +1,41 @@
 # =============================================================================
-# Rancher Questions — Fluent Bit (Edge Log Collector)
+# Rancher Questions: Fluent Bit (Log Collector and Forwarder)
 # ISO/IEC 42001: B.6.2.8.1
+# The pipeline (inputs, filters, Loki outputs) is defined in values.yaml.
 # =============================================================================
 categories:
   - "Edge"
   - "Monitoring"
 
 questions:
-
-  # ---- Log Output Destination ----
-  - variable: loki.host
-    label: "Loki Host"
-    description: "Platform Loki endpoint for centralised log storage"
+  - variable: fluent-bit.image.tag
+    label: "Fluent Bit Image Tag"
+    description: "Empty uses the chart appVersion (cr.fluentbit.io registry)"
     type: string
-    default: "loki.monitoring.svc.cluster.local"
-    group: "Log Output"
+    default: ""
+    group: "General"
 
-  - variable: loki.port
-    label: "Loki Port"
-    type: int
-    default: 3100
-    group: "Log Output"
+  - variable: fluent-bit.logLevel
+    label: "Log Level"
+    type: enum
+    default: "info"
+    options: ["error", "warning", "info", "debug"]
+    group: "General"
 
-  - variable: config.outputs.fallbackFile
-    label: "Enable Fallback File Buffer"
-    description: "Buffer logs locally when Loki is unreachable"
-    type: boolean
-    default: true
-    group: "Log Output"
-
-  # ---- Filtering ----
-  - variable: config.filters.tierLabel
-    label: "Tier Label"
-    description: "Label added to all log records"
-    type: string
-    default: "edge"
-    group: "Filtering"
-
-  - variable: config.filters.clusterName
-    label: "Cluster Name Label"
-    type: string
-    default: "edge-cluster"
-    group: "Filtering"
-
-  # ---- Resources ----
-  - variable: resources.requests.cpu
-    label: "CPU Request"
-    type: string
-    default: "50m"
-    group: "Resources"
-
-  - variable: resources.requests.memory
+  - variable: fluent-bit.resources.requests.memory
     label: "Memory Request"
     type: string
     default: "64Mi"
     group: "Resources"
 
-  - variable: resources.limits.cpu
-    label: "CPU Limit"
-    type: string
-    default: "200m"
-    group: "Resources"
-
-  - variable: resources.limits.memory
+  - variable: fluent-bit.resources.limits.memory
     label: "Memory Limit"
     type: string
     default: "256Mi"
     group: "Resources"
 
-  # ---- Scheduling ----
-  - variable: nodeSelector.node-role\.kubernetes\.io/edge
-    label: "Pin to Edge Nodes"
+  - variable: fluent-bit.resources.limits.cpu
+    label: "CPU Limit"
     type: string
-    default: "true"
-    group: "Scheduling"
+    default: "300m"
+    group: "Resources"
