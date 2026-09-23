@@ -38,7 +38,10 @@ helm.sh/chart: {{ include "platform-training-jobs.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-tier: platform
+app.kubernetes.io/part-of: iso42001-ai-system
+{{- with .Values.iso42001Labels }}
+{{ toYaml . }}
+{{- end }}
 {{- end }}
 
 {{/*

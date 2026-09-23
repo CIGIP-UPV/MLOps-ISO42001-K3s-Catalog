@@ -1,91 +1,92 @@
+# =============================================================================
+# Rancher Questions: Evidently AI (Drift Monitoring and Retraining Recommendation)
+# ISO/IEC 42001: B.6.2.6.2, B.6.2.8.1, B.8.0.5.1
+# =============================================================================
 categories:
-  - Platform
-  - AI Lifecycle
-  - Monitoring
+  - "Platform"
+  - "AI Lifecycle"
 
 questions:
-  - variable: image.tag
-    default: "0.4.33"
-    description: "Evidently UI service image tag"
+
+  # ---- UI ----
+  - variable: ui.persistence.size
+    label: "UI Workspace Size"
     type: string
-    label: "Image Tag"
-    group: "Image"
+    default: "5Gi"
+    group: "Evidently UI"
 
   - variable: ingress.enabled
-    default: true
-    description: "Expose the Evidently UI via Traefik ingress"
+    label: "Expose the UI through Ingress"
     type: boolean
-    label: "Enable Ingress"
-    group: "Ingress"
+    default: false
+    group: "Evidently UI"
 
   - variable: ingress.host
-    default: "evidently.platform.local"
-    description: "Hostname for the Evidently UI"
+    label: "UI Hostname"
     type: hostname
+    default: "evidently.platform.local"
     show_if: "ingress.enabled=true"
-    label: "Hostname"
-    group: "Ingress"
+    group: "Evidently UI"
 
-  - variable: ingress.tls
-    default: false
-    description: "Enable TLS on the ingress (requires cert-manager)"
+  # ---- Drift check ----
+  - variable: driftCheck.enabled
+    label: "Enable Scheduled Drift Check"
     type: boolean
-    show_if: "ingress.enabled=true"
-    label: "Enable TLS"
-    group: "Ingress"
+    default: true
+    group: "Drift Check"
 
-  - variable: persistence.size
-    default: "10Gi"
-    description: "Workspace volume size — projects, snapshots and reports"
+  - variable: driftCheck.schedule
+    label: "Drift Check Schedule (cron)"
     type: string
-    label: "Workspace Size"
-    group: "Persistence"
-
-  - variable: datasource.type
-    default: "postgres"
-    description: "Where to read prediction / reference data from"
-    type: enum
-    options:
-      - "postgres"
-      - "s3"
-      - "local"
-    label: "Datasource Type"
-    group: "Datasource"
-
-  - variable: datasource.postgres.host
-    default: "platform-postgresql"
-    description: "PostgreSQL host for predictions database"
-    type: string
-    show_if: "datasource.type=postgres"
-    label: "PostgreSQL Host"
-    group: "Datasource"
-
-  - variable: schedules.driftCheckCron
     default: "*/30 * * * *"
-    description: "Cron expression — how often to compute drift snapshots"
+    show_if: "driftCheck.enabled=true"
+    group: "Drift Check"
+
+  - variable: driftCheck.currentWindow
+    label: "Window of Recent Data"
     type: string
-    label: "Drift Check Schedule"
-    group: "Schedules"
+    default: "1 hour"
+    show_if: "driftCheck.enabled=true"
+    group: "Drift Check"
 
-  - variable: schedules.retrainTriggerThreshold
-    default: 0.15
-    description: "Drift score threshold (PSI / Wasserstein) above which a retraining job is fired"
-    type: float
-    min: 0.01
-    max: 1.0
-    label: "Retrain Threshold"
-    group: "Schedules"
+  - variable: driftCheck.threshold
+    label: "Retraining Threshold (share of drifted features)"
+    type: string
+    default: "0.5"
+    show_if: "driftCheck.enabled=true"
+    group: "Drift Check"
 
-  - variable: webhook.retrainOnDrift.enabled
-    default: true
-    description: "Trigger platform-training-jobs when drift exceeds threshold (closes the MLOps loop)"
+  # ---- Retraining ----
+  - variable: driftCheck.autoRetrain
+    label: "Start Retraining Automatically"
+    description: "Creates a Job from the training CronJob when the threshold is reached"
     type: boolean
-    label: "Enable Retrain Webhook"
-    group: "Closed-loop"
-
-  - variable: metrics.enabled
     default: true
-    description: "Expose drift score as a Prometheus metric (scraped by platform-prometheus)"
-    type: boolean
-    label: "Enable Prometheus Metrics"
-    group: "Observability"
+    group: "Retraining Recommendation"
+
+  - variable: driftCheck.trainingCronJob
+    label: "Training CronJob"
+    type: string
+    default: "platform-training-jobs"
+    show_if: "driftCheck.autoRetrain=true"
+    group: "Retraining Recommendation"
+
+  - variable: driftCheck.cooldown
+    label: "Cooldown between Retrainings"
+    type: string
+    default: "6 hours"
+    show_if: "driftCheck.autoRetrain=true"
+    group: "Retraining Recommendation"
+
+  # ---- Data ----
+  - variable: driftCheck.dataStock.host
+    label: "TimescaleDB Host"
+    type: string
+    default: "platform-timescaledb.platform.svc.cluster.local"
+    group: "Data"
+
+  - variable: driftCheck.dataStock.existingSecret
+    label: "Credentials Secret (role ml)"
+    type: string
+    default: "platform-ml-db"
+    group: "Data"
