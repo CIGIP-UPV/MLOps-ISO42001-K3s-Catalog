@@ -774,6 +774,21 @@ def run(cmd: list[str], cwd: pathlib.Path | None = None) -> None:
         raise SystemExit(f"command failed: {' '.join(cmd)}")
 
 
+def ensure_repos() -> None:
+    """helm repo add every dependency repository (needed to build from Chart.lock)."""
+    urls = set()
+    for meta in CHART_META.values():
+        chart = yaml.safe_load((ROOT / meta["path"] / "manifests" / "Chart.yaml").read_text(encoding="utf-8"))
+        for dep in chart.get("dependencies") or []:
+            if dep.get("repository", "").startswith("http"):
+                urls.add(dep["repository"].rstrip("/"))
+    for url in sorted(urls):
+        name = "dep-" + hashlib.sha1(url.encode()).hexdigest()[:10]
+        run(["helm", "repo", "add", "--force-update", name, url])
+    if urls:
+        run(["helm", "repo", "update"])
+
+
 def update_lock(chart_name: str) -> None:
     """Refresh Chart.lock in the source tree (helm dependency update)."""
     src = ROOT / CHART_META[chart_name]["path"] / "manifests"
@@ -1013,6 +1028,8 @@ def main() -> int:
         enriched.append((chart_name, data))
     print(f"[chart]   enriched {len(enriched)} charts (version {NEW_CHART_VERSION}), label blocks synced")
 
+    if args.update_locks or not args.skip_package:
+        ensure_repos()
     if args.update_locks:
         for chart_name, _ in enriched:
             update_lock(chart_name)

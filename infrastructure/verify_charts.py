@@ -175,6 +175,9 @@ def unknown_subchart_keys(chart_dir: pathlib.Path):
             templates = "".join(t.extractfile(m).read().decode("utf-8", "replace")
                                 for m in t.getmembers()
                                 if m.isfile() and "/templates/" in m.name and m.name.count("/charts/") == 0)
+            # Nested subcharts validate their own values; not checked here.
+            nested = {m.name.split("/")[2] for m in t.getmembers()
+                      if m.name.count("/") >= 3 and m.name.split("/")[1] == "charts"}
 
         def used_in_templates(path):
             rel = path.split(".", 1)[1] if "." in path else path
@@ -184,7 +187,7 @@ def unknown_subchart_keys(chart_dir: pathlib.Path):
             if not isinstance(mine, dict) or not isinstance(theirs, dict) or not theirs:
                 return
             for k, v in mine.items():
-                if k == "global":
+                if k == "global" or (path == key and k in nested):
                     continue
                 if k == dep.get("condition", "").split(".")[-1] and path == key:
                     continue  # the key that enables the dependency
@@ -279,6 +282,10 @@ def verify(chart_name: str, post_render: bool, workdir: pathlib.Path):
 
     required = publish.iso_labels(chart_name)
     docs = [d for d in yaml.safe_load_all(rendered) if isinstance(d, dict) and d.get("kind")]
+    # helm test hooks are only created by "helm test": reported, not counted.
+    is_test = lambda d: "test" in ((d.get("metadata") or {}).get("annotations") or {}).get("helm.sh/hook", "")
+    out["test_hooks"] = [f"{d['kind']}/{d['metadata'].get('name')}" for d in docs if is_test(d)]
+    docs = [d for d in docs if not is_test(d)]
     res_ok, res_missing, pods_total, pods_ok, pods_missing, bad_values = 0, [], 0, 0, [], []
     for d in docs:
         md = d.get("metadata") or {}
@@ -321,6 +328,7 @@ def main() -> int:
     ap.add_argument("--json")
     args = ap.parse_args()
     names = args.charts or list(CHART_META)
+    publish.ensure_repos()
     results, failed = [], 0
     with tempfile.TemporaryDirectory() as tmp:
         for n in names:
