@@ -4,7 +4,7 @@ apiVersion: v2
 name: enterprise-zammad
 type: application
 version: 0.2.0
-appVersion: 6.3.0
+appVersion: 6.2.0-1
 kubeVersion: '>=1.24.0-0'
 description: Incident management with webhook integration for Prometheus alerts and SMTP notifications.
 icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-zammad.svg
