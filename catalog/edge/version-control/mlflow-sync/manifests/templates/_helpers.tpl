@@ -1,22 +1,22 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "edge-fastapi-model.name" -}}
+{{- define "edge-mlflow-sync.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Create a default fully qualified app name.
 */}}
-{{- define "edge-fastapi-model.fullname" -}}
+{{- define "edge-mlflow-sync.fullname" -}}
 {{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- .Values.fullnameOverride | trunc 52 | trimSuffix "-" }}
 {{- else }}
 {{- $name := default .Chart.Name .Values.nameOverride }}
 {{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- .Release.Name | trunc 52 | trimSuffix "-" }}
 {{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- printf "%s-%s" .Release.Name $name | trunc 52 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -24,30 +24,21 @@ Create a default fully qualified app name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "edge-fastapi-model.chart" -}}
+{{- define "edge-mlflow-sync.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
-Common labels
+Common labels, including the ISO/IEC 42001 traceability labels.
 */}}
-{{- define "edge-fastapi-model.labels" -}}
-helm.sh/chart: {{ include "edge-fastapi-model.chart" . }}
-{{ include "edge-fastapi-model.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
+{{- define "edge-mlflow-sync.labels" -}}
+helm.sh/chart: {{ include "edge-mlflow-sync.chart" . }}
+app.kubernetes.io/name: {{ include "edge-mlflow-sync.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: iso42001-ai-system
 {{- with .Values.iso42001Labels }}
 {{ toYaml . }}
 {{- end }}
-{{- end }}
-
-{{/*
-Selector labels
-*/}}
-{{- define "edge-fastapi-model.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "edge-fastapi-model.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

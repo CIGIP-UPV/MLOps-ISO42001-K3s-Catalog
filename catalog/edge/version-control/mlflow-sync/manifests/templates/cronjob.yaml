@@ -1,0 +1,99 @@
+# =============================================================================
+# Edge version synchronisation CronJob
+# ISO/IEC 42001: B.6.1.3.2, B.6.2.6.4, B.6.2.8.1
+# =============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "edge-mlflow-sync.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "edge-mlflow-sync.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  suspend: {{ .Values.suspend }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
+  jobTemplate:
+    metadata:
+      labels:
+        {{- include "edge-mlflow-sync.labels" . | nindent 8 }}
+    spec:
+      backoffLimit: {{ .Values.backoffLimit }}
+      activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
+      template:
+        metadata:
+          labels:
+            {{- include "edge-mlflow-sync.labels" . | nindent 12 }}
+          annotations:
+            checksum/script: {{ .Files.Get "files/sync.py" | sha256sum }}
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            fsGroup: 1001
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: sync
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["python", "/app/sync.py"]
+              env:
+                - name: HOME
+                  value: /tmp
+                - name: GIT_PYTHON_REFRESH
+                  value: quiet
+                - name: MLFLOW_TRACKING_URI
+                  value: {{ .Values.registry.trackingUri | quote }}
+                - name: MODEL_NAME
+                  value: {{ .Values.registry.modelName | quote }}
+                - name: MODEL_ALIAS
+                  value: {{ .Values.registry.alias | quote }}
+                - name: MODEL_DIR
+                  value: {{ .Values.modelServer.modelDir | quote }}
+                - name: SERVER_URL
+                  value: {{ .Values.modelServer.url | quote }}
+                - name: KEEP_VERSIONS
+                  value: {{ .Values.modelServer.keepVersions | quote }}
+                - name: DB_HOST
+                  value: {{ .Values.versionLog.host | quote }}
+                - name: DB_PORT
+                  value: {{ .Values.versionLog.port | quote }}
+                - name: DB_NAME
+                  value: {{ .Values.versionLog.database | quote }}
+                - name: DB_USER
+                  value: {{ .Values.versionLog.user | quote }}
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.versionLog.existingSecret }}
+                      key: {{ .Values.versionLog.passwordKey }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+              volumeMounts:
+                - name: app
+                  mountPath: /app
+                  readOnly: true
+                - name: models
+                  mountPath: {{ .Values.modelServer.modelDir }}
+          volumes:
+            - name: app
+              configMap:
+                name: {{ include "edge-mlflow-sync.fullname" . }}
+            - name: models
+              persistentVolumeClaim:
+                claimName: {{ .Values.modelServer.modelStoreClaim }}
