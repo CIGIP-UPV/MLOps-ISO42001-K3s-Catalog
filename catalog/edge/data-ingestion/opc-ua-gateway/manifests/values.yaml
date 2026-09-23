@@ -22,7 +22,7 @@ iso42001Labels: &iso42001Labels
 # END iso42001-labels
 
 image:
-  repository: telegraf     # Docker official image (also mirrored at public.ecr.aws/docker/library)
+  repository: public.ecr.aws/docker/library/telegraf   # Docker official image, public ECR mirror
   tag: "1.32-alpine"
   pullPolicy: IfNotPresent
 
