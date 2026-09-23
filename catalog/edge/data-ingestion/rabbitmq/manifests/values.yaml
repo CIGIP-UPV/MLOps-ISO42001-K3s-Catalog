@@ -48,8 +48,6 @@ config:
   # buffering for upstream connectivity interruptions).
   diskFreeLimit: "1GB"
 
-# Broker credentials — rendered into a Secret created by this chart.
-# Override 'password' at install time; never commit a real secret.
 # Credentials: Secret created by install.sh with the keys RABBITMQ_DEFAULT_USER,
 # RABBITMQ_DEFAULT_PASS and RABBITMQ_ERLANG_COOKIE (loaded with envFrom).
 auth:

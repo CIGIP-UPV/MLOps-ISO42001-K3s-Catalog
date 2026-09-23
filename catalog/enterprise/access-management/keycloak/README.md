@@ -1,27 +1,32 @@
-# Keycloak — Identity & Access Management
+# Keycloak: Identity and Access Management
 
 | Field | Value |
 |-------|-------|
+| **Chart** | `enterprise-keycloak` |
 | **Tier** | Enterprise |
+| **Namespace** | `security` |
 | **Category** | Access Management · Security |
-| **RA Component** | User Access and Oversight · Security Monitoring |
-| **ISO/IEC 42001** | B.6.1.3.1 · B.6.1.3.3 · B.8.0.2.1 |
-| **Helm Chart** | `bitnami/keycloak` |
+| **RA Component** | User Access & Oversight (CMP-07) |
+| **ISO/IEC 42001** | B.6.1.3.1 · B.8.0.2.1 |
+| **Helm Chart** | `bitnami/keycloak` (wrapped), image `bitnamilegacy/keycloak:24.0.5-debian-12-r0` |
 | **K3S Compatible** | Yes |
 
 ---
 
 ## Description
 
-Keycloak is the **Identity and Access Management (IAM)** platform implementing the **User Access and Oversight** component across the enterprise and platform tiers. It provides centralised authentication, authorisation, and identity federation for all AI system interfaces.
+Keycloak is the **Identity and Access Management (IAM)** platform implementing the **User Access & Oversight** component. It provides centralised authentication, authorisation and identity federation for the interfaces of the AI system.
 
-Its key roles in the reference architecture are:
+What the chart deploys:
 
-- **Single Sign-On (SSO)**: unified login across Grafana, MLflow UI, MinIO console, and any custom React frontends via OpenID Connect (OIDC) / OAuth 2.0.
-- **Role-Based Access Control (RBAC)**: defines roles (operator, data scientist, compliance officer, admin) and grants access to specific AI system functions based on role — implementing segregation of duties required by B.6.1.3.1.
-- **User activity auditing**: Keycloak logs all authentication and authorisation events, contributing to the audit trail required by B.6.2.8.1.
-- **API security**: protects the FastAPI inference endpoints and MLflow API via bearer token validation.
-- **Federated identity**: integrates with enterprise LDAP/Active Directory for manufacturing plant environments.
+- **Keycloak 24** in production mode behind a proxy (`proxy: edge`), with non-strict hostnames (`KC_HOSTNAME_STRICT=false`) so it is reachable through port-forward when no ingress is enabled.
+- **Database** on the platform PostgreSQL (`platform-postgresql.platform`, database and role `keycloak`, created by `platform-postgresql`); no bundled PostgreSQL.
+- **Realm `ai-system`**, imported by keycloak-config-cli: realm roles (see below), OIDC clients `grafana`, `mlflow`, `minio` and `zammad`, login and admin events enabled (90-day expiry).
+- **Prometheus metrics** with a ServiceMonitor.
+
+Single sign-on is **not** switched on in the other charts by default: Grafana, Argo CD and the rest ship the OIDC settings disabled or documented, to be enabled once Keycloak and its client secrets are in place.
+
+Bitnami moved its versioned images to `docker.io/bitnamilegacy`, which receives no new security patches; 24.0.0 was never published there, so 24.0.5 is used.
 
 ---
 
@@ -29,68 +34,63 @@ Its key roles in the reference architecture are:
 
 | Clause | Requirement | How Keycloak Addresses It |
 |--------|-------------|---------------------------|
-| B.6.1.3.1 | Human Oversight | Enforces role-based access to AI system controls and oversight dashboards |
-| B.6.1.3.3 | Usability & Controllability | Controlled interaction with AI system via authenticated sessions |
-| B.8.0.2.1 | User Information | Users can access their roles, permissions, and interaction history via Keycloak account console |
+| B.6.1.3.1 | Resources: Access Control | Role-based access to the AI system interfaces, segregation of duties |
+| B.8.0.2.1 | Continual Improvement: Roles | Realm roles for the actors of the AI system; account console for users |
 
 ---
 
-## Recommended Role Structure
+## Role Structure (realm `ai-system`)
 
 | Role | Access | Description |
 |------|--------|-------------|
-| `operator` | Grafana dashboards, Feedback Interface | Machine operators viewing predictions and annotating feedback |
-| `data-scientist` | MLflow UI, Training Jobs, Grafana | Model training, evaluation, and promotion |
-| `compliance-officer` | Audit logs (Loki), Document Store (MinIO), MLflow approval | ISO/IEC 42001 compliance review and model approval |
-| `production-manager` | KPI dashboards, model promotion approval, AI Helpdesk | Business performance oversight and decision approval |
+| `operator` | Grafana dashboards | Machine operators viewing predictions |
+| `data-scientist` | MLflow UI, training jobs, Grafana | Model training, evaluation and promotion |
+| `compliance-officer` | Audit logs (Loki), document store (MinIO), MLflow | ISO/IEC 42001 compliance review and model approval |
+| `production-manager` | KPI dashboards, AI Helpdesk | Business performance oversight |
 | `admin` | All components | Platform administration |
 
 ---
 
 ## Prerequisites
 
-- K3S enterprise cluster with persistent volumes
-- PostgreSQL for Keycloak metadata storage
-- TLS certificate (cert-manager or pre-existing) — Keycloak requires HTTPS in production
-- DNS entry for Keycloak external hostname
+- `platform-postgresql` (database `keycloak`).
+- Secrets `enterprise-keycloak-admin` (key `admin-password`) and `enterprise-keycloak-db` (key `password`), created by `infrastructure/install.sh`.
+- For users outside the cluster: an ingress with TLS (cert-manager) and a DNS name.
 
 ---
 
 ## Deployment Questionnaire
 
-See [`questionnaire.md`](./questionnaire.md).
+The Rancher questionnaire is [`manifests/questions.yaml`](./manifests/questions.yaml).
 
 ---
 
-## Installation (K3S / Helm)
+## Installation (Helm)
 
 ```bash
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
+helm repo add cigip-upv https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+helm install enterprise-keycloak cigip-upv/enterprise-keycloak -n security
 
-helm install keycloak bitnami/keycloak \
-  --namespace security \
-  --create-namespace \
-  -f values.yaml
+kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/chart=enterprise-keycloak
 ```
 
 ---
 
 ## Integration Points
 
-| System | Integration Method | Purpose |
-|--------|-------------------|---------|
-| Grafana | OIDC provider | SSO and role mapping |
-| MLflow | OIDC proxy (oauth2-proxy) | Protect MLflow UI |
-| MinIO | OIDC (native support) | Object storage access control |
-| FastAPI | JWT bearer token validation | API endpoint protection |
-| Zammad | SAML / OIDC | Helpdesk SSO |
+| System | Integration Method | State in the catalog |
+|--------|-------------------|----------------------|
+| Grafana | OIDC (generic OAuth) | Client defined; disabled in `platform-grafana` until enabled |
+| Argo CD | OIDC | Documented in `platform-argocd`; not configured by default |
+| MLflow | OIDC proxy (oauth2-proxy) | Client defined; no proxy shipped |
+| MinIO | OIDC (native support) | Client defined; not configured by default |
+| Zammad | OIDC | Client defined; not configured by default |
 
 ---
 
 ## Related Solutions
 
-- [Grafana](../../../platform/monitoring/grafana/README.md) — OIDC integration for dashboard SSO
-- [MLflow](../../../platform/ai-lifecycle/mlflow/README.md) — OIDC proxy authentication
-- [MinIO](../../../platform/data-management/minio/README.md) — OIDC-based access control
-- [Zammad](../helpdesk/zammad/README.md) — SSO integration for helpdesk
+- [Grafana](../../../platform/monitoring/grafana/README.md): OIDC integration for dashboards
+- [PostgreSQL (platform)](../../../platform/data-management/postgresql/README.md): Keycloak database
+- [OpenBao](../../../platform/security/openbao/README.md): secrets management
+- [Zammad](../../helpdesk/zammad/README.md): helpdesk
