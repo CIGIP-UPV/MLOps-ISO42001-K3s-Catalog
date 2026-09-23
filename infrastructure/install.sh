@@ -34,6 +34,7 @@
 #   --with-rancher          also install platform-rancher (never when a
 #                           Rancher server is already present)
 #   --site-id ID            edge site identifier (default edge-site-01)
+#   --values-dir DIR        extra values: DIR/<chart>.yaml is passed with -f
 #   --log FILE              run log (default ./install-<timestamp>.jsonl)
 #   --dry-run               print the plan; change nothing
 #   -h, --help
@@ -57,6 +58,7 @@ SITE_ID="edge-site-01"
 DRY_RUN=false
 USE_EXISTING_CM=false
 WITH_RANCHER=false
+VALUES_DIR=""
 ONLY=()
 SKIP=()
 PHASES=()
@@ -119,6 +121,7 @@ while [[ $# -gt 0 ]]; do
     --timeout) TIMEOUT="$2"; shift 2 ;;
     --site-id) SITE_ID="$2"; shift 2 ;;
     --log) RUN_LOG="$2"; shift 2 ;;
+    --values-dir) VALUES_DIR="$(cd "$2" && pwd)"; shift 2 ;;
     --use-existing-cert-manager) USE_EXISTING_CM=true; shift ;;
     --with-rancher) WITH_RANCHER=true; shift ;;
     --dry-run) DRY_RUN=true; shift ;;
@@ -279,6 +282,9 @@ resolve_chart() {
 
 extra_args() {
   local c=$1
+  if [[ -n "${VALUES_DIR}" && -f "${VALUES_DIR}/${c}.yaml" ]]; then
+    echo "-f ${VALUES_DIR}/${c}.yaml"
+  fi
   case "$c" in
     platform-cert-manager) ${HAS_FOREIGN_CM} && echo "--set cert-manager.enabled=false" ;;
     edge-postgresql-sync) echo "--set siteId=${SITE_ID}" ;;
