@@ -1,0 +1,32 @@
+OK   edge-fastapi-model               dep=1 lint=1 tpl=1 kc_err=0 labels=4/4 pods=1/1 questions=15/15 unknown_keys=0
+OK   edge-kafka                       dep=1 lint=1 tpl=1 kc_err=0 labels=13/13 pods=2/2 questions=15/15 unknown_keys=0
+OK   edge-mosquitto                   dep=1 lint=1 tpl=1 kc_err=0 labels=4/4 pods=1/1 questions=15/15 unknown_keys=0
+OK   edge-rabbitmq                    dep=1 lint=1 tpl=1 kc_err=0 labels=4/4 pods=1/1 questions=20/20 unknown_keys=0
+OK   edge-node-red                    dep=1 lint=1 tpl=1 kc_err=0 labels=8/8 pods=1/1 questions=7/7 unknown_keys=0
+OK   edge-opc-ua-gateway              dep=1 lint=1 tpl=1 kc_err=0 labels=3/3 pods=1/1 questions=12/12 unknown_keys=0
+OK   edge-fluent-bit                  dep=1 lint=1 tpl=1 kc_err=0 labels=6/6 pods=1/1 questions=5/5 unknown_keys=0
+OK   edge-prometheus-agent            dep=1 lint=1 tpl=1 kc_err=0 labels=7/7 pods=1/1 questions=9/9 unknown_keys=0
+OK   edge-falco                       dep=1 lint=1 tpl=1 kc_err=0 labels=12/12 pods=2/2 questions=7/7 unknown_keys=0
+OK   edge-mongodb                     dep=1 lint=1 tpl=1 kc_err=0 labels=8/8 pods=1/1 questions=11/11 unknown_keys=0
+OK   edge-postgresql                  dep=1 lint=1 tpl=1 kc_err=0 labels=8/8 pods=1/1 questions=11/11 unknown_keys=0
+OK   edge-postgresql-sync             dep=1 lint=1 tpl=1 kc_err=0 labels=2/2 pods=1/1 questions=9/9 unknown_keys=0
+OK   edge-mlflow-sync                 dep=1 lint=1 tpl=1 kc_err=0 labels=2/2 pods=1/1 questions=9/9 unknown_keys=0
+FAIL platform-mlflow                  dep=1 lint=1 tpl=1 kc_err=0 labels=7/8 pods=1/1 questions=13/13 unknown_keys=0
+OK   platform-training-jobs           dep=1 lint=1 tpl=1 kc_err=0 labels=2/2 pods=1/1 questions=14/14 unknown_keys=0
+OK   platform-evidently               dep=1 lint=1 tpl=1 kc_err=0 labels=8/8 pods=2/2 questions=12/12 unknown_keys=0
+FAIL platform-minio                   dep=1 lint=1 tpl=1 kc_err=0 labels=7/8 pods=2/2 questions=9/9 unknown_keys=0
+OK   platform-postgresql              dep=1 lint=1 tpl=1 kc_err=0 labels=9/9 pods=1/1 questions=10/10 unknown_keys=0
+OK   platform-timescaledb             dep=1 lint=1 tpl=1 kc_err=0 labels=4/4 pods=1/1 questions=9/9 unknown_keys=0
+OK   platform-grafana                 dep=1 lint=1 tpl=1 kc_err=0 labels=11/11 pods=1/1 questions=6/6 unknown_keys=0
+OK   platform-loki                    dep=1 lint=1 tpl=1 kc_err=0 labels=9/9 pods=1/1 questions=7/7 unknown_keys=0
+OK   platform-prometheus              dep=1 lint=1 tpl=1 kc_err=0 labels=94/94 pods=7/7 questions=7/7 unknown_keys=0
+FAIL platform-rancher                 dep=1 lint=1 tpl=1 kc_err=0 labels=8/13 pods=1/2 questions=5/5 unknown_keys=0
+OK   platform-argocd                  dep=1 lint=1 tpl=1 kc_err=0 labels=48/48 pods=7/7 questions=7/7 unknown_keys=0
+OK   platform-openbao                 dep=1 lint=1 tpl=1 kc_err=0 labels=8/8 pods=1/1 questions=6/6 unknown_keys=0
+OK   platform-cert-manager            dep=1 lint=1 tpl=1 kc_err=0 labels=56/56 pods=4/4 questions=6/6 unknown_keys=0
+OK   enterprise-keycloak              dep=1 lint=1 tpl=1 kc_err=0 labels=10/10 pods=2/2 questions=9/9 unknown_keys=0
+OK   enterprise-grafana-dashboards    dep=1 lint=1 tpl=1 kc_err=0 labels=5/5 pods=0/0 questions=6/6 unknown_keys=0
+OK   enterprise-minio-overlay         dep=1 lint=1 tpl=1 kc_err=0 labels=2/2 pods=1/1 questions=5/5 unknown_keys=0
+OK   enterprise-zammad                dep=1 lint=1 tpl=1 kc_err=0 labels=18/18 pods=4/4 questions=6/6 unknown_keys=0
+
+27/30 charts pass every check

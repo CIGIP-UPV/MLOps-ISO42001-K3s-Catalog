@@ -1,0 +1,1324 @@
+[
+ {
+  "chart": "edge-fastapi-model",
+  "namespace": "edge",
+  "dependency_build": true,
+  "dependencies": [],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 4,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 4,
+  "labelled_resources": 4,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 1,
+   "Deployment": 1,
+   "PersistentVolumeClaim": 1,
+   "Service": 1
+  },
+  "images": [
+   "ghcr.io/burakince/mlflow:2.22.1"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 15,
+   "resolved": 15,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-kafka",
+  "namespace": "edge",
+  "dependency_build": true,
+  "dependencies": [
+   "kafka@30.1.8"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 13,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 13,
+  "labelled_resources": 13,
+  "unlabelled_resources": [],
+  "workloads": 2,
+  "labelled_pod_templates": 2,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 3,
+   "Job": 1,
+   "PodDisruptionBudget": 2,
+   "Secret": 1,
+   "Service": 3,
+   "ServiceAccount": 2,
+   "StatefulSet": 1
+  },
+  "images": [
+   "docker.io/bitnamilegacy/jmx-exporter:1.0.1-debian-12-r9",
+   "docker.io/bitnamilegacy/kafka:3.8.1-debian-12-r0"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 15,
+   "resolved": 15,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-mosquitto",
+  "namespace": "edge",
+  "dependency_build": true,
+  "dependencies": [],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 4,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 4,
+  "labelled_resources": 4,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 1,
+   "Deployment": 1,
+   "PersistentVolumeClaim": 1,
+   "Service": 1
+  },
+  "images": [
+   "public.ecr.aws/docker/library/eclipse-mosquitto:2.0"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 15,
+   "resolved": 15,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-rabbitmq",
+  "namespace": "edge",
+  "dependency_build": true,
+  "dependencies": [],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 4,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 4,
+  "labelled_resources": 4,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 1,
+   "Deployment": 1,
+   "PersistentVolumeClaim": 1,
+   "Service": 1
+  },
+  "images": [
+   "public.ecr.aws/docker/library/rabbitmq:3.13-management"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 20,
+   "resolved": 20,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-node-red",
+  "namespace": "edge",
+  "dependency_build": true,
+  "dependencies": [
+   "node-red@0.30.0"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 8,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 8,
+  "labelled_resources": 8,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 2,
+   "Deployment": 1,
+   "PersistentVolumeClaim": 1,
+   "Role": 1,
+   "RoleBinding": 1,
+   "Service": 1,
+   "ServiceAccount": 1
+  },
+  "images": [
+   "docker.io/nodered/node-red:3.1.3"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 7,
+   "resolved": 7,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-opc-ua-gateway",
+  "namespace": "edge",
+  "dependency_build": true,
+  "dependencies": [],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 3,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 3,
+  "labelled_resources": 3,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 1,
+   "Deployment": 1,
+   "Service": 1
+  },
+  "images": [
+   "public.ecr.aws/docker/library/telegraf:1.32-alpine"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 12,
+   "resolved": 12,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-fluent-bit",
+  "namespace": "logging",
+  "dependency_build": true,
+  "dependencies": [
+   "fluent-bit@0.47.10"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 7,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [
+   "Pod/edge-fluent-bit-test-connection"
+  ],
+  "resources": 6,
+  "labelled_resources": 6,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ClusterRole": 1,
+   "ClusterRoleBinding": 1,
+   "ConfigMap": 1,
+   "DaemonSet": 1,
+   "Service": 1,
+   "ServiceAccount": 1
+  },
+  "images": [
+   "cr.fluentbit.io/fluent/fluent-bit:3.1.9"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 5,
+   "resolved": 5,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-prometheus-agent",
+  "namespace": "edge",
+  "dependency_build": true,
+  "dependencies": [
+   "prometheus@25.30.2"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 7,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 7,
+  "labelled_resources": 7,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ClusterRole": 1,
+   "ClusterRoleBinding": 1,
+   "ConfigMap": 1,
+   "Deployment": 1,
+   "PersistentVolumeClaim": 1,
+   "Service": 1,
+   "ServiceAccount": 1
+  },
+  "images": [
+   "quay.io/prometheus-operator/prometheus-config-reloader:v0.78.1",
+   "quay.io/prometheus/prometheus:v2.55.1"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 9,
+   "resolved": 9,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-falco",
+  "namespace": "falco",
+  "dependency_build": true,
+  "dependencies": [
+   "falco@4.22.0"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 13,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [
+   "Pod/edge-falco-falcosidekick-test-connection"
+  ],
+  "resources": 12,
+  "labelled_resources": 12,
+  "unlabelled_resources": [],
+  "workloads": 2,
+  "labelled_pod_templates": 2,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 4,
+   "DaemonSet": 1,
+   "Deployment": 1,
+   "Role": 1,
+   "RoleBinding": 1,
+   "Secret": 1,
+   "Service": 1,
+   "ServiceAccount": 2
+  },
+  "images": [
+   "public.ecr.aws/falcosecurity/falco:0.41.0-debian",
+   "public.ecr.aws/falcosecurity/falcoctl:0.11.0",
+   "public.ecr.aws/falcosecurity/falcosidekick:2.31.1"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 7,
+   "resolved": 7,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-mongodb",
+  "namespace": "edge",
+  "dependency_build": true,
+  "dependencies": [
+   "mongodb@15.6.26"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 8,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 8,
+  "labelled_resources": 8,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 2,
+   "Deployment": 1,
+   "PersistentVolumeClaim": 1,
+   "PodDisruptionBudget": 1,
+   "Service": 2,
+   "ServiceAccount": 1
+  },
+  "images": [
+   "docker.io/bitnamilegacy/mongodb-exporter:0.41.0-debian-12-r0",
+   "docker.io/bitnamilegacy/mongodb:7.0.14-debian-12-r3"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 11,
+   "resolved": 11,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-postgresql",
+  "namespace": "edge",
+  "dependency_build": true,
+  "dependencies": [
+   "postgresql@15.5.38"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 8,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 8,
+  "labelled_resources": 8,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 2,
+   "PodDisruptionBudget": 1,
+   "Service": 3,
+   "ServiceAccount": 1,
+   "StatefulSet": 1
+  },
+  "images": [
+   "docker.io/bitnamilegacy/postgres-exporter:0.15.0-debian-12-r43",
+   "docker.io/bitnamilegacy/postgresql:16.4.0-debian-12-r14"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 11,
+   "resolved": 11,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-postgresql-sync",
+  "namespace": "edge",
+  "dependency_build": true,
+  "dependencies": [],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 2,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 2,
+  "labelled_resources": 2,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 1,
+   "CronJob": 1
+  },
+  "images": [
+   "public.ecr.aws/docker/library/postgres:16-alpine"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 9,
+   "resolved": 9,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "edge-mlflow-sync",
+  "namespace": "edge",
+  "dependency_build": true,
+  "dependencies": [],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 2,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 2,
+  "labelled_resources": 2,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 1,
+   "CronJob": 1
+  },
+  "images": [
+   "ghcr.io/burakince/mlflow:2.22.1"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 9,
+   "resolved": 9,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-mlflow",
+  "namespace": "mlops",
+  "dependency_build": true,
+  "dependencies": [
+   "mlflow@0.18.0"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 8,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 8,
+  "labelled_resources": 7,
+  "unlabelled_resources": [
+   "Secret/platform-mlflow-flask-server-secret-key (hook)"
+  ],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 2,
+   "Deployment": 1,
+   "Secret": 2,
+   "Service": 1,
+   "ServiceAccount": 1,
+   "ServiceMonitor": 1
+  },
+  "images": [
+   "ghcr.io/burakince/mlflow:2.22.1"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 13,
+   "resolved": 13,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-training-jobs",
+  "namespace": "mlops",
+  "dependency_build": true,
+  "dependencies": [],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 2,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 2,
+  "labelled_resources": 2,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 1,
+   "CronJob": 1
+  },
+  "images": [
+   "ghcr.io/burakince/mlflow:2.22.1"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 14,
+   "resolved": 14,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-evidently",
+  "namespace": "mlops",
+  "dependency_build": true,
+  "dependencies": [],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 8,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 8,
+  "labelled_resources": 8,
+  "unlabelled_resources": [],
+  "workloads": 2,
+  "labelled_pod_templates": 2,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 1,
+   "CronJob": 1,
+   "Deployment": 1,
+   "PersistentVolumeClaim": 1,
+   "Role": 1,
+   "RoleBinding": 1,
+   "Service": 1,
+   "ServiceAccount": 1
+  },
+  "images": [
+   "evidently/evidently-service:0.4.33",
+   "ghcr.io/burakince/mlflow:2.22.1"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 12,
+   "resolved": 12,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-minio",
+  "namespace": "minio",
+  "dependency_build": true,
+  "dependencies": [
+   "minio@5.4.0"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 8,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 8,
+  "labelled_resources": 7,
+  "unlabelled_resources": [
+   "Job/platform-minio-post-job (hook)"
+  ],
+  "workloads": 2,
+  "labelled_pod_templates": 2,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 1,
+   "Deployment": 1,
+   "Job": 1,
+   "PersistentVolumeClaim": 1,
+   "Probe": 1,
+   "Service": 2,
+   "ServiceAccount": 1
+  },
+  "images": [
+   "quay.io/minio/mc:RELEASE.2024-11-21T17-21-54Z",
+   "quay.io/minio/minio:RELEASE.2024-12-18T13-15-44Z"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 9,
+   "resolved": 9,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-postgresql",
+  "namespace": "platform",
+  "dependency_build": true,
+  "dependencies": [
+   "postgresql@15.5.38"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 9,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 9,
+  "labelled_resources": 9,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 2,
+   "PodDisruptionBudget": 1,
+   "Service": 3,
+   "ServiceAccount": 1,
+   "ServiceMonitor": 1,
+   "StatefulSet": 1
+  },
+  "images": [
+   "docker.io/bitnamilegacy/postgres-exporter:0.15.0-debian-12-r43",
+   "docker.io/bitnamilegacy/postgresql:16.4.0-debian-12-r14"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 10,
+   "resolved": 10,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-timescaledb",
+  "namespace": "platform",
+  "dependency_build": true,
+  "dependencies": [],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 4,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 4,
+  "labelled_resources": 4,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 1,
+   "Service": 1,
+   "ServiceMonitor": 1,
+   "StatefulSet": 1
+  },
+  "images": [
+   "quay.io/prometheuscommunity/postgres-exporter:v0.15.0",
+   "timescale/timescaledb:2.17.2-pg16"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 9,
+   "resolved": 9,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-grafana",
+  "namespace": "monitoring",
+  "dependency_build": true,
+  "dependencies": [
+   "grafana@8.15.0"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 11,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 11,
+  "labelled_resources": 11,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ClusterRole": 1,
+   "ClusterRoleBinding": 1,
+   "ConfigMap": 2,
+   "Deployment": 1,
+   "PersistentVolumeClaim": 1,
+   "Role": 1,
+   "RoleBinding": 1,
+   "Service": 1,
+   "ServiceAccount": 1,
+   "ServiceMonitor": 1
+  },
+  "images": [
+   "docker.io/grafana/grafana:11.6.1",
+   "quay.io/kiwigrid/k8s-sidecar:1.30.0"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 6,
+   "resolved": 6,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-loki",
+  "namespace": "monitoring",
+  "dependency_build": true,
+  "dependencies": [
+   "loki@6.55.0"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 9,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 9,
+  "labelled_resources": 9,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ClusterRole": 1,
+   "ClusterRoleBinding": 1,
+   "ConfigMap": 2,
+   "Service": 3,
+   "ServiceAccount": 1,
+   "StatefulSet": 1
+  },
+  "images": [
+   "docker.io/grafana/loki:3.6.7"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 7,
+   "resolved": 7,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-prometheus",
+  "namespace": "monitoring",
+  "dependency_build": true,
+  "dependencies": [
+   "kube-prometheus-stack@61.9.0"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 94,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 94,
+  "labelled_resources": 94,
+  "unlabelled_resources": [],
+  "workloads": 7,
+  "labelled_pod_templates": 7,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "Alertmanager": 1,
+   "ClusterRole": 4,
+   "ClusterRoleBinding": 4,
+   "ConfigMap": 23,
+   "DaemonSet": 1,
+   "Deployment": 2,
+   "Job": 2,
+   "MutatingWebhookConfiguration": 1,
+   "Prometheus": 1,
+   "PrometheusRule": 31,
+   "Role": 1,
+   "RoleBinding": 1,
+   "Secret": 1,
+   "Service": 6,
+   "ServiceAccount": 6,
+   "ServiceMonitor": 8,
+   "ValidatingWebhookConfiguration": 1
+  },
+  "images": [
+   "quay.io/prometheus-operator/prometheus-operator:v0.75.2",
+   "quay.io/prometheus/alertmanager:v0.27.0",
+   "quay.io/prometheus/node-exporter:v1.8.2",
+   "quay.io/prometheus/prometheus:v2.54.0",
+   "registry.k8s.io/ingress-nginx/kube-webhook-certgen:v20221220-controller-v1.5.1-58-g787ea74b6",
+   "registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.13.0"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 7,
+   "resolved": 7,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-rancher",
+  "namespace": "cattle-system",
+  "dependency_build": true,
+  "dependencies": [
+   "rancher@2.11.3"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 13,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 13,
+  "labelled_resources": 8,
+  "unlabelled_resources": [
+   "ServiceAccount/platform-rancher-post-delete (hook)",
+   "ConfigMap/platform-rancher-post-delete (hook)",
+   "ClusterRole/platform-rancher-post-delete (hook)",
+   "ClusterRoleBinding/platform-rancher-post-delete (hook)",
+   "Job/platform-rancher-post-delete (hook)"
+  ],
+  "workloads": 2,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [
+   "Job/platform-rancher-post-delete (hook)"
+  ],
+  "invalid_label_values": [],
+  "kinds": {
+   "ClusterRole": 1,
+   "ClusterRoleBinding": 2,
+   "ConfigMap": 2,
+   "Deployment": 1,
+   "Ingress": 1,
+   "Issuer": 1,
+   "Job": 1,
+   "PriorityClass": 1,
+   "Service": 1,
+   "ServiceAccount": 2
+  },
+  "images": [
+   "rancher/mirrored-bci-micro:15.6.24.2",
+   "rancher/rancher:v2.11.3",
+   "rancher/shell:v0.4.1"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 5,
+   "resolved": 5,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-argocd",
+  "namespace": "argocd",
+  "dependency_build": true,
+  "dependencies": [
+   "argo-cd@7.9.1"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 45,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 3
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 48,
+  "labelled_resources": 48,
+  "unlabelled_resources": [],
+  "workloads": 7,
+  "labelled_pod_templates": 7,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ClusterRole": 3,
+   "ClusterRoleBinding": 3,
+   "ConfigMap": 8,
+   "CustomResourceDefinition": 3,
+   "Deployment": 5,
+   "Job": 1,
+   "Role": 6,
+   "RoleBinding": 6,
+   "Secret": 2,
+   "Service": 4,
+   "ServiceAccount": 6,
+   "StatefulSet": 1
+  },
+  "images": [
+   "public.ecr.aws/docker/library/redis:7.2.8-alpine",
+   "quay.io/argoproj/argocd:v2.14.11"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 7,
+   "resolved": 7,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-openbao",
+  "namespace": "openbao",
+  "dependency_build": true,
+  "dependencies": [
+   "openbao@0.16.4"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 9,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [
+   "Pod/platform-openbao-server-test"
+  ],
+  "resources": 8,
+  "labelled_resources": 8,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "Certificate": 1,
+   "ClusterRoleBinding": 1,
+   "ConfigMap": 1,
+   "Service": 3,
+   "ServiceAccount": 1,
+   "StatefulSet": 1
+  },
+  "images": [
+   "quay.io/openbao/openbao:2.0.0"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 6,
+   "resolved": 6,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "platform-cert-manager",
+  "namespace": "cert-manager",
+  "dependency_build": true,
+  "dependencies": [
+   "cert-manager@v1.17.4"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 50,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 6
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 56,
+  "labelled_resources": 56,
+  "unlabelled_resources": [],
+  "workloads": 4,
+  "labelled_pod_templates": 4,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "Certificate": 1,
+   "ClusterIssuer": 2,
+   "ClusterRole": 13,
+   "ClusterRoleBinding": 10,
+   "CustomResourceDefinition": 6,
+   "Deployment": 3,
+   "Job": 1,
+   "MutatingWebhookConfiguration": 1,
+   "Role": 5,
+   "RoleBinding": 5,
+   "Service": 3,
+   "ServiceAccount": 4,
+   "ServiceMonitor": 1,
+   "ValidatingWebhookConfiguration": 1
+  },
+  "images": [
+   "quay.io/jetstack/cert-manager-cainjector:v1.17.4",
+   "quay.io/jetstack/cert-manager-controller:v1.17.4",
+   "quay.io/jetstack/cert-manager-startupapicheck:v1.17.4",
+   "quay.io/jetstack/cert-manager-webhook:v1.17.4"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 6,
+   "resolved": 6,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "enterprise-keycloak",
+  "namespace": "security",
+  "dependency_build": true,
+  "dependencies": [
+   "keycloak@22.2.6"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 10,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 10,
+  "labelled_resources": 10,
+  "unlabelled_resources": [],
+  "workloads": 2,
+  "labelled_pod_templates": 2,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 2,
+   "Job": 1,
+   "PodDisruptionBudget": 1,
+   "Service": 3,
+   "ServiceAccount": 1,
+   "ServiceMonitor": 1,
+   "StatefulSet": 1
+  },
+  "images": [
+   "docker.io/bitnamilegacy/keycloak-config-cli:6.1.6-debian-12-r3",
+   "docker.io/bitnamilegacy/keycloak:25.0.6-debian-12-r0"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 9,
+   "resolved": 9,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "enterprise-grafana-dashboards",
+  "namespace": "monitoring",
+  "dependency_build": true,
+  "dependencies": [],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 5,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 5,
+  "labelled_resources": 5,
+  "unlabelled_resources": [],
+  "workloads": 0,
+  "labelled_pod_templates": 0,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 5
+  },
+  "images": [],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 6,
+   "resolved": 6,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "enterprise-minio-overlay",
+  "namespace": "minio",
+  "dependency_build": true,
+  "dependencies": [],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 2,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [],
+  "resources": 2,
+  "labelled_resources": 2,
+  "unlabelled_resources": [],
+  "workloads": 1,
+  "labelled_pod_templates": 1,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 1,
+   "Job": 1
+  },
+  "images": [
+   "quay.io/minio/mc:RELEASE.2024-11-21T17-21-54Z"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 5,
+   "resolved": 5,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ },
+ {
+  "chart": "enterprise-zammad",
+  "namespace": "helpdesk",
+  "dependency_build": true,
+  "dependencies": [
+   "zammad@10.3.4"
+  ],
+  "lint": true,
+  "template": true,
+  "kubeconform": {
+   "valid": 19,
+   "invalid": 0,
+   "errors": 0,
+   "skipped": 0
+  },
+  "kubeconform_errors": [],
+  "test_hooks": [
+   "Pod/enterprise-zammad-test-connection"
+  ],
+  "resources": 18,
+  "labelled_resources": 18,
+  "unlabelled_resources": [],
+  "workloads": 4,
+  "labelled_pod_templates": 4,
+  "unlabelled_pod_templates": [],
+  "invalid_label_values": [],
+  "kinds": {
+   "ConfigMap": 5,
+   "Deployment": 1,
+   "Service": 6,
+   "ServiceAccount": 3,
+   "StatefulSet": 3
+  },
+  "images": [
+   "docker.io/bitnamilegacy/elasticsearch:8.12.0-debian-11-r1",
+   "docker.io/bitnamilegacy/memcached:1.6.23-debian-11-r0",
+   "docker.io/bitnamilegacy/os-shell:11-debian-11-r94",
+   "docker.io/bitnamilegacy/redis:7.0.12-debian-11-r34",
+   "ghcr.io/zammad/zammad:6.2.0-1",
+   "public.ecr.aws/docker/library/alpine:3.18.4"
+  ],
+  "questions": {
+   "valid_yaml": true,
+   "variables": 6,
+   "resolved": 6,
+   "unresolved": []
+  },
+  "unknown_values_keys": []
+ }
+]
