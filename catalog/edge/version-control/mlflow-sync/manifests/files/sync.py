@@ -17,12 +17,17 @@ Each run:
      oversight), current.json is marked as suspended and the edge model server
      stops serving it; removing the tag resumes it.
 
+Runs are serialised with a lock on the model store: a run started by hand
+while the CronJob is running waits for it instead of downloading the same
+version into the same place.
+
 Environment: MLFLOW_TRACKING_URI, MODEL_NAME, MODEL_ALIAS, MODEL_DIR,
 SERVER_URL, KEEP_VERSIONS, DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD.
 """
 
 from __future__ import annotations
 
+import fcntl
 import hashlib
 import json
 import os
@@ -103,6 +108,12 @@ def switch(meta: dict, server: str) -> tuple[bool, dict]:
 
 
 def main() -> int:
+    with open(MODEL_DIR / ".sync.lock", "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)  # released when the file is closed
+        return sync()
+
+
+def sync() -> int:
     name, alias = ENV.get("MODEL_NAME", "zdm-anomaly-detector"), ENV.get("MODEL_ALIAS", "champion")
     server = ENV.get("SERVER_URL", "http://edge-fastapi-model:8000").rstrip("/")
     keep = int(ENV.get("KEEP_VERSIONS", "3"))
@@ -134,7 +145,7 @@ def main() -> int:
          previous_version=current.get("version"), run_id=mv.run_id)
     target = f"versions/{name}-v{mv.version}"
     dest = MODEL_DIR / target
-    tmp = MODEL_DIR / "versions" / f".{name}-v{mv.version}.tmp"
+    tmp = MODEL_DIR / "versions" / f".{name}-v{mv.version}.{os.getpid()}.tmp"
     try:
         shutil.rmtree(tmp, ignore_errors=True)
         tmp.mkdir(parents=True)
