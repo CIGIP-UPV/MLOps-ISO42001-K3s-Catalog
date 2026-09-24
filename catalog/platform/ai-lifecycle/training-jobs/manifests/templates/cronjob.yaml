@@ -73,6 +73,10 @@ spec:
                   value: {{ .Values.releaseCriteria.minSamples | quote }}
                 - name: MAX_ANOMALY_RATE
                   value: {{ .Values.releaseCriteria.maxAnomalyRate | quote }}
+                - name: FEEDBACK_MIN_LABELS
+                  value: {{ .Values.releaseCriteria.feedback.minLabels | quote }}
+                - name: FEEDBACK_MIN_AGREEMENT
+                  value: {{ .Values.releaseCriteria.feedback.minAgreement | quote }}
                 - name: DB_HOST
                   value: {{ .Values.dataStock.host | quote }}
                 - name: DB_PORT

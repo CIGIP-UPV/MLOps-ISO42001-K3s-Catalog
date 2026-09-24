@@ -4,3 +4,10 @@
 training:
   bucket: "1 second"
   window: "2 hours"
+# Operator feedback: evaluate the candidate on as few as one labelled
+# prediction in the laboratory; report only (no release gate), so that a few
+# test verdicts cannot block the end-to-end test.
+releaseCriteria:
+  feedback:
+    minLabels: 1
+    minAgreement: 0
