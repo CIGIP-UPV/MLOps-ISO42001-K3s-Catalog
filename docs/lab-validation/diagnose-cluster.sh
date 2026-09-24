@@ -38,6 +38,18 @@ nosecrets() { grep -viE 'token|secret|password|passwd'; }
   section "k3s config (filtered)"
   nosecrets < /etc/rancher/k3s/config.yaml 2>&1
   for s in k3s k3s-agent; do systemctl cat "$s" 2>/dev/null | grep -A15 ExecStart= | nosecrets; done
+  section "NetworkPolicy controller (kube-router in K3s)"
+  for s in k3s k3s-agent; do
+    systemctl is-active "$s" >/dev/null 2>&1 && systemctl show "$s" -p ActiveEnterTimestamp
+  done
+  journalctl -u k3s -u k3s-agent --since "-3h" --no-pager 2>/dev/null \
+    | grep -iE 'network.?polic|netpol|kube-router|ipset|xt_set' | tail -20 | cut -c1-300
+  echo "kernel modules:"; lsmod | grep -E '^(ip_set|xt_set|ip_tables|iptable_filter|nf_tables|xt_comment|xt_mark)' || echo "  none of ip_set, xt_set, ip_tables, nf_tables loaded"
+  for m in ip_set xt_set ip_set_hash_ip ip_set_hash_net; do
+    modinfo "$m" >/dev/null 2>&1 && echo "  module $m available" || echo "  module $m NOT available in this kernel"
+  done
+  echo "iptables KUBE-ROUTER rules: $(iptables-save 2>/dev/null | grep -c KUBE-ROUTER)"
+  echo "ipsets: $(ipset list -n 2>/dev/null | wc -l)"
   section "registries.yaml"
   ls -l /etc/rancher/k3s/registries.yaml 2>&1
   section "audit policy"
