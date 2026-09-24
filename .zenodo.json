@@ -1,6 +1,6 @@
 {
   "title": "K3s Solution Catalog for ISO/IEC 42001-Compliant Industrial AI Systems",
-  "description": "<p>Companion catalog to the doctoral thesis <em>Automatización de operaciones en el ciclo de vida de soluciones para fabricación cero defectos</em> (Mateo-Casalí, Universitat Politècnica de València, 2026).</p><p>Organises K3s MLOps solutions by deployment tier (Edge, Platform, Enterprise) and functional category, with deployment questionnaires and explicit mappings to ISO/IEC 42001 Annex B requirements.</p>",
+  "description": "<p>Companion catalog to the doctoral thesis <em>Automatización de operaciones en el ciclo de vida de soluciones para fabricación cero defectos</em> (Mateo-Casalí, Universitat Politècnica de València, 2026).</p><p>Organises K3s MLOps solutions by deployment tier (Edge, Platform, Enterprise) and functional category, with deployment questionnaires and explicit mappings to ISO/IEC 42001 Annex B requirements.</p><p>Version 2.0.0 contains 30 Helm charts, a phased installer, zone NetworkPolicies, an API audit policy, a Helm repository built with its dependencies, and the laboratory validation of the catalog (report, runner and raw evidence in <code>docs/lab-validation/</code>).</p>",
   "creators": [
     {
       "name": "Mateo-Casalí, Miguel Ángel",

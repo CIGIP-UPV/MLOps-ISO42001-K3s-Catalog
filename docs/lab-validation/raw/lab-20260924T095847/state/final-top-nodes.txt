@@ -1,0 +1,4 @@
+NAME          CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%   
+edgenode01    823m         10%    8797Mi          13%       
+kb2           858m         21%    4517Mi          56%       
+worker1-kb2   433m         2%     7192Mi          22%       

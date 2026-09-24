@@ -1,7 +1,11 @@
+# =============================================================================
+# Evidently UI Service
+# =============================================================================
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-evidently
+  name: {{ include "platform-evidently.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "platform-evidently.labels" . | nindent 4 }}
 spec:
@@ -10,10 +14,5 @@ spec:
     - name: http
       port: {{ .Values.service.port }}
       targetPort: http
-    {{- if .Values.metrics.enabled }}
-    - name: metrics
-      port: {{ .Values.metrics.port }}
-      targetPort: metrics
-    {{- end }}
   selector:
     {{- include "platform-evidently.selectorLabels" . | nindent 4 }}

@@ -1,0 +1,73 @@
+# Local validation of the Helm repository built by publish.py (not the laboratory)
+# 2026-09-24T10:10:24Z; commit ba1cb48; helm v3.18.4+gd80839c
+$ CATALOG_REPO_URL=http://127.0.0.1:8879 python3 infrastructure/publish.py  (copy of the repository; docs/ served with python3 -m http.server 8879)
+$ helm repo add cigip-upv http://127.0.0.1:8879 && helm search repo cigip-upv
+charts found: 30
+# The server dry-run of this first block used new release names (<chart>-reposim); charts with fixed
+# object names then collide with the releases already installed, hence the ownership errors. The second
+# block repeats the dry-run as an upgrade of the installed releases.
+$ for each chart: helm pull cigip-upv/<chart> && helm template <chart> <tgz> --post-renderer infrastructure/iso42001-postrender.py && helm install <chart> <tgz> -n <ns> --dry-run=server
+ok   edge-falco (falco): 13 objects rendered; server dry-run: Error: INSTALLATION FAILED: Unable to continue with install: ConfigMap "falcosidekick-loki-dashboard-grafana" in namespa
+ok   edge-fastapi-model (edge): 4 objects rendered; server dry-run ok
+ok   edge-fluent-bit (logging): 7 objects rendered; server dry-run ok
+ok   edge-kafka (edge): 13 objects rendered; server dry-run ok
+ok   edge-mlflow-sync (edge): 2 objects rendered; server dry-run ok
+ok   edge-mongodb (edge): 8 objects rendered; server dry-run ok
+ok   edge-mosquitto (edge): 4 objects rendered; server dry-run ok
+ok   edge-node-red (edge): 8 objects rendered; server dry-run ok
+ok   edge-opc-ua-gateway (edge): 3 objects rendered; server dry-run ok
+ok   edge-postgresql (edge): 8 objects rendered; server dry-run ok
+ok   edge-postgresql-sync (edge): 2 objects rendered; server dry-run ok
+ok   edge-prometheus-agent (edge): 7 objects rendered; server dry-run ok
+ok   edge-rabbitmq (edge): 4 objects rendered; server dry-run ok
+ok   enterprise-grafana-dashboards (monitoring): 5 objects rendered; server dry-run ok
+ok   enterprise-keycloak (security): 10 objects rendered; server dry-run ok
+ok   enterprise-minio-overlay (minio): 2 objects rendered; server dry-run ok
+ok   enterprise-zammad (helpdesk): 19 objects rendered; server dry-run ok
+ok   platform-argocd (argocd): 48 objects rendered; server dry-run: Error: INSTALLATION FAILED: Unable to continue with install: ServiceAccount "argocd-application-controller" in namespace
+ok   platform-cert-manager (cert-manager): 56 objects rendered; server dry-run: Error: INSTALLATION FAILED: Unable to continue with install: CustomResourceDefinition "certificaterequests.cert-manager.
+ok   platform-evidently (mlops): 8 objects rendered; server dry-run ok
+ok   platform-grafana (monitoring): 11 objects rendered; server dry-run ok
+ok   platform-loki (monitoring): 9 objects rendered; server dry-run: Error: INSTALLATION FAILED: Unable to continue with install: ConfigMap "loki" in namespace "monitoring" exists and canno
+ok   platform-minio (minio): 8 objects rendered; server dry-run: Error: INSTALLATION FAILED: Unable to continue with install: ServiceAccount "minio-sa" in namespace "minio" exists and c
+ok   platform-mlflow (mlops): 8 objects rendered; server dry-run ok
+ok   platform-openbao (openbao): 9 objects rendered; server dry-run: Error: INSTALLATION FAILED: Unable to continue with install: Certificate "openbao-tls" in namespace "openbao" exists and
+ok   platform-postgresql (platform): 9 objects rendered; server dry-run ok
+ok   platform-prometheus (monitoring): 94 objects rendered; server dry-run: Error: INSTALLATION FAILED: Unable to continue with install: ServiceAccount "platform-prometheus-alertmanager" in namesp
+ok   platform-rancher (cattle-system): 13 objects rendered; dry-run not attempted (Rancher server)
+ok   platform-timescaledb (platform): 4 objects rendered; server dry-run ok
+ok   platform-training-jobs (mlops): 2 objects rendered; server dry-run ok
+charts pulled and rendered: 30 ok, 0 failed
+
+$ for each chart already installed in the local cluster: helm upgrade <chart> cigip-upv/<chart> -n <ns> --reuse-values --dry-run=server
+ok   edge-falco (falco)
+ok   edge-fastapi-model (edge)
+ok   edge-fluent-bit (logging)
+ok   edge-kafka (edge)
+ok   edge-mlflow-sync (edge)
+ok   edge-mongodb (edge)
+ok   edge-mosquitto (edge)
+ok   edge-node-red (edge)
+ok   edge-opc-ua-gateway (edge)
+ok   edge-postgresql (edge)
+ok   edge-postgresql-sync (edge)
+ok   edge-prometheus-agent (edge)
+ok   edge-rabbitmq (edge)
+ok   enterprise-grafana-dashboards (monitoring)
+ok   enterprise-keycloak (security)
+ok   enterprise-minio-overlay (minio)
+ok   enterprise-zammad (helpdesk)
+ok   platform-argocd (argocd)
+ok   platform-cert-manager (cert-manager)
+ok   platform-evidently (mlops)
+ok   platform-grafana (monitoring)
+ok   platform-loki (monitoring)
+ok   platform-minio (minio)
+ok   platform-mlflow (mlops)
+ok   platform-openbao (openbao)
+ok   platform-postgresql (platform)
+ok   platform-prometheus (monitoring)
+--   platform-rancher: not installed in the local cluster
+ok   platform-timescaledb (platform)
+ok   platform-training-jobs (mlops)
+server dry-run upgrades from the repository: 29 ok, 0 failed

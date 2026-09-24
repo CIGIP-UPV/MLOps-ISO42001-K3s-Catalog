@@ -1,0 +1,11 @@
+# E15: MLOps events collected by Fluent Bit in Loki
+$ LogQL count_over_time({namespace=~"edge|mlops"} |= <event> [3h])
+model_registered: 2 log lines
+version_activated: 2 log lines
+recommendation: 2 log lines
+drift_computed: 2 log lines
+prediction: 19 log lines
+sample_rejected: 0 log lines
+edge-postgresql-sync: 25 log lines
+event types found in Loki: 6/7
+(exit 0)

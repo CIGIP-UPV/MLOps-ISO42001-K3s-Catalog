@@ -1,0 +1,41 @@
+# =============================================================================
+# OPC UA server simulator (Microsoft OPC PLC) for the laboratory validation.
+# Stands in for the plant PLC: edge-opc-ua-gateway reads its nodes SpikeData,
+# DipData, PositiveTrendData and NegativeTrendData (namespace index 3) at
+# opc.tcp://opc-plc.edge.svc.cluster.local:50000. Test asset only: not part
+# of the catalog and without the iso42001 labels.
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opc-plc
+  namespace: edge
+  labels: {app.kubernetes.io/name: opc-plc, lab-validation: simulator}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app.kubernetes.io/name: opc-plc}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: opc-plc, lab-validation: simulator}
+    spec:
+      containers:
+        - name: opc-plc
+          image: mcr.microsoft.com/iotedge/opc-plc:2.15.5
+          args: ["--pn=50000", "--autoaccept", "--unsecuretransport", "--sph", "--sn=0", "--fn=0"]
+          ports:
+            - {name: opcua, containerPort: 50000}
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opc-plc
+  namespace: edge
+  labels: {app.kubernetes.io/name: opc-plc, lab-validation: simulator}
+spec:
+  selector: {app.kubernetes.io/name: opc-plc}
+  ports:
+    - {name: opcua, port: 50000, targetPort: opcua}

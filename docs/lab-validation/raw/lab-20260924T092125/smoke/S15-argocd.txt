@@ -1,0 +1,4 @@
+# S15: Argo CD sync of a catalog chart from git (lab-validation)
+$ kubectl apply Application lab-smoke-dashboards; wait Synced/Healthy
+not run: release platform-argocd is not installed in namespace argocd (skipped in this laboratory, see the run options)
+(exit 3)

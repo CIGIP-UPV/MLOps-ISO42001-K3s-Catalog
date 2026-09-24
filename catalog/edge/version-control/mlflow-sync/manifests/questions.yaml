@@ -1,0 +1,70 @@
+# =============================================================================
+# Rancher Questions: Edge Version Control (MLflow Sync)
+# ISO/IEC 42001: B.6.1.3.2, B.6.2.6.4, B.6.2.8.1
+# =============================================================================
+categories:
+  - "Edge"
+  - "Version Control"
+
+questions:
+
+  # ---- Registry ----
+  - variable: registry.trackingUri
+    label: "Platform MLflow URL"
+    type: string
+    default: "http://platform-mlflow.mlops.svc.cluster.local:5000"
+    group: "Model Registry"
+
+  - variable: registry.modelName
+    label: "Registered Model"
+    type: string
+    default: "zdm-anomaly-detector"
+    group: "Model Registry"
+
+  - variable: registry.alias
+    label: "Alias to Follow"
+    description: "The edge serves the version this alias points to (for example champion)"
+    type: string
+    default: "champion"
+    group: "Model Registry"
+
+  - variable: schedule
+    label: "Check Schedule (cron)"
+    type: string
+    default: "*/2 * * * *"
+    group: "Model Registry"
+
+  # ---- Edge model server ----
+  - variable: modelServer.url
+    label: "Edge Model Server URL"
+    type: string
+    default: "http://edge-fastapi-model.edge.svc.cluster.local:8000"
+    group: "Edge Model Server"
+
+  - variable: modelServer.modelStoreClaim
+    label: "Model Store PVC"
+    description: "PVC created by edge-fastapi-model"
+    type: string
+    default: "edge-fastapi-model-storage"
+    group: "Edge Model Server"
+
+  - variable: modelServer.keepVersions
+    label: "Versions Kept for Rollback"
+    type: int
+    default: 3
+    min: 1
+    max: 10
+    group: "Edge Model Server"
+
+  # ---- Version log ----
+  - variable: versionLog.host
+    label: "Edge PostgreSQL Host"
+    type: string
+    default: "edge-postgresql.edge.svc.cluster.local"
+    group: "Version History"
+
+  - variable: versionLog.existingSecret
+    label: "Credentials Secret"
+    type: string
+    default: "edge-postgresql-auth"
+    group: "Version History"

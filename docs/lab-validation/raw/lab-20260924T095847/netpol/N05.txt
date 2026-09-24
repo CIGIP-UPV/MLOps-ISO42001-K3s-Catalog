@@ -1,0 +1,4 @@
+# N05: edge -> Zammad (no conduit)
+$ nc -z -w 5 enterprise-zammad.helpdesk.svc.cluster.local 8080   (pod in namespace edge)
+client node: worker1-kb2; destination node(s): worker1-kb2
+BLOCKED

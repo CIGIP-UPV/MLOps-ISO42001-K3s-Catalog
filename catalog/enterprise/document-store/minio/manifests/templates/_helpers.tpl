@@ -38,7 +38,10 @@ helm.sh/chart: {{ include "enterprise-minio-overlay.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-iso42001/tier: enterprise
+app.kubernetes.io/part-of: iso42001-ai-system
+{{- with .Values.iso42001Labels }}
+{{ toYaml . }}
+{{- end }}
 {{- end }}
 
 {{/*

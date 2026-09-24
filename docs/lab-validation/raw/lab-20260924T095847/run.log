@@ -1,0 +1,42 @@
+[09:58:47] === 7. Network policies ===
+[09:59:35] FAIL N-CANARY NetworkPolicies are enforced on every node (pod behind a deny-all policy)
+[09:59:36] Network test clients run on worker1-kb2 (enforces NetworkPolicies)
+[09:59:55] PASS N00 namespace outside the catalog -> Internet (control, no policy) (expected: allow)
+[10:00:15] PASS N01 edge -> platform TimescaleDB (consolidation conduit) (expected: allow)
+[10:00:35] PASS N02 edge -> MLflow (version sync conduit) (expected: allow)
+[10:00:55] PASS N03 edge -> edge PostgreSQL (same namespace) (expected: allow)
+[10:01:15] PASS N04 edge -> MinIO (no conduit) (expected: deny)
+[10:01:35] PASS N05 edge -> Zammad (no conduit) (expected: deny)
+[10:01:55] FAIL N06 namespace outside the catalog -> edge PostgreSQL (default deny ingress) (expected: deny)
+[10:02:15] PASS N07 mlops -> MinIO (artefact conduit) (expected: allow)
+[10:02:35] PASS N08 mlops -> Internet (default deny egress) (expected: deny)
+[10:02:55] PASS N09 security -> platform PostgreSQL (Keycloak database) (expected: allow)
+[10:03:15] PASS N10 helpdesk -> MLflow (no conduit) (expected: deny)
+[10:03:15] SKIP N11 argocd -> Internet 443 (Git and Helm repositories) (expected: allow)
+[10:03:35] PASS N12 logging -> Loki (log conduit) (expected: allow)
+[10:03:55] PASS N13 mlops -> edge PostgreSQL (no conduit; egress rule of mlops) (expected: deny)
+# Laboratory validation run: summary
+
+| Phase | PASS | FAIL | SKIP |
+|---|---|---|---|
+| netpol | 12 | 2 | 1 |
+
+| ID | Result | Name | Seconds | Evidence | Detail |
+|---|---|---|---|---|---|
+| N-CANARY | FAIL | NetworkPolicies are enforced on every node (pod behind a deny-all policy) | 47 | netpol/N-CANARY.txt | edgenode01: pod 10.42.2.151:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy CONNECTED kb2: pod 10.42.0 |
+| N00 | PASS | namespace outside the catalog -> Internet (control, no policy) (expected: allow) | 0 | netpol/N00.txt | CONNECTED |
+| N01 | PASS | edge -> platform TimescaleDB (consolidation conduit) (expected: allow) | 0 | netpol/N01.txt | CONNECTED |
+| N02 | PASS | edge -> MLflow (version sync conduit) (expected: allow) | 0 | netpol/N02.txt | CONNECTED |
+| N03 | PASS | edge -> edge PostgreSQL (same namespace) (expected: allow) | 0 | netpol/N03.txt | destination on edgenode01, which does not enforce NetworkPolicies (N-CANARY); CONNECTED |
+| N04 | PASS | edge -> MinIO (no conduit) (expected: deny) | 0 | netpol/N04.txt | BLOCKED |
+| N05 | PASS | edge -> Zammad (no conduit) (expected: deny) | 0 | netpol/N05.txt | BLOCKED |
+| N06 | FAIL | namespace outside the catalog -> edge PostgreSQL (default deny ingress) (expected: deny) | 0 | netpol/N06.txt | destination on edgenode01, which does not enforce NetworkPolicies (N-CANARY); CONNECTED |
+| N07 | PASS | mlops -> MinIO (artefact conduit) (expected: allow) | 0 | netpol/N07.txt | CONNECTED |
+| N08 | PASS | mlops -> Internet (default deny egress) (expected: deny) | 0 | netpol/N08.txt | BLOCKED |
+| N09 | PASS | security -> platform PostgreSQL (Keycloak database) (expected: allow) | 0 | netpol/N09.txt | CONNECTED |
+| N10 | PASS | helpdesk -> MLflow (no conduit) (expected: deny) | 0 | netpol/N10.txt | BLOCKED |
+| N11 | SKIP | argocd -> Internet 443 (Git and Helm repositories) (expected: allow) | 0 |  | not run: platform-argocd is not installed; the argocd namespace belongs to another deployment |
+| N12 | PASS | logging -> Loki (log conduit) (expected: allow) | 0 | netpol/N12.txt | CONNECTED |
+| N13 | PASS | mlops -> edge PostgreSQL (no conduit; egress rule of mlops) (expected: deny) | 0 | netpol/N13.txt | destination on edgenode01, which does not enforce NetworkPolicies (N-CANARY); BLOCKED |
+
+[10:03:58] Evidence in /root/MLOps-ISO42001-K3s-Catalog/docs/lab-validation/raw/lab-20260924T095847

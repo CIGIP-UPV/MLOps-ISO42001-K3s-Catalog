@@ -1,0 +1,4 @@
+# N10: helpdesk -> MLflow (no conduit)
+$ nc -z -w 5 platform-mlflow.mlops.svc.cluster.local 5000   (pod in namespace helpdesk)
+client node: worker1-kb2; destination node(s): worker1-kb2
+BLOCKED

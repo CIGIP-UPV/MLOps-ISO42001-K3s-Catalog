@@ -1,0 +1,6 @@
+# E06: MLflow registry: version, alias and provenance tags
+$ GET /api/2.0/mlflow/registered-models/get; model-versions/get
+aliases: [{'alias': 'champion', 'version': '1'}]
+versions: ['1']
+v1 tags: {'trigger': 'schedule', 'train_anomaly_rate': '0.0205', 'data_window': '2 hours', 'data.source': 'timescaledb:zdm_platform.sensor_readings', 'data.window': '2 hours', 'data.bucket': '1 second', 'data.raw_rows': '3320', 'data.time_min': '2026-09-24 08:46:46+00:00', 'data.time_max': '2026-09-24 09:00:36+00:00', 'data.max_consolidation_batch': '15', 'data.sites': 'lab-edge-01', 'release_criteria': 'passed'}
+(exit 0)

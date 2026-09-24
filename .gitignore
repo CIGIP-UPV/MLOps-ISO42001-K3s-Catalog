@@ -63,3 +63,7 @@ charts/
 # Environment files (may contain credentials)
 .env
 .env.*
+
+# Laboratory validation evidence is committed in full (environment and logs)
+!docs/lab-validation/raw/*/env/
+!docs/lab-validation/raw/**/*.log

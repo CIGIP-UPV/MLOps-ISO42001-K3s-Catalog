@@ -1,0 +1,49 @@
+[
+ {
+  "name": "edgenode01",
+  "roles": [
+   "edge"
+  ],
+  "os": "Ubuntu 22.04.5 LTS",
+  "kernel": "5.15.148-tegra",
+  "arch": "arm64",
+  "kubelet": "v1.32.6+k3s1",
+  "runtime": "containerd://2.0.5-k3s1.32",
+  "cpu": "8",
+  "memory": "64349060Ki",
+  "allocatable_cpu": "8",
+  "allocatable_memory": "64349060Ki",
+  "ephemeral_storage": "491133848Ki"
+ },
+ {
+  "name": "kb2",
+  "roles": [
+   "control-plane",
+   "master"
+  ],
+  "os": "Ubuntu 22.04.4 LTS",
+  "kernel": "5.15.0-190-generic",
+  "arch": "amd64",
+  "kubelet": "v1.32.6+k3s1",
+  "runtime": "containerd://2.0.5-k3s1.32",
+  "cpu": "4",
+  "memory": "8127212Ki",
+  "allocatable_cpu": "4",
+  "allocatable_memory": "8127212Ki",
+  "ephemeral_storage": "254554148Ki"
+ },
+ {
+  "name": "worker1-kb2",
+  "roles": [],
+  "os": "Ubuntu 22.04.4 LTS",
+  "kernel": "6.8.0-138-generic",
+  "arch": "amd64",
+  "kubelet": "v1.32.6+k3s1",
+  "runtime": "containerd://2.0.5-k3s1.32",
+  "cpu": "16",
+  "memory": "32572276Ki",
+  "allocatable_cpu": "16",
+  "allocatable_memory": "32572276Ki",
+  "ephemeral_storage": "490617784Ki"
+ }
+]

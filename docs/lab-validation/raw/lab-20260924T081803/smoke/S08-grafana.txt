@@ -1,0 +1,14 @@
+# S08: Grafana health, data sources and dashboards
+$ GET /api/health; /api/datasources/uid/<uid>/health; /api/search?query=ZDM
+{
+  "database": "ok",
+  "version": "11.6.1",
+  "commit": "ae23ead4d959aa73a5a0ffada60e4147d679523c"
+}
+data source prometheus: {"details":{"application":"Prometheus","features":{"rulerApiEnabled":false}},"message":"Successfully queried the Prometheus API.","status":"OK"}
+data source loki: {"message":"Data source successfully connected.","status":"OK"}
+data source timescaledb: {"message":"Database Connection OK","status":"OK"}
+data source edgepg: {"message":"Database Connection OK","status":"OK"}
+6 ZDM dashboards: ['ZDM AI System', 'ZDM: Data Consolidation, KPIs and Drift (CMP-02, CMP-11, CMP-14)', 'ZDM: Edge Predictions and Model Versions', 'ZDM: Input Data Monitoring (CMP-01)', 'ZDM: Model Health (CMP-10)', 'ZDM: Security Events and Audit Trail (CMP-15, CMP-09)']
+healthy data sources: 4/4
+(exit 0)

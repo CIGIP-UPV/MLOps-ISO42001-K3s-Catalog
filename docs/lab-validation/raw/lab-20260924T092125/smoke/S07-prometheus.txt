@@ -1,0 +1,24 @@
+# S07: Prometheus scrape targets
+$ GET /api/v1/targets (port-forward svc/platform-prometheus-prometheus)
+up         1  apiserver
+up         1  coredns
+up         1  enterprise-keycloak-metrics
+up         1  kube-state-metrics
+up         9  kubelet
+up         1  monitoring/platform-loki
+down       1  node-exporter
+up         2  node-exporter
+up         1  platform-cert-manager
+up         1  platform-cert-manager-cainjector
+up         1  platform-cert-manager-webhook
+up         1  platform-grafana
+up         1  platform-minio
+up         1  platform-mlflow
+up         1  platform-postgresql-metrics
+up         2  platform-prometheus-alertmanager
+up         1  platform-prometheus-operator
+up         2  platform-prometheus-prometheus
+up         1  platform-timescaledb
+up 29 of 30 targets
+down: node-exporter http://<ip-edgenode01>:9101/metrics server returned HTTP status 503 Service Unavailable
+(exit 0)

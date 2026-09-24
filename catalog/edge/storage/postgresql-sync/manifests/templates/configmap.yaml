@@ -1,0 +1,111 @@
+# =============================================================================
+# Consolidation scripts: edge PostgreSQL -> platform TimescaleDB
+# ISO/IEC 42001: B.6.2.6.1, B.6.2.8.1
+#
+# For each table:
+#   1. read the watermark (highest source id of the last successful batch);
+#   2. open a batch in consolidation_batches (status running);
+#   3. COPY the new edge rows to STDOUT and stream them into the platform;
+#   4. insert them idempotently (ON CONFLICT DO NOTHING on site + source id);
+#   5. close the batch with the row counts (status ok) or mark it failed.
+# One JSON line per batch goes to stdout, where Fluent Bit ships it to Loki.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "edge-postgresql-sync.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "edge-postgresql-sync.labels" . | nindent 4 }}
+data:
+  sync.sh: |
+    #!/bin/sh
+    set -eu
+    set -o pipefail
+    export PGCONNECT_TIMEOUT=10
+    SRC="host=${SRC_HOST} port=${SRC_PORT} dbname=${SRC_DB} user=${SRC_USER}"
+    DST="host=${DST_HOST} port=${DST_PORT} dbname=${DST_DB} user=${DST_USER}"
+    src_psql() { PGPASSWORD="${SRC_PASSWORD}" psql "${SRC}" -X -q -v ON_ERROR_STOP=1 "$@"; }
+    dst_psql() { PGPASSWORD="${DST_PASSWORD}" psql "${DST}" -X -q -v ON_ERROR_STOP=1 "$@"; }
+    log() {
+      printf '{"ts":"%s","component":"edge-postgresql-sync","site":"%s",%s}\n' \
+        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${SITE_ID}" "$1"
+    }
+
+    sync_table() {
+      table="$1"
+      wm=$(dst_psql -tA -v site="${SITE_ID}" -v tbl="${table}" -f /scripts/watermark.sql)
+      batch=$(dst_psql -tA -v site="${SITE_ID}" -v tbl="${table}" -v wm="${wm}" -f /scripts/open-batch.sql)
+      if result=$(src_psql -v wm="${wm}" -v n="${BATCH_SIZE}" -f "/scripts/extract-${table}.sql" \
+          | dst_psql -tA -F ',' -v site="${SITE_ID}" -v batch="${batch}" -v wm="${wm}" -f "/scripts/load-${table}.sql"); then
+        read_rows=$(echo "${result}" | cut -d, -f1)
+        written=$(echo "${result}" | cut -d, -f2)
+        to_id=$(echo "${result}" | cut -d, -f3)
+        log "\"table\":\"${table}\",\"batch_id\":${batch},\"from_id\":${wm},\"to_id\":${to_id},\"rows_read\":${read_rows},\"rows_written\":${written},\"status\":\"ok\""
+      else
+        dst_psql -v batch="${batch}" -f /scripts/fail-batch.sql || true
+        log "\"table\":\"${table}\",\"batch_id\":${batch},\"from_id\":${wm},\"status\":\"failed\""
+        return 1
+      fi
+    }
+
+    rc=0
+    for t in ${TABLES}; do
+      sync_table "${t}" || rc=1
+    done
+    exit "${rc}"
+
+  watermark.sql: |
+    SELECT COALESCE(max(to_id), 0) FROM consolidation_batches
+     WHERE site_id = :'site' AND source_table = :'tbl' AND status = 'ok';
+
+  open-batch.sql: |
+    INSERT INTO consolidation_batches (site_id, source_table, from_id, status)
+    VALUES (:'site', :'tbl', :wm, 'running') RETURNING id;
+
+  fail-batch.sql: |
+    UPDATE consolidation_batches SET finished_at = now(), status = 'failed'
+     WHERE id = :batch;
+
+  extract-sensor_features.sql: |
+    COPY (SELECT id, timestamp, machine_id, feature_name, value
+            FROM sensor_features WHERE id > :wm ORDER BY id LIMIT :n)
+      TO STDOUT WITH (FORMAT csv);
+
+  load-sensor_features.sql: |
+    CREATE TEMP TABLE stg (id BIGINT, ts TIMESTAMPTZ, machine_id TEXT, name TEXT, value DOUBLE PRECISION);
+    \copy stg FROM pstdin WITH (FORMAT csv)
+    WITH ins AS (
+      INSERT INTO sensor_readings (time, site_id, machine_id, signal_name, value, source_id, batch_id)
+      SELECT ts, :'site', machine_id, name, value, id, :batch FROM stg
+      ON CONFLICT DO NOTHING RETURNING 1)
+    SELECT (SELECT count(*) FROM stg) AS rows_read,
+           (SELECT count(*) FROM ins) AS rows_written,
+           COALESCE((SELECT max(id) FROM stg), :wm) AS to_id \gset
+    UPDATE consolidation_batches
+       SET finished_at = now(), rows_read = :rows_read, rows_written = :rows_written,
+           to_id = :to_id, status = 'ok'
+     WHERE id = :batch;
+    SELECT :rows_read, :rows_written, :to_id;
+
+  extract-predictions.sql: |
+    COPY (SELECT id, timestamp, machine_id, model_name, model_version, score, label
+            FROM predictions WHERE id > :wm ORDER BY id LIMIT :n)
+      TO STDOUT WITH (FORMAT csv);
+
+  load-predictions.sql: |
+    CREATE TEMP TABLE stg (id BIGINT, ts TIMESTAMPTZ, machine_id TEXT, model_name TEXT,
+                           model_version TEXT, score DOUBLE PRECISION, label TEXT);
+    \copy stg FROM pstdin WITH (FORMAT csv)
+    WITH ins AS (
+      INSERT INTO predictions (time, site_id, machine_id, model_name, model_version, score, label, source_id, batch_id)
+      SELECT ts, :'site', machine_id, model_name, model_version, score, label, id, :batch FROM stg
+      ON CONFLICT DO NOTHING RETURNING 1)
+    SELECT (SELECT count(*) FROM stg) AS rows_read,
+           (SELECT count(*) FROM ins) AS rows_written,
+           COALESCE((SELECT max(id) FROM stg), :wm) AS to_id \gset
+    UPDATE consolidation_batches
+       SET finished_at = now(), rows_read = :rows_read, rows_written = :rows_written,
+           to_id = :to_id, status = 'ok'
+     WHERE id = :batch;
+    SELECT :rows_read, :rows_written, :to_id;

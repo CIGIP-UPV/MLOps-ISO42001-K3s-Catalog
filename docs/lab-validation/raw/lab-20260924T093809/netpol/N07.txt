@@ -1,0 +1,4 @@
+# N07: mlops -> MinIO (artefact conduit)
+$ nc -z -w 5 platform-minio.minio.svc.cluster.local 9000   (pod in namespace mlops)
+client node: worker1-kb2; destination node(s): worker1-kb2
+CONNECTED

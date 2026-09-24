@@ -3,8 +3,8 @@
 apiVersion: v2
 name: platform-cert-manager
 type: application
-version: 0.2.0
-appVersion: '1.14'
+version: 0.3.0
+appVersion: v1.17.4
 kubeVersion: '>=1.24.0-0'
 description: Automated X.509 certificate provisioning and renewal (ACME, self-signed, OpenBao PKI) for every ingress endpoint
   in the reference architecture.
@@ -32,11 +32,13 @@ annotations:
   artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name": "catalog",
     "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
   mlops-iso42001.cigip-upv.es/tier: platform
+  mlops-iso42001.cigip-upv.es/namespace: cert-manager
   mlops-iso42001.cigip-upv.es/display-name: cert-manager
   mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.4.1, B.6.2.3.1
+  mlops-iso42001.cigip-upv.es/ra-components: CMP-15
 dependencies:
 - name: cert-manager
-  version: ~1.14.0
+  version: v1.17.4
   repository: https://charts.jetstack.io
   condition: cert-manager.enabled
   alias: cert-manager

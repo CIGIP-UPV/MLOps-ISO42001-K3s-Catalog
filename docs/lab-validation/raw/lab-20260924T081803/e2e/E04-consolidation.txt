@@ -1,0 +1,11 @@
+# E04: Data consolidation edge -> platform (batch log)
+$ kubectl create job --from=cronjob/edge-postgresql-sync; psql consolidation_batches
+job.batch/e2e-sync-1 condition met
+{"ts":"2026-09-24T09:00:36Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"sensor_features","batch_id":15,"from_id":3181,"to_id":3320,"rows_read":139,"rows_written":139,"status":"ok"}
+{"ts":"2026-09-24T09:00:37Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"predictions","batch_id":16,"from_id":0,"to_id":0,"rows_read":0,"rows_written":0,"status":"ok"}
+16 | lab-edge-01 | predictions | 0 | 0 | 0 | 0 | ok
+15 | lab-edge-01 | sensor_features | 3181 | 3320 | 139 | 139 | ok
+14 | lab-edge-01 | predictions | 0 | 0 | 0 | 0 | ok
+13 | lab-edge-01 | sensor_features | 2701 | 3181 | 480 | 480 | ok
+cnc-01 | 3320
+(exit 0)

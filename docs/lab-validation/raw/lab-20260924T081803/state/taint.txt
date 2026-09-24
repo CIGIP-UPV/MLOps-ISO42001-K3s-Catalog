@@ -1,0 +1,5 @@
+# PREP-00: control plane reserved (NoSchedule taint on kb2)
+$ kubectl taint nodes kb2 node-role.kubernetes.io/control-plane=true:NoSchedule
+node/kb2 modified
+[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","value":"true"}]
+(exit 0)

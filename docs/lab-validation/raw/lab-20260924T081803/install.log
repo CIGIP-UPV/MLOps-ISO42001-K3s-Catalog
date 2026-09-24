@@ -1,0 +1,186 @@
+[08:18:42] INFO  MLOps ISO/IEC 42001 K3s catalog installer (source: local, phases: base security data edge enterprise)
+WARNING: version difference between client (1.29) and server (1.32) exceeds the supported minor version skew of +/-1
+[08:18:43] INFO  Cluster: v1.32.6+k3s1, helm v3.19.0+g3d8990f
+[08:18:43] INFO  Edge nodes (node-role.kubernetes.io/edge=true): 1
+[08:18:43] INFO  Helm repositories of the chart dependencies
+[08:19:34] INFO  === Base ===
+[08:19:35] INFO  namespaces left untouched (all their charts skipped): argocd
+namespace/edge unchanged
+namespace/logging unchanged
+namespace/falco unchanged
+namespace/platform unchanged
+namespace/mlops unchanged
+namespace/minio unchanged
+namespace/monitoring unchanged
+namespace/openbao unchanged
+namespace/security unchanged
+namespace/helpdesk unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-platform unchanged
+networkpolicy.networking.k8s.io/allow-node-red-npm unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-loki unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-egress unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress-databases unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-scrape unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-db unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-db unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+[08:19:41] INFO  Prometheus Operator CRDs (from platform-prometheus)
+[08:20:21] INFO  === Secrets ===
+[08:20:22] INFO  secret platform/platform-postgresql-auth: created
+[08:20:24] INFO  secret platform/platform-postgresql-app-passwords: created
+[08:20:24] INFO  secret platform/platform-timescaledb-auth: created
+[08:20:25] INFO  secret minio/platform-minio-root: created
+[08:20:26] INFO  secret minio/platform-minio-users: created
+[08:20:27] INFO  secret edge/edge-postgresql-auth: created
+[08:20:29] INFO  secret mlops/platform-mlflow-db: created
+[08:20:29] INFO  secret mlops/platform-mlflow-s3: created
+[08:20:30] INFO  secret mlops/platform-ml-db: created
+[08:20:31] INFO  secret monitoring/platform-loki-s3: created
+[08:20:32] INFO  secret monitoring/platform-grafana-admin: created
+[08:20:33] INFO  secret monitoring/platform-grafana-datasources: created
+[08:20:33] INFO  secret edge/edge-postgresql-sync-target: created
+[08:20:34] INFO  secret edge/edge-mongodb-auth: created
+[08:20:34] INFO  secret edge/edge-mosquitto-users: created
+[08:20:35] INFO  secret edge/edge-rabbitmq-auth: created
+[08:20:35] INFO  secret edge/edge-node-red-admin: created
+[08:20:36] INFO  secret security/enterprise-keycloak-admin: created
+[08:20:37] INFO  secret security/enterprise-keycloak-db: created
+[08:20:37] INFO  secret helpdesk/enterprise-zammad-db: created
+[08:20:38] INFO  secret helpdesk/enterprise-zammad-redis: created
+[08:20:38] INFO  === Phase security ===
+[08:21:11] INFO  install platform-cert-manager -> cert-manager
+[08:23:02] INFO    ok in 111 s, pods ready 3/3
+[08:23:02] INFO  platform-cert-manager: second pass (platform CA)
+[08:23:02] INFO  install platform-cert-manager -> cert-manager
+[08:23:13] INFO    ok in 11 s, pods ready 3/3
+[08:24:00] INFO  install platform-openbao -> openbao
+[08:24:02] INFO    ok in 2 s, pods ready 0/1
+[08:24:42] INFO  install platform-postgresql -> platform
+[08:25:18] INFO    ok in 35 s, pods ready 1/1
+[08:26:08] INFO  install enterprise-keycloak -> security
+[08:28:08] INFO    ok in 120 s, pods ready 1/1
+[08:28:08] INFO  skip platform-argocd (not selected)
+[08:28:08] INFO  === Phase data ===
+[08:28:48] INFO  install platform-minio -> minio
+[08:29:08] INFO    ok in 19 s, pods ready 1/1
+[08:29:08] INFO  install platform-timescaledb -> platform
+[08:30:13] INFO    ok in 65 s, pods ready 1/1
+[08:30:54] INFO  install platform-prometheus -> monitoring
+[08:31:36] INFO    ok in 42 s, pods ready 5/7
+[08:32:15] INFO  install platform-loki -> monitoring
+[08:33:11] INFO    ok in 56 s, pods ready 1/1
+[08:33:49] INFO  install platform-grafana -> monitoring
+[08:34:23] INFO    ok in 34 s, pods ready 1/1
+[08:35:01] INFO  install platform-mlflow -> mlops
+[08:39:41] INFO    ok in 280 s, pods ready 1/1
+[08:39:41] INFO  install platform-training-jobs -> mlops
+[08:39:42] INFO    ok in 1 s, pods ready 0/0
+[08:39:42] INFO  install platform-evidently -> mlops
+[08:40:34] INFO    ok in 52 s, pods ready 1/1
+[08:40:35] INFO  === Phase edge ===
+[08:41:13] INFO  install edge-postgresql -> edge
+[08:41:49] INFO    ok in 36 s, pods ready 1/1
+[08:41:49] INFO  skip edge-mongodb (not selected)
+[08:41:49] INFO  install edge-mosquitto -> edge
+[08:42:08] INFO    ok in 19 s, pods ready 1/1
+[08:42:08] INFO  install edge-rabbitmq -> edge
+[08:42:58] INFO    ok in 50 s, pods ready 1/1
+[08:43:37] INFO  install edge-kafka -> edge
+[08:45:06] INFO    ok in 88 s, pods ready 1/1
+[08:45:06] INFO  install edge-opc-ua-gateway -> edge
+[08:45:25] INFO    ok in 19 s, pods ready 1/1
+[08:46:14] INFO  install edge-node-red -> edge
+[08:47:05] INFO    ok in 51 s, pods ready 1/1
+[08:47:05] INFO  install edge-fastapi-model -> edge
+[08:47:57] INFO    ok in 52 s, pods ready 1/1
+[08:47:57] INFO  install edge-mlflow-sync -> edge
+[08:47:58] INFO    ok in 1 s, pods ready 0/0
+[08:47:58] INFO  install edge-postgresql-sync -> edge
+[08:47:59] INFO    ok in 1 s, pods ready 0/0
+[08:48:46] INFO  install edge-prometheus-agent -> edge
+[08:49:48] INFO    ok in 62 s, pods ready 1/1
+[08:50:21] INFO  install edge-fluent-bit -> logging
+[08:50:32] INFO    ok in 11 s, pods ready 2/3
+[08:51:09] INFO  install edge-falco -> falco
+[08:52:23] INFO    ok in 74 s, pods ready 3/4
+[08:52:23] INFO  === Phase enterprise ===
+[08:52:23] INFO  install enterprise-minio-overlay -> minio
+[08:52:25] INFO    ok in 1 s, pods ready 0/1
+[08:52:25] INFO  install enterprise-grafana-dashboards -> monitoring
+[08:52:27] INFO    ok in 1 s, pods ready 0/0
+[08:53:21] INFO  install enterprise-zammad -> helpdesk
+[08:57:38] INFO    ok in 256 s, pods ready 4/4
+[08:57:38] INFO  === Done. Run log: /root/MLOps-ISO42001-K3s-Catalog/docs/lab-validation/raw/lab-20260924T081803/install.jsonl ===
+  ok     platform-cert-manager            cert-manager    111 s  pods 3/3
+  ok     platform-cert-manager            cert-manager     11 s  pods 3/3
+  ok     platform-openbao                 openbao           2 s  pods 0/1
+  ok     platform-postgresql              platform         35 s  pods 1/1
+  ok     enterprise-keycloak              security        120 s  pods 1/1
+  ok     platform-minio                   minio            19 s  pods 1/1
+  ok     platform-timescaledb             platform         65 s  pods 1/1
+  ok     platform-prometheus              monitoring       42 s  pods 5/7
+  ok     platform-loki                    monitoring       56 s  pods 1/1
+  ok     platform-grafana                 monitoring       34 s  pods 1/1
+  ok     platform-mlflow                  mlops           280 s  pods 1/1
+  ok     platform-training-jobs           mlops             1 s  pods 0/0
+  ok     platform-evidently               mlops            52 s  pods 1/1
+  ok     edge-postgresql                  edge             36 s  pods 1/1
+  ok     edge-mosquitto                   edge             19 s  pods 1/1
+  ok     edge-rabbitmq                    edge             50 s  pods 1/1
+  ok     edge-kafka                       edge             88 s  pods 1/1
+  ok     edge-opc-ua-gateway              edge             19 s  pods 1/1
+  ok     edge-node-red                    edge             51 s  pods 1/1
+  ok     edge-fastapi-model               edge             52 s  pods 1/1
+  ok     edge-mlflow-sync                 edge              1 s  pods 0/0
+  ok     edge-postgresql-sync             edge              1 s  pods 0/0
+  ok     edge-prometheus-agent            edge             62 s  pods 1/1
+  ok     edge-fluent-bit                  logging          11 s  pods 2/3
+  ok     edge-falco                       falco            74 s  pods 3/4
+  ok     enterprise-minio-overlay         minio             1 s  pods 0/1
+  ok     enterprise-grafana-dashboards    monitoring        1 s  pods 0/0
+  ok     enterprise-zammad                helpdesk        256 s  pods 4/4
+  28/28 releases ok

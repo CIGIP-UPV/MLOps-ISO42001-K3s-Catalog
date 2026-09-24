@@ -1,0 +1,36 @@
+# Published Helm repository (GitHub Pages, built from main) checked from the workstation, 2026-09-24T10:19:48Z
+# origin/main: cb20350 2026-06-03 13:18:05 +0200 Add RAbbitMQ and solve bugs
+$ curl -s -o index.yaml -w '%{http_code}' https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/index.yaml
+HTTP 200
+$ python3: charts and versions in index.yaml
+28 charts; versions: ['0.2.0']
+$ curl -s -o /dev/null -w '%{http_code}' <url>   (first URL of every chart)
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fastapi-model-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-kafka-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mosquitto-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-rabbitmq-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-node-red-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-opc-ua-gateway-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fluent-bit-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-prometheus-agent-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-falco-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mongodb-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-postgresql-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-mlflow-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-training-jobs-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-evidently-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-minio-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-postgresql-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-timescaledb-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-grafana-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-loki-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-prometheus-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-rancher-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-argocd-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-openbao-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-cert-manager-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-keycloak-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-grafana-dashboards-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-minio-overlay-0.2.0.tgz
+404 https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-zammad-0.2.0.tgz
+packages: 28, HTTP 404: 28

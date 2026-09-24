@@ -1,0 +1,4 @@
+# N01: edge -> platform TimescaleDB (consolidation conduit)
+$ nc -z -w 5 platform-timescaledb.platform.svc.cluster.local 5432   (pod in namespace edge)
+client node: worker1-kb2; destination node(s): worker1-kb2
+CONNECTED

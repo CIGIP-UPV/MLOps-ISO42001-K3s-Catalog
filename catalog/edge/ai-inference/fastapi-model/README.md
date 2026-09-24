@@ -1,82 +1,103 @@
-# FastAPI Model Server — Edge AI Inference
+# FastAPI Model Server: Edge AI Inference
 
 | Field | Value |
 |-------|-------|
+| **Chart** | `edge-fastapi-model` |
 | **Tier** | Edge |
+| **Namespace** | `edge` |
 | **Category** | AI Inference |
-| **RA Component** | Edge AI Model |
-| **ISO/IEC 42001** | B.6.1.2.2 · B.6.1.3.4 · B.6.2.6.1 |
-| **Deployment** | Custom container (no public Helm chart — provided as K3S manifest) |
+| **RA Components** | Model (CMP-04, edge); Model Technical Performance Monitoring (CMP-10, edge subcomponent) |
+| **ISO/IEC 42001** | B.6.2.6.2 · B.6.2.6.4 |
+| **Deployment** | Own Helm chart; application code in `manifests/files/app.py`, public runtime image |
 | **K3S Compatible** | Yes |
 
 ---
 
 ## Description
 
-The FastAPI Model Server is the **Edge AI Model** component — a containerised Python service that exposes an AI model (e.g., LSTM, Random Forest, anomaly detector) as a REST API for **low-latency inference** close to the data source.
+The FastAPI Model Server is the **edge Model** component: a Python service that serves the AI model through a REST API close to the data source, for **low-latency inference** without a round trip to the platform.
 
-In the reference architecture, the edge inference service provides:
+It never builds or bakes a model into an image. It serves the model version that the **edge Version Control** component ([`edge-mlflow-sync`](../../version-control/mlflow-sync/README.md)) has propagated from the platform MLflow registry into a shared volume:
 
-- **Real-time predictions** from time-series sensor data (e.g., vibration, temperature, energy consumption) without round-trip latency to the platform.
-- **Prediction logging**: every inference request and response is logged to PostgreSQL and forwarded to Fluent Bit, supporting the audit trail required by B.6.2.8.1.
-- **Health and readiness endpoints**: expose `/health` and `/ready` endpoints consumed by Prometheus Agent for infrastructure monitoring.
-- **Version endpoint**: exposes the deployed model version, linked to the version control component (MLflow) for traceability (B.6.1.3.2).
+```
+/models/current.json              name, version, run, features and SHA-256 of the active version
+/models/versions/<name>-v<N>/     MLflow pyfunc model of each synchronised version
+```
 
-The edge model is a **lightweight variant** of the platform model — same architecture, potentially quantised or pruned for constrained hardware. Model artefacts are promoted from the platform tier via the Version Control mechanism (MLflow model registry).
+The application (`manifests/files/app.py`) is mounted from a ConfigMap and runs on `ghcr.io/burakince/mlflow`, a public image that already bundles MLflow, scikit-learn, FastAPI, uvicorn, `prometheus_client` and `psycopg2`. No private registry is needed.
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /health` | Liveness (process up) |
+| `GET /ready` | `200` when a model is loaded, `503` before the first promotion |
+| `GET /version` | Model name, version, MLflow run, features and SHA-256 of the served version |
+| `POST /reload` | Load the version pointed to by `current.json` (called by `edge-mlflow-sync`) |
+| `POST /predict` | Score samples: `{"samples": [{"machine_id": "cnc-01", "features": {"temperature": 61.0, ...}}]}` |
+| `GET /metrics` | Prometheus metrics |
+
+Every prediction is written to the `predictions` table of the edge data stock (`edge-postgresql`) and emitted as a JSON line on stdout, which Fluent Bit ships to Loki (B.6.2.8.1).
+
+The `/metrics` endpoint is the **edge subcomponent of CMP-10** (Model Technical Performance Monitoring): `edge-prometheus-agent` scrapes it through the pod annotations and forwards it to the platform Prometheus. Metrics: `model_predictions_total{model_name,model_version,outcome}`, `model_prediction_latency_seconds`, `model_anomaly_score`, `model_info{model_name,model_version}`, `model_loaded`, `model_reloads_total` and `model_prediction_log_errors_total`.
 
 ---
 
 ## ISO/IEC 42001 Mapping
 
-| Clause | Requirement | How FastAPI Model Server Addresses It |
-|--------|-------------|---------------------------------------|
-| B.6.1.2.2 | Integration of Metrics | Exposes `/metrics` endpoint for Prometheus scraping |
-| B.6.1.3.4 | Release Criteria | Version endpoint linked to MLflow registry; only promoted models are served |
-| B.6.2.6.1 | Error Monitoring | Health endpoint; structured error logging per request |
+| Clause | Requirement | How the FastAPI Model Server addresses it |
+|--------|-------------|-------------------------------------------|
+| B.6.2.6.2 | Operation: Model Performance | Latency, outcome and score metrics per model version on `/metrics` |
+| B.6.2.6.4 | Operation: Retraining / Lifecycle | Hot reload of each version promoted in the registry; `/version` exposes which one is served |
 
 ---
 
 ## Prerequisites
 
-- Container image with your model artefact baked in (or mounted via PVC from MinIO)
-- K3S cluster with GPU support (optional — for GPU-accelerated inference)
-- PostgreSQL deployed for prediction logging
-- Prometheus Agent deployed for metrics scraping
-- Access to MLflow registry on the platform tier (for model version metadata)
+- `edge-postgresql` (prediction log) and the Secret `edge-postgresql-auth`.
+- `edge-mlflow-sync`, installed after this chart, to populate the model store.
+- `edge-prometheus-agent` to scrape `/metrics`.
+- An edge node labelled `node-role.kubernetes.io/edge=true`.
 
 ---
 
 ## Deployment Questionnaire
 
-See [`questionnaire.md`](./questionnaire.md).
+The Rancher questionnaire is [`manifests/questions.yaml`](./manifests/questions.yaml).
 
 ---
 
-## Installation (K3S Manifest)
+## Installation (Helm)
 
 ```bash
-kubectl apply -f manifests/fastapi-deployment.yaml
-kubectl apply -f manifests/fastapi-service.yaml
+helm repo add cigip-upv https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+helm install edge-fastapi-model cigip-upv/edge-fastapi-model -n edge
 ```
 
-Edit `manifests/fastapi-deployment.yaml` to set your container image, resource limits, and environment variables.
+Until a model version is promoted and synchronised, `/ready` returns `503` and `/predict` refuses requests. After the first synchronisation:
+
+```bash
+kubectl -n edge port-forward svc/edge-fastapi-model 8000:8000
+curl localhost:8000/version
+curl localhost:8000/predict -H 'content-type: application/json' \
+  -d '{"samples":[{"machine_id":"cnc-01","features":{"temperature":61,"vibration":1.1,"pressure":5.2}}]}'
+```
 
 ---
 
 ## Key Configuration Decisions
 
-| Decision | Options | Recommendation |
-|----------|---------|----------------|
-| Model loading | Baked into image / mounted PVC / remote pull | **Mounted PVC** — simplifies model updates without image rebuilds |
-| GPU | Enabled / Disabled | Enable only if edge node has GPU; most edge scenarios use CPU |
-| Replicas | 1 / 2+ | 1 for constrained edge; 2 for high-availability setups |
-| Inference timeout | 100ms / 500ms / custom | Set based on process latency requirements (e.g., 500ms for stamping press) |
+| Decision | Options | Choice in this chart |
+|----------|---------|----------------------|
+| Model loading | Baked into image / mounted volume / remote pull | **Mounted volume** written by `edge-mlflow-sync`: models change without rebuilding or restarting |
+| Runtime image | Custom image / public image + code in ConfigMap | **Public image + ConfigMap**: reproducible without a private registry |
+| Readiness | Model loaded / process up | Readiness on `/health` so the release installs before the first model exists; `/ready` reports the model state |
+| Update strategy | RollingUpdate / Recreate | **Recreate**: the model volume is `ReadWriteOnce` |
+| GPU | Enabled / Disabled | Not used: the reference model (IsolationForest) runs on CPU |
 
 ---
 
 ## Related Solutions
 
-- [Node-RED](../../data-ingestion/node-red/README.md) — calls this endpoint with preprocessed sensor data
-- [PostgreSQL](../../storage/postgresql/README.md) — prediction cache and feature store
-- [Prometheus Agent](../../monitoring/prometheus-agent/README.md) — scrapes `/metrics` endpoint
-- [MLflow](../../../platform/ai-lifecycle/mlflow/README.md) — source of model artefacts and version metadata
+- [Edge Version Control](../../version-control/mlflow-sync/README.md): propagates the promoted model version to this server
+- [PostgreSQL (edge)](../../storage/postgresql/README.md): prediction log
+- [Prometheus Agent](../../monitoring/prometheus-agent/README.md): scrapes `/metrics`
+- [MLflow](../../../platform/ai-lifecycle/mlflow/README.md): model registry on the platform

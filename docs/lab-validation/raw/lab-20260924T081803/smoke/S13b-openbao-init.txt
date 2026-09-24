@@ -1,0 +1,10 @@
+# S13b: OpenBao init, unseal, KV write/read, audit device
+$ bao operator init/unseal; bao secrets enable kv; bao audit enable file; bao kv put/get
+initialised; laboratory unseal key and root token stored in Secret openbao/openbao-lab-init (not printed)
+kv read back: ok
+Initialized     true
+Sealed          false
+Path     Type    Description
+----     ----    -----------
+file/    file    n/a
+(exit 0)

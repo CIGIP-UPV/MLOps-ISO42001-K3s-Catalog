@@ -1,208 +1,1352 @@
 # =============================================================================
-# Network Policies — Tier isolation and controlled inter-tier communication
-# ISA/IEC 62443: Zone segmentation and intrusion prevention
-# ISO/IEC 42001: B.6.2.6.7 (Threat Detection support)
+# Network Policies: zone segmentation of the catalog namespaces
+# ISA/IEC 62443 zones and conduits; ISO/IEC 42001 B.6.2.6.7 (threat
+# prevention support) and B.6.1.3.1 (access control).
+#
+# Every catalog namespace denies all ingress and egress by default and
+# allows DNS, traffic inside the namespace and, where needed, the Kubernetes
+# API. The rules below open only the conduits the catalog uses:
+#   edge -> platform (5432, data consolidation), edge -> mlops (5000, version
+#   sync), edge -> monitoring (9090 remote-write, 3100 logs), logging and
+#   falco -> monitoring (3100), mlops -> minio (9000) and platform (5432),
+#   security/helpdesk -> platform (5432), monitoring -> every namespace
+#   (scraping and Grafana data sources).
+# Generated with the catalog; applied by infrastructure/install.sh.
 # =============================================================================
 
-# ---- EDGE NAMESPACE ----
-# Allow: intra-edge, edge→platform (monitoring, data sync), deny all else
+# ----------------------------------------------------------------------
+# Namespace edge
+# ----------------------------------------------------------------------
+---
+# edge: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: edge
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: edge-default-deny
+  name: allow-dns
   namespace: edge
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
 spec:
   podSelector: {}
   policyTypes:
-    - Ingress
-    - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: edge-allow-intra
-  namespace: edge
-spec:
-  podSelector: {}
-  policyTypes:
-    - Ingress
-    - Egress
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              tier: edge
+  - Egress
   egress:
-    # Intra-edge
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              tier: edge
-    # Edge → Monitoring (Prometheus remote-write, Loki log shipping)
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              function: monitoring
-      ports:
-        - port: 9090
-          protocol: TCP
-        - port: 3100
-          protocol: TCP
-    # Edge → Platform (data sync to TimescaleDB, MinIO)
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              tier: platform
-      ports:
-        - port: 5432
-          protocol: TCP
-        - port: 9000
-          protocol: TCP
-    # DNS resolution
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-      ports:
-        - port: 53
-          protocol: UDP
-        - port: 53
-          protocol: TCP
-
-# ---- MONITORING NAMESPACE ----
-# Allow: all tiers → monitoring (scraping, log shipping)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: monitoring-allow-ingress
+  name: allow-same-namespace
+  namespace: edge
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+# edge: Kubernetes API server (endpoint port 6443, after the Service DNAT)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kube-apiserver
+  namespace: edge
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - port: 6443
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: edge
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - port: 5432
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-platform
+  namespace: edge
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: platform
+    ports:
+    - port: 5432
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: mlops
+    ports:
+    - port: 5000
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - port: 9090
+      protocol: TCP
+    - port: 3100
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: logging
+    ports:
+    - port: 2020
+      protocol: TCP
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - port: 4840
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-node-red-npm
+  namespace: edge
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: node-red
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+    ports:
+    - port: 443
+      protocol: TCP
+
+# ----------------------------------------------------------------------
+# Namespace logging
+# ----------------------------------------------------------------------
+---
+# logging: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: logging
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: logging
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: logging
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+# logging: Kubernetes API server (endpoint port 6443, after the Service DNAT)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kube-apiserver
+  namespace: logging
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - port: 6443
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: logging
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: edge
+    ports:
+    - port: 2020
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-loki
+  namespace: logging
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - port: 3100
+      protocol: TCP
+
+# ----------------------------------------------------------------------
+# Namespace falco
+# ----------------------------------------------------------------------
+---
+# falco: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: falco
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: falco
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: falco
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+# falco: Kubernetes API server (endpoint port 6443, after the Service DNAT)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kube-apiserver
+  namespace: falco
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - port: 6443
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress
+  namespace: falco
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - port: 3100
+      protocol: TCP
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+    ports:
+    - port: 443
+      protocol: TCP
+
+# ----------------------------------------------------------------------
+# Namespace platform
+# ----------------------------------------------------------------------
+---
+# platform: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: platform
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: platform
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: platform
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-databases
+  namespace: platform
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: mlops
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: security
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: helpdesk
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: edge
+    ports:
+    - port: 5432
+      protocol: TCP
+    - port: 9187
+      protocol: TCP
+
+# ----------------------------------------------------------------------
+# Namespace mlops
+# ----------------------------------------------------------------------
+---
+# mlops: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: mlops
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: mlops
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: mlops
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+# mlops: Kubernetes API server (endpoint port 6443, after the Service DNAT)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kube-apiserver
+  namespace: mlops
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - port: 6443
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: mlops
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: edge
+    ports:
+    - port: 5000
+      protocol: TCP
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress
+  namespace: mlops
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: minio
+    ports:
+    - port: 9000
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: platform
+    ports:
+    - port: 5432
+      protocol: TCP
+
+# ----------------------------------------------------------------------
+# Namespace minio
+# ----------------------------------------------------------------------
+---
+# minio: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: minio
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: minio
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: minio
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: minio
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: mlops
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - port: 9000
+      protocol: TCP
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+
+# ----------------------------------------------------------------------
+# Namespace monitoring
+# ----------------------------------------------------------------------
+---
+# monitoring: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
   namespace: monitoring
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
 spec:
   podSelector: {}
   policyTypes:
-    - Ingress
-  ingress:
-    # From all ISO 42001 namespaces (metrics and logs)
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              iso42001: "true"
-    # From Traefik ingress (Grafana, Prometheus UI)
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-
-# ---- MLOPS NAMESPACE ----
-# Allow: platform↔mlops, enterprise→mlops (MLflow UI)
+  - Ingress
+  - Egress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: mlops-default-deny
-  namespace: mlops
+  name: allow-dns
+  namespace: monitoring
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
 spec:
   podSelector: {}
   policyTypes:
-    - Ingress
-    - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: mlops-allow
-  namespace: mlops
-spec:
-  podSelector: {}
-  policyTypes:
-    - Ingress
-    - Egress
-  ingress:
-    # From platform and enterprise tiers
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              tier: platform
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              tier: enterprise
-    # Traefik ingress
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
+  - Egress
   egress:
-    # To MinIO (artefact storage)
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              function: storage
-      ports:
-        - port: 9000
-          protocol: TCP
-    # To PostgreSQL (metadata)
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              function: data-management
-      ports:
-        - port: 5432
-          protocol: TCP
-    # DNS
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-      ports:
-        - port: 53
-          protocol: UDP
-
-# ---- SECURITY NAMESPACE (Keycloak) ----
-# Allow: all ISO 42001 namespaces → Keycloak (authentication)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: security-allow-auth
+  name: allow-same-namespace
+  namespace: monitoring
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+# monitoring: Kubernetes API server (endpoint port 6443, after the Service DNAT)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kube-apiserver
+  namespace: monitoring
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - port: 6443
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: monitoring
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          iso42001: 'true'
+    ports:
+    - port: 9090
+      protocol: TCP
+    - port: 3100
+      protocol: TCP
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+  - from:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - port: 10250
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-scrape
+  namespace: monitoring
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector: {}
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - port: 9100
+      protocol: TCP
+    - port: 10250
+      protocol: TCP
+
+# ----------------------------------------------------------------------
+# Namespace security
+# ----------------------------------------------------------------------
+---
+# security: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
   namespace: security
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
 spec:
   podSelector: {}
   policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              iso42001: "true"
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-
-# ---- HELPDESK NAMESPACE ----
-# Allow: enterprise access, monitoring alerts
+  - Ingress
+  - Egress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: helpdesk-allow
-  namespace: helpdesk
+  name: allow-dns
+  namespace: security
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
 spec:
   podSelector: {}
   policyTypes:
-    - Ingress
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: security
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
   ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              tier: enterprise
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              function: monitoring
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: security
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: argocd
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-db
+  namespace: security
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: platform
+    ports:
+    - port: 5432
+      protocol: TCP
+
+# ----------------------------------------------------------------------
+# Namespace helpdesk
+# ----------------------------------------------------------------------
+---
+# helpdesk: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: helpdesk
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: helpdesk
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: helpdesk
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: helpdesk
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-db
+  namespace: helpdesk
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: platform
+    ports:
+    - port: 5432
+      protocol: TCP
+
+# ----------------------------------------------------------------------
+# Namespace argocd
+# ----------------------------------------------------------------------
+---
+# argocd: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: argocd
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: argocd
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: argocd
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+# argocd: Kubernetes API server (endpoint port 6443, after the Service DNAT)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kube-apiserver
+  namespace: argocd
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - port: 6443
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: argocd
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-repos
+  namespace: argocd
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+    ports:
+    - port: 443
+      protocol: TCP
+    - port: 22
+      protocol: TCP
+
+# ----------------------------------------------------------------------
+# Namespace openbao
+# ----------------------------------------------------------------------
+---
+# openbao: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: openbao
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: openbao
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: openbao
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+# openbao: Kubernetes API server (endpoint port 6443, after the Service DNAT)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kube-apiserver
+  namespace: openbao
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - port: 6443
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: openbao
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          iso42001: 'true'
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 8200
+      protocol: TCP

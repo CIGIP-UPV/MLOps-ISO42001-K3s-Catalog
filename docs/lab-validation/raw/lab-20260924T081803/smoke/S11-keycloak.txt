@@ -1,0 +1,4 @@
+# S11: Keycloak realm ai-system
+$ GET /realms/ai-system/.well-known/openid-configuration
+issuer: http://127.0.0.1:18080/realms/ai-system
+(exit 0)

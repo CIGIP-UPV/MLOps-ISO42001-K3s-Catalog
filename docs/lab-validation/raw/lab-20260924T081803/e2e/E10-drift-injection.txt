@@ -1,0 +1,4 @@
+# E10: Induced drift: shifted samples of machine cnc-02 through MQTT
+$ mosquitto_pub 300 s of shifted samples (pod in edge)
+published 300 seconds of shifted samples for machine cnc-02
+(exit 0)

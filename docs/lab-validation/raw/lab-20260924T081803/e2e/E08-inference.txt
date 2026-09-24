@@ -1,0 +1,8 @@
+# E08: Inference with the propagated version
+$ GET /version; POST /predict (port-forward svc/edge-fastapi-model)
+{"model_name":"zdm-anomaly-detector","model_version":"1","alias":"champion","run_id":"1dc489b33bcc40e4a664baa423de928d","features":["DipData","NegativeTrendData","PositiveTrendData","SpikeData"],"sha256":"8ce9e0113b5f6f974ff61f37464cb4284ec664765a81f65e485fef29873ebeef","loaded_at":1790240477.3145795}
+features of the last 30 s: { "SpikeData" : -1.4210854715202005e-15, "PositiveTrendData" : 158.89000000000001, "DipData" : -30.006577571905765, "NegativeTrendData" : 41.01 }
+{"model_name":"zdm-anomaly-detector","model_version":"1","predictions":[{"machine_id":"cnc-01","score":0.5731829116903856,"label":"normal"},{"machine_id":"cnc-01","score":0.7075893154813926,"label":"anomaly"}]}
+2026-09-24 09:01:25.008309+00 | 1 | anomaly | 0.7076
+2026-09-24 09:01:25.008309+00 | 1 | normal | 0.5732
+(exit 0)

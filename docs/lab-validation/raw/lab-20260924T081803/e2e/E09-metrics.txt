@@ -1,0 +1,8 @@
+# E09: Edge metrics in the platform Prometheus (remote-write)
+$ PromQL on platform-prometheus: model_predictions_total, model_info, ingest_messages_valid_total
+sum by (model_version, outcome) (model_predictions_total) => [({'model_version': '1', 'outcome': 'normal'}, '1'), ({'model_version': '1', 'outcome': 'anomaly'}, '1')]
+max by (model_version) (model_info) => [({'model_version': '1'}, '1')]
+sum(ingest_messages_valid_total) => [({}, '3688')]
+sum(internal_gather_metrics_gathered{input="opcua"}) => [({}, '4020')]
+queries with data: 4/4
+(exit 0)

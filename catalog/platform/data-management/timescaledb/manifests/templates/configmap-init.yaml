@@ -1,0 +1,108 @@
+# =============================================================================
+# TimescaleDB schema of the platform data stock.
+# Mounted as a single file under /docker-entrypoint-initdb.d, so it runs once
+# on first start, after the image's own TimescaleDB set-up script.
+# ISO/IEC 42001: B.6.2.6.1, B.6.2.6.3 (consolidation and drift tables also
+# support B.6.2.8.1 audit queries)
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "platform-timescaledb.fullname" . }}-init
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "platform-timescaledb.labels" . | nindent 4 }}
+data:
+  100-zdm-schema.sh: |
+    #!/bin/bash
+    set -euo pipefail
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \
+      -v sync_pw="$SYNC_DB_PASSWORD" -v ml_pw="$ML_DB_PASSWORD" -v grafana_pw="$GRAFANA_DB_PASSWORD" <<'SQL'
+    CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+    -- Consolidated edge sensor readings (target of edge-postgresql-sync).
+    -- (site_id, source_id, time) makes each batch idempotent.
+    CREATE TABLE IF NOT EXISTS sensor_readings (
+      time        TIMESTAMPTZ NOT NULL,
+      site_id     TEXT NOT NULL,
+      machine_id  TEXT NOT NULL,
+      signal_name TEXT NOT NULL,
+      value       DOUBLE PRECISION,
+      source_id   BIGINT NOT NULL,
+      batch_id    BIGINT,
+      UNIQUE (site_id, source_id, time)
+    );
+    SELECT create_hypertable('sensor_readings', 'time', if_not_exists => TRUE);
+
+    -- Consolidated edge predictions.
+    CREATE TABLE IF NOT EXISTS predictions (
+      time          TIMESTAMPTZ NOT NULL,
+      site_id       TEXT NOT NULL,
+      machine_id    TEXT NOT NULL,
+      model_name    TEXT,
+      model_version TEXT NOT NULL,
+      score         DOUBLE PRECISION,
+      label         TEXT,
+      source_id     BIGINT NOT NULL,
+      batch_id      BIGINT,
+      UNIQUE (site_id, source_id, time)
+    );
+    SELECT create_hypertable('predictions', 'time', if_not_exists => TRUE);
+
+    -- Goal-oriented KPIs (B.6.2.6.3).
+    CREATE TABLE IF NOT EXISTS oee_kpis (
+      time         TIMESTAMPTZ NOT NULL,
+      machine_id   TEXT NOT NULL,
+      oee          DOUBLE PRECISION,
+      availability DOUBLE PRECISION,
+      performance  DOUBLE PRECISION,
+      quality      DOUBLE PRECISION
+    );
+    SELECT create_hypertable('oee_kpis', 'time', if_not_exists => TRUE);
+
+    -- Provenance of every consolidation batch (edge -> platform data flow).
+    CREATE TABLE IF NOT EXISTS consolidation_batches (
+      id           BIGSERIAL PRIMARY KEY,
+      site_id      TEXT NOT NULL,
+      source_table TEXT NOT NULL,
+      started_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      finished_at  TIMESTAMPTZ,
+      from_id      BIGINT,
+      to_id        BIGINT,
+      rows_read    BIGINT DEFAULT 0,
+      rows_written BIGINT DEFAULT 0,
+      status       TEXT NOT NULL,
+      message      TEXT
+    );
+
+    -- Drift checks and retraining recommendations (CMP-14).
+    CREATE TABLE IF NOT EXISTS retraining_recommendations (
+      id               BIGSERIAL PRIMARY KEY,
+      created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      model_name       TEXT NOT NULL,
+      model_version    TEXT,
+      reference_window TEXT,
+      current_window   TEXT,
+      drift_share      DOUBLE PRECISION,
+      drifted_columns  TEXT[],
+      threshold        DOUBLE PRECISION,
+      recommended      BOOLEAN NOT NULL,
+      action           TEXT,
+      report_uri       TEXT
+    );
+
+    -- Least-privilege roles.
+    SELECT format('CREATE ROLE sync LOGIN PASSWORD %L', :'sync_pw')
+      WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'sync') \gexec
+    SELECT format('CREATE ROLE ml LOGIN PASSWORD %L', :'ml_pw')
+      WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'ml') \gexec
+    SELECT format('CREATE ROLE grafana LOGIN PASSWORD %L', :'grafana_pw')
+      WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'grafana') \gexec
+
+    GRANT SELECT, INSERT ON sensor_readings, predictions TO sync;
+    GRANT SELECT, INSERT, UPDATE ON consolidation_batches TO sync;
+    GRANT USAGE ON SEQUENCE consolidation_batches_id_seq TO sync;
+    GRANT SELECT ON ALL TABLES IN SCHEMA public TO ml, grafana;
+    GRANT INSERT ON retraining_recommendations TO ml;
+    GRANT USAGE ON SEQUENCE retraining_recommendations_id_seq TO ml;
+    SQL

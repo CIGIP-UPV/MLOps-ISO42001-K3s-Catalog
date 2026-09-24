@@ -1,0 +1,6 @@
+# S04: Mosquitto authenticated publish/subscribe, anonymous refused
+$ mosquitto_sub (nodered) + mosquitto_pub (gateway); anonymous mosquitto_pub
+Timed out
+received: 
+anonymous refused
+(exit 1)

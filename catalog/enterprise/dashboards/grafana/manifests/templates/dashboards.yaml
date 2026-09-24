@@ -1,0 +1,23 @@
+# =============================================================================
+# Grafana dashboards (files/dashboards/*.json), one ConfigMap each, loaded by
+# the sidecar of platform-grafana (label grafana_dashboard=1).
+# ISO/IEC 42001: B.6.1.3.3, B.6.2.6.2
+# =============================================================================
+{{- range $name, $enabled := .Values.dashboards }}
+{{- if $enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Release.Name }}-{{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "enterprise-grafana-dashboards.labels" $ | nindent 4 }}
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: {{ $.Values.folder | quote }}
+data:
+  {{ $name }}.json: |-
+{{ $.Files.Get (printf "files/dashboards/%s.json" $name) | indent 4 }}
+{{- end }}
+{{- end }}

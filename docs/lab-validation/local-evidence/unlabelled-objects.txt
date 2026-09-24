@@ -1,0 +1,16 @@
+# Local check (Docker Desktop kind cluster, same charts; not the laboratory): catalog namespace objects
+# without the iso42001 label, by origin. 2026-09-24T10:11:29Z, commit ba1cb48
+$ kubectl get pods,svc,deploy,sts,ds,cm,pvc,job,cronjob,sa,secret,ingress,networkpolicy -n <ns> -o json (catalog namespaces), classified by name, owner and helm.sh/hook
+objects 473 labelled 380
+43 Secret: Helm release record e.g. ['edge/Secret/sh.helm.release.v1.edge-fastapi-model.v1', 'edge/Secret/sh.helm.release.v1.edge-kafka.v1', 'edge/Secret/sh.helm.release.v1.edge-kafka.v2']
+11 ConfigMap kube-root-ca.crt (Kubernetes) e.g. ['edge/ConfigMap/kube-root-ca.crt', 'falco/ConfigMap/kube-root-ca.crt', 'helpdesk/ConfigMap/kube-root-ca.crt']
+11 ServiceAccount default (Kubernetes) e.g. ['edge/ServiceAccount/default', 'falco/ServiceAccount/default', 'helpdesk/ServiceAccount/default']
+9 PVC from volumeClaimTemplate e.g. ['edge/PersistentVolumeClaim/data-edge-kafka-controller-0', 'edge/PersistentVolumeClaim/data-edge-postgresql-0', 'helpdesk/PersistentVolumeClaim/enterprise-zammad-var-enterprise-zammad-0']
+5 created by controller/operator (owner Prometheus) e.g. ['monitoring/Service/prometheus-operated', 'monitoring/ConfigMap/prometheus-platform-prometheus-prometheus-rulefiles-0', 'monitoring/Secret/prometheus-platform-prometheus-prometheus']
+5 other Secret e.g. ['monitoring/Secret/platform-prometheus-admission', 'openbao/Secret/openbao-lab-init', 'openbao/Secret/openbao-tls']
+4 created by controller/operator (owner Alertmanager) e.g. ['monitoring/Service/alertmanager-operated', 'monitoring/Secret/alertmanager-platform-prometheus-alertmanager-generated', 'monitoring/Secret/alertmanager-platform-prometheus-alertmanager-tls-assets-0']
+1 created by controller/operator (owner ReplicaSet) e.g. ['edge/Pod/opc-plc-754d76d457-jf2rg']
+1 other Service e.g. ['edge/Service/opc-plc']
+1 other Deployment e.g. ['edge/Deployment/opc-plc']
+1 Helm hook e.g. ['mlops/Secret/platform-mlflow-flask-server-secret-key']
+1 created by controller/operator (owner StatefulSet) e.g. ['monitoring/PersistentVolumeClaim/storage-platform-loki-0']

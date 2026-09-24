@@ -3,10 +3,11 @@
 apiVersion: v2
 name: edge-prometheus-agent
 type: application
-version: 0.2.0
+version: 0.3.0
 appVersion: '25.3'
 kubeVersion: '>=1.24.0-0'
-description: Prometheus running in agent mode — scrapes local targets and forwards metrics to the platform via remote-write.
+description: 'Prometheus in agent mode: scrapes edge workloads (including the model server metrics) and forwards them to the
+  platform via remote-write.'
 icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/edge-prometheus-agent.svg
 home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
 sources:
@@ -29,8 +30,10 @@ annotations:
   artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name": "catalog",
     "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
   mlops-iso42001.cigip-upv.es/tier: edge
+  mlops-iso42001.cigip-upv.es/namespace: edge
   mlops-iso42001.cigip-upv.es/display-name: Prometheus Agent
   mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.2.2, B.6.2.6.1
+  mlops-iso42001.cigip-upv.es/ra-components: CMP-08, CMP-10
 dependencies:
 - name: prometheus
   version: ~25

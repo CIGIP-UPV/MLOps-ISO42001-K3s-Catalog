@@ -1,0 +1,5 @@
+# S12: Zammad web and API
+$ GET /; GET /api/v1/getting_started
+web: HTTP 200
+{"setup_done":false,"import_mode":false,"import_backend":"","system_online_service":false}
+(exit 0)

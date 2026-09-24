@@ -1,0 +1,4 @@
+# S20: Evidently UI API
+$ GET /api/version
+{"application":"Evidently UI","version":"0.4.33","commit":"-"}
+(exit 0)

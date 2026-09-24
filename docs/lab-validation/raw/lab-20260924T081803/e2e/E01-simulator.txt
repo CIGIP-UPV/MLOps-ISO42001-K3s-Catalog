@@ -1,0 +1,6 @@
+# E01: OPC UA simulator (OPC PLC) in the edge namespace
+$ kubectl apply -f docs/lab-validation/manifests/opc-plc-simulator.yaml
+deployment.apps/opc-plc unchanged
+service/opc-plc unchanged
+deployment "opc-plc" successfully rolled out
+(exit 0)

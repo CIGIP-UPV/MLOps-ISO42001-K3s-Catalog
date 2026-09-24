@@ -1,6 +1,6 @@
 # =============================================================================
-# Rancher Questions — Eclipse Mosquitto (Edge MQTT Broker)
-# ISO/IEC 42001: B.6.2.6.4
+# Rancher Questions: Eclipse Mosquitto (Edge MQTT Broker)
+# ISO/IEC 42001: B.6.1.3.1, B.6.2.6.4
 # =============================================================================
 categories:
   - "Edge"
@@ -61,21 +61,15 @@ questions:
       - "LoadBalancer"
     group: "Networking"
 
-  - variable: service.nodePorts.mqtt
-    label: "MQTT NodePort"
-    type: int
-    default: 31883
-    show_if: "service.type=NodePort"
-    group: "Networking"
 
-  - variable: service.nodePorts.websocket
-    label: "WebSocket NodePort"
-    type: int
-    default: 31901
-    show_if: "service.type=NodePort"
-    group: "Networking"
+  # ---- Authentication ----
+  - variable: auth.usersSecret
+    label: "MQTT Users Secret"
+    description: "One key per user with the plain password (created by install.sh); hashed at start-up (ISO/IEC 42001: B.6.1.3.1)"
+    type: string
+    default: "edge-mosquitto-users"
+    group: "Authentication"
 
-  # ---- Persistence ----
   - variable: persistence.storageClass
     label: "Storage Class"
     type: storageclass

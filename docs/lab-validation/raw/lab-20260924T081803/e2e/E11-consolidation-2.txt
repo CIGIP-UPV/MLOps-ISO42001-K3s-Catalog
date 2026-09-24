@@ -1,0 +1,12 @@
+# E11: Consolidation of the drifted data
+$ kubectl create job --from=cronjob/edge-postgresql-sync e2e-sync-2
+job.batch/e2e-sync-2 condition met
+{"ts":"2026-09-24T09:08:57Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"sensor_features","batch_id":25,"from_id":6154,"to_id":6520,"rows_read":366,"rows_written":366,"status":"ok"}
+{"ts":"2026-09-24T09:08:57Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"predictions","batch_id":26,"from_id":2,"to_id":2,"rows_read":0,"rows_written":0,"status":"ok"}
+26 | lab-edge-01 | predictions | 2 | 2 | 0 | 0 | ok
+25 | lab-edge-01 | sensor_features | 6154 | 6520 | 366 | 366 | ok
+24 | lab-edge-01 | predictions | 2 | 2 | 0 | 0 | ok
+23 | lab-edge-01 | sensor_features | 5300 | 6154 | 854 | 854 | ok
+cnc-01 | 5320
+cnc-02 | 1200
+(exit 0)
