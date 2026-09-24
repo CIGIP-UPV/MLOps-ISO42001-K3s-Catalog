@@ -46,6 +46,14 @@ CMP-12 Feedback Interface. The catalog has 31 charts.
 - `edge-mlflow-sync` runs are serialised with a lock on the model store: a
   run started by hand during a scheduled run downloaded the same version into
   the same directory and one of them failed.
+- `edge-postgresql-sync` waits up to a minute for both databases before the
+  first batch. With NetworkPolicies enforced by the K3s controller, a new pod
+  is refused for a moment until the controller of the destination node
+  includes it, so every run failed in the laboratory once the platform node
+  enforced policies. A failed step now stops the table instead of running the
+  next statements with empty values.
+- The TimescaleDB schema Job prefers the nodes without the edge label (Helm
+  hooks are not reached by `install.sh --separate-tiers`).
 
 ## [2.0.0] - 2026-09-24
 
