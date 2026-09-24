@@ -1,0 +1,99 @@
+## date
+jue 24 sep 2026 19:40:48 UTC
+
+## nodes
+NAME          STATUS   ROLES                  AGE    VERSION        INTERNAL-IP      EXTERNAL-IP     OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
+edgenode01    Ready    edge                   178d   v1.32.6+k3s1   <ip-edgenode01>   <none>          Ubuntu 22.04.5 LTS   5.15.148-tegra       containerd://2.0.5-k3s1.32
+kb2           Ready    control-plane,master   246d   v1.32.6+k3s1   <ip-kb2>    <ip-kb2>   Ubuntu 22.04.4 LTS   5.15.0-190-generic   containerd://2.0.5-k3s1.32
+worker1-kb2   Ready    <none>                 198d   v1.32.6+k3s1   <ip-worker1-kb2>   <none>          Ubuntu 22.04.4 LTS   6.8.0-138-generic    containerd://2.0.5-k3s1.32
+
+## conduits from the edge namespace (policies apply) and from a namespace without policies (control)
+  edge on edgenode01: platform-timescaledb.platform.svc.cluster.local:5432 CONNECTED
+  edge on edgenode01: platform-mlflow.mlops.svc.cluster.local:5000 CONNECTED
+  edge on edgenode01: platform-prometheus-prometheus.monitoring.svc.cluster.local:9090 CONNECTED
+  edge on edgenode01: platform-loki.monitoring.svc.cluster.local:3100 CONNECTED
+  edge on edgenode01: edge-postgresql.edge.svc.cluster.local:5432 CONNECTED
+  lab-np-outside on edgenode01: platform-timescaledb.platform.svc.cluster.local:5432 BLOCKED
+  lab-np-outside on edgenode01: platform-mlflow.mlops.svc.cluster.local:5000 BLOCKED
+  lab-np-outside on edgenode01: platform-prometheus-prometheus.monitoring.svc.cluster.local:9090 BLOCKED
+  lab-np-outside on edgenode01: platform-loki.monitoring.svc.cluster.local:3100 BLOCKED
+  lab-np-outside on edgenode01: edge-postgresql.edge.svc.cluster.local:5432 CONNECTED
+  edge on kb2: platform-timescaledb.platform.svc.cluster.local:5432 CONNECTED
+  edge on kb2: platform-mlflow.mlops.svc.cluster.local:5000 CONNECTED
+  edge on kb2: platform-prometheus-prometheus.monitoring.svc.cluster.local:9090 CONNECTED
+  edge on kb2: platform-loki.monitoring.svc.cluster.local:3100 CONNECTED
+  edge on kb2: edge-postgresql.edge.svc.cluster.local:5432 CONNECTED
+  lab-np-outside on kb2: platform-timescaledb.platform.svc.cluster.local:5432 BLOCKED
+  lab-np-outside on kb2: platform-mlflow.mlops.svc.cluster.local:5000 BLOCKED
+  lab-np-outside on kb2: platform-prometheus-prometheus.monitoring.svc.cluster.local:9090 BLOCKED
+  lab-np-outside on kb2: platform-loki.monitoring.svc.cluster.local:3100 BLOCKED
+  lab-np-outside on kb2: edge-postgresql.edge.svc.cluster.local:5432 CONNECTED
+  edge on worker1-kb2: platform-timescaledb.platform.svc.cluster.local:5432 CONNECTED
+  edge on worker1-kb2: platform-mlflow.mlops.svc.cluster.local:5000 CONNECTED
+  edge on worker1-kb2: platform-prometheus-prometheus.monitoring.svc.cluster.local:9090 CONNECTED
+  edge on worker1-kb2: platform-loki.monitoring.svc.cluster.local:3100 CONNECTED
+  edge on worker1-kb2: edge-postgresql.edge.svc.cluster.local:5432 CONNECTED
+  lab-np-outside on worker1-kb2: platform-timescaledb.platform.svc.cluster.local:5432 BLOCKED
+  lab-np-outside on worker1-kb2: platform-mlflow.mlops.svc.cluster.local:5000 BLOCKED
+  lab-np-outside on worker1-kb2: platform-prometheus-prometheus.monitoring.svc.cluster.local:9090 BLOCKED
+  lab-np-outside on worker1-kb2: platform-loki.monitoring.svc.cluster.local:3100 BLOCKED
+  lab-np-outside on worker1-kb2: edge-postgresql.edge.svc.cluster.local:5432 CONNECTED
+
+## consolidation (edge-postgresql-sync): recent runs
+edge-postgresql-sync-29837978-ds7dv            0/1   Error       0     4m38s   10.42.2.194   edgenode01   <none>   <none>
+edge-postgresql-sync-29837978-ltrzd            0/1   Error       0     4m17s   10.42.2.195   edgenode01   <none>   <none>
+edge-postgresql-sync-29837980-76ssz            0/1   Error       0     2m50s   10.42.2.197   edgenode01   <none>   <none>
+edge-postgresql-sync-29837980-rtxpx            0/1   Error       0     2m38s   10.42.2.200   edgenode01   <none>   <none>
+edge-postgresql-sync-29837980-zd42l            0/1   Error       0     2m17s   10.42.2.201   edgenode01   <none>   <none>
+edge-postgresql-sync-29837982-9n8rm            0/1   Error       0     50s     10.42.2.206   edgenode01   <none>   <none>
+edge-postgresql-sync-29837982-9rpqb            0/1   Error       0     38s     10.42.2.208   edgenode01   <none>   <none>
+edge-postgresql-sync-29837982-97dgb            0/1   Error       0     17s     10.42.2.213   edgenode01   <none>   <none>
+--- edge/edge-postgresql-sync-29837982-9rpqb (node edgenode01)
+{"ts":"2026-09-24T19:42:12Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"sensor_features","batch_id":,"from_id":,"status":"failed"}
+psql: error: connection to server at "platform-timescaledb.platform.svc.cluster.local" (10.43.24.219), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+psql: error: connection to server at "platform-timescaledb.platform.svc.cluster.local" (10.43.24.219), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+psql:/scripts/extract-predictions.sql:3: ERROR:  syntax error at or near "ORDER"
+LINE 2:         FROM predictions WHERE id >  ORDER BY id LIMIT 50000...
+                                             ^
+psql:/scripts/load-predictions.sql:11: ERROR:  syntax error at or near "FROM"
+LINE 4: ...l_name, model_version, score, label, features, id,  FROM stg
+                                                               ^
+psql:/scripts/fail-batch.sql:2: ERROR:  syntax error at or near ";"
+LINE 2:  WHERE id = ;
+                    ^
+{"ts":"2026-09-24T19:42:13Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"predictions","batch_id":,"from_id":,"status":"failed"}
+--- edge/edge-postgresql-sync-29837982-97dgb (node edgenode01)
+{"ts":"2026-09-24T19:42:33Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"sensor_features","batch_id":,"from_id":,"status":"failed"}
+psql: error: connection to server at "platform-timescaledb.platform.svc.cluster.local" (10.43.24.219), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+psql: error: connection to server at "platform-timescaledb.platform.svc.cluster.local" (10.43.24.219), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+psql:/scripts/extract-predictions.sql:3: ERROR:  syntax error at or near "ORDER"
+LINE 2:         FROM predictions WHERE id >  ORDER BY id LIMIT 50000...
+                                             ^
+psql:/scripts/load-predictions.sql:11: ERROR:  syntax error at or near "FROM"
+LINE 4: ...l_name, model_version, score, label, features, id,  FROM stg
+                                                               ^
+psql:/scripts/fail-batch.sql:2: ERROR:  syntax error at or near ";"
+LINE 2:  WHERE id = ;
+                    ^
+{"ts":"2026-09-24T19:42:34Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"predictions","batch_id":,"from_id":,"status":"failed"}
+--- edge/edge-postgresql-sync-29837362-kzfn7 (node edgenode01)
+{"ts":"2026-09-24T09:22:03Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"sensor_features","batch_id":40,"from_id":9180,"to_id":9663,"rows_read":483,"rows_written":483,"status":"ok"}
+{"ts":"2026-09-24T09:22:04Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"predictions","batch_id":41,"from_id":3,"to_id":3,"rows_read":0,"rows_written":0,"status":"ok"}
+--- edge/edge-postgresql-sync-29837368-j7f9f (node edgenode01)
+{"ts":"2026-09-24T09:28:45Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"sensor_features","batch_id":47,"from_id":9663,"to_id":11269,"rows_read":1606,"rows_written":1606,"status":"ok"}
+{"ts":"2026-09-24T09:28:47Z","component":"edge-postgresql-sync","site":"lab-edge-01","table":"predictions","batch_id":48,"from_id":3,"to_id":3,"rows_read":0,"rows_written":0,"status":"ok"}
+
+## version sync (edge-mlflow-sync): recent runs
+edge-mlflow-sync-29837980-th4pz                0/1   Completed   0     2m52s   10.42.2.199   edgenode01   <none>   <none>
+edge-mlflow-sync-29837981-fq9td                0/1   Completed   0     112s    10.42.2.204   edgenode01   <none>   <none>
+edge-mlflow-sync-29837982-s8k79                0/1   Completed   0     52s     10.42.2.207   edgenode01   <none>   <none>
+--- edge/edge-mlflow-sync-29837981-fq9td (node edgenode01)
+{"ts": "2026-09-24T19:41:12Z", "component": "edge-mlflow-sync", "event": "up_to_date", "model_name": "zdm-anomaly-detector", "model_version": "3", "alias": "champion", "suspended": false}
+--- edge/edge-mlflow-sync-29837982-s8k79 (node edgenode01)
+{"ts": "2026-09-24T19:42:11Z", "component": "edge-mlflow-sync", "event": "up_to_date", "model_name": "zdm-anomaly-detector", "model_version": "3", "alias": "champion", "suspended": false}
+
+## remote-write of the edge Prometheus agent (last errors)
