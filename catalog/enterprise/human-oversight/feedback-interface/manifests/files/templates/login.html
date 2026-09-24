@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="box" style="max-width: 24rem">
+  <h2>Sign in</h2>
+  <p>Use your account of the AI system realm (Keycloak).</p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="post" action="/login">
+    <p><label>User<br><input type="text" name="username" autocomplete="username" required></label></p>
+    <p><label>Password<br><input type="password" name="password" autocomplete="current-password" required></label></p>
+    <button type="submit">Sign in</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 # Catalog Index
 
-Cross-reference of the 30 charts of the catalog by **deployment tier** and **functional category**, with the reference architecture components (CMP, Annex A of the thesis) and the ISO/IEC 42001 Annex B requirements each one covers. Tables generated from `CHART_META` in [`infrastructure/publish.py`](../infrastructure/publish.py).
+Cross-reference of the 31 charts of the catalog by **deployment tier** and **functional category**, with the reference architecture components (CMP, Annex A of the thesis) and the ISO/IEC 42001 Annex B requirements each one covers. Tables generated from `CHART_META` in [`infrastructure/publish.py`](../infrastructure/publish.py).
 
 ## Tier × Category
 
@@ -14,6 +14,7 @@ Cross-reference of the 30 charts of the catalog by **deployment tier** and **fun
 | **Data Management** | none | [MinIO](./platform/data-management/minio/README.md) · [PostgreSQL (Platform)](./platform/data-management/postgresql/README.md) · [TimescaleDB](./platform/data-management/timescaledb/README.md) | none |
 | **Document Store** | none | none | [MinIO Docs Overlay](./enterprise/document-store/minio/README.md) |
 | **Helpdesk** | none | none | [Zammad](./enterprise/helpdesk/zammad/README.md) |
+| **Human Oversight** | none | none | [Feedback Interface](./enterprise/human-oversight/feedback-interface/README.md) |
 | **Monitoring** | [Fluent Bit](./edge/monitoring/fluent-bit/README.md) · [Prometheus Agent](./edge/monitoring/prometheus-agent/README.md) | [Grafana](./platform/monitoring/grafana/README.md) · [Loki](./platform/monitoring/loki/README.md) · [Prometheus + Alertmanager](./platform/monitoring/prometheus/README.md) | none |
 | **Orchestration** | none | [Rancher](./platform/orchestration/rancher/README.md) · [Argo CD](./platform/orchestration/argocd/README.md) | none |
 | **Security** | [Falco](./edge/security/falco/README.md) | [OpenBao](./platform/security/openbao/README.md) · [cert-manager](./platform/security/cert-manager/README.md) | none |
@@ -70,6 +71,7 @@ K3s itself (with its Traefik ingress, containerd and the kube-router network pol
 | [`enterprise-grafana-dashboards`](./enterprise/dashboards/grafana/README.md) | `monitoring` | CMP-06, CMP-11 | B.6.1.3.3, B.6.2.6.2 |
 | [`enterprise-minio-overlay`](./enterprise/document-store/minio/README.md) | `minio` | CMP-05 | B.6.2.3.1, B.6.2.6.5 |
 | [`enterprise-zammad`](./enterprise/helpdesk/zammad/README.md) | `helpdesk` | CMP-13 | B.6.2.6.6, B.8.0.4.1, B.8.0.5.1 |
+| [`enterprise-feedback-interface`](./enterprise/human-oversight/feedback-interface/README.md) | `feedback` | CMP-12 | B.6.1.3.3, B.6.2.6.4 |
 
 `edge-fluent-bit` and `edge-falco` are edge charts that run as DaemonSets on every node, so they also cover the platform nodes (Logger and Security Monitoring at platform level).
 
@@ -82,7 +84,7 @@ K3s itself (with its Traefik ingress, containerd and the kube-router network pol
 | B.6.1.2.2 | Resources: Monitoring Performance | `edge-prometheus-agent`, `platform-prometheus` |
 | B.6.1.3.1 | Resources: Access Control | `edge-mosquitto`, `edge-opc-ua-gateway`, `platform-grafana`, `enterprise-keycloak` |
 | B.6.1.3.2 | Resources: Version Control | `edge-mlflow-sync`, `platform-mlflow` |
-| B.6.1.3.3 | Resources: Human Oversight / Feedback | `platform-grafana`, `platform-openbao`, `enterprise-grafana-dashboards` |
+| B.6.1.3.3 | Resources: Human Oversight / Feedback | `platform-grafana`, `platform-openbao`, `enterprise-grafana-dashboards`, `enterprise-feedback-interface` |
 | B.6.1.3.4 | Resources: Inventory / Registry | `platform-mlflow`, `platform-postgresql` |
 | B.6.1.4.1 | Resources: Security of AI Assets | `platform-openbao`, `platform-cert-manager` |
 | B.6.2.3.1 | Planning: System Documentation | `platform-minio`, `platform-cert-manager`, `enterprise-minio-overlay` |
@@ -90,7 +92,7 @@ K3s itself (with its Traefik ingress, containerd and the kube-router network pol
 | B.6.2.6.1 | Operation: Infrastructure Monitoring | `edge-prometheus-agent`, `edge-mongodb`, `edge-postgresql`, `edge-postgresql-sync`, `platform-timescaledb` |
 | B.6.2.6.2 | Operation: Model Performance | `edge-fastapi-model`, `platform-evidently`, `platform-grafana`, `platform-prometheus`, `enterprise-grafana-dashboards` |
 | B.6.2.6.3 | Operation: KPI Assessment (OEE) | `edge-postgresql`, `platform-timescaledb` |
-| B.6.2.6.4 | Operation: Retraining / Lifecycle | `edge-fastapi-model`, `edge-kafka`, `edge-mosquitto`, `edge-rabbitmq`, `edge-node-red`, `edge-opc-ua-gateway`, `edge-mlflow-sync`, `platform-mlflow`, `platform-training-jobs`, `platform-argocd` |
+| B.6.2.6.4 | Operation: Retraining / Lifecycle | `edge-fastapi-model`, `edge-kafka`, `edge-mosquitto`, `edge-rabbitmq`, `edge-node-red`, `edge-opc-ua-gateway`, `edge-mlflow-sync`, `platform-mlflow`, `platform-training-jobs`, `platform-argocd`, `enterprise-feedback-interface` |
 | B.6.2.6.5 | Operation: Update & Repair Plan | `enterprise-minio-overlay` |
 | B.6.2.6.6 | Operation: Incident Communication | `enterprise-zammad` |
 | B.6.2.6.7 | Operation: Security Monitoring | `edge-falco` |

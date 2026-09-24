@@ -1,0 +1,73 @@
+# =============================================================================
+# Rancher Questions: Feedback Interface
+# ISO/IEC 42001: B.6.1.3.3, B.6.2.6.4
+# =============================================================================
+categories:
+  - "Enterprise"
+  - "Human Oversight"
+
+questions:
+
+  # ---- Sign-in ----
+  - variable: keycloak.url
+    label: "Keycloak URL (in the cluster)"
+    type: string
+    default: "http://enterprise-keycloak.security.svc.cluster.local"
+    group: "Sign-in"
+
+  - variable: keycloak.realm
+    label: "Realm"
+    type: string
+    default: "ai-system"
+    group: "Sign-in"
+
+  - variable: session.ttlSeconds
+    label: "Session Duration (seconds)"
+    type: int
+    default: 1800
+    group: "Sign-in"
+
+  - variable: session.secureCookie
+    label: "Secure Cookie (TLS only)"
+    description: "Enable when the interface is published over HTTPS"
+    type: boolean
+    default: false
+    group: "Sign-in"
+
+  # ---- Data and model ----
+  - variable: dataStock.host
+    label: "Platform Data Stock Host"
+    type: string
+    default: "platform-timescaledb.platform.svc.cluster.local"
+    group: "Data and Model"
+
+  - variable: registry.trackingUri
+    label: "MLflow URL"
+    type: string
+    default: "http://platform-mlflow.mlops.svc.cluster.local:5000"
+    group: "Data and Model"
+
+  - variable: registry.modelName
+    label: "Registered Model"
+    type: string
+    default: "zdm-anomaly-detector"
+    group: "Data and Model"
+
+  - variable: predictions.lookback
+    label: "Predictions Shown (period)"
+    type: string
+    default: "24 hours"
+    group: "Data and Model"
+
+  # ---- Exposure ----
+  - variable: ingress.enabled
+    label: "Enable Ingress"
+    type: boolean
+    default: false
+    group: "Exposure"
+    show_subquestion_if: true
+    subquestions:
+      - variable: ingress.host
+        label: "Host"
+        type: hostname
+        default: "feedback.enterprise.local"

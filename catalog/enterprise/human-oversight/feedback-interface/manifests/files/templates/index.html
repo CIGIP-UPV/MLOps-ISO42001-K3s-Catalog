@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+{% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
+
+<div class="box">
+  <h3>Model in service</h3>
+  {% if model.error %}
+    <p class="error">Model registry unavailable ({{ model.error }}).</p>
+  {% else %}
+    <p>{{ model.name }}, alias {{ model.alias }}: version <strong>{{ model.version }}</strong>
+    {% if model.suspended %}
+      <span class="suspended">suspended</span> by {{ model.suspended_by }} at {{ model.suspended_at }}
+      {% if model.suspended_reason %}({{ model.suspended_reason }}){% endif %}
+    {% else %}(in service){% endif %}</p>
+    {% if can_suspend %}
+      {% if model.suspended %}
+      <form method="post" action="/models/resume">
+        <input type="hidden" name="csrf" value="{{ session.csrf }}">
+        <button type="submit">Resume version {{ model.version }}</button>
+      </form>
+      {% else %}
+      <form method="post" action="/models/suspend">
+        <input type="hidden" name="csrf" value="{{ session.csrf }}">
+        <input type="text" name="reason" maxlength="1000" placeholder="Reason" required>
+        <button type="submit">Suspend version {{ model.version }}</button>
+      </form>
+      {% endif %}
+      <p><small>The edge stops serving a suspended version at the next synchronisation.</small></p>
+    {% endif %}
+  {% endif %}
+</div>
+
+<h3>Recent predictions</h3>
+<table>
+  <tr><th>Time (UTC)</th><th>Site</th><th>Machine</th><th>Version</th><th>Score</th><th>Prediction</th>
+      <th>Latest verdict</th>{% if can_verdict %}<th>Your verdict</th>{% endif %}</tr>
+  {% for p in predictions %}
+  <tr>
+    <td>{{ p.time }}</td><td>{{ p.site_id }}</td><td>{{ p.machine_id }}</td><td>{{ p.model_version }}</td>
+    <td>{{ "%.4f"|format(p.score) if p.score is not none else "" }}</td>
+    <td class="{{ 'anomaly' if p.label == 'anomaly' else '' }}">{{ p.label }}</td>
+    <td>{% if p.verdict %}{{ p.verdict }}{% if p.corrected_label %} ({{ p.corrected_label }}){% endif %}
+        <br><small>{{ p.operator }}</small>{% endif %}</td>
+    {% if can_verdict %}
+    <td>
+      <form method="post" action="/feedback">
+        <input type="hidden" name="csrf" value="{{ session.csrf }}">
+        <input type="hidden" name="site_id" value="{{ p.site_id }}">
+        <input type="hidden" name="source_id" value="{{ p.source_id }}">
+        <input type="hidden" name="time" value="{{ p.time }}">
+        <select name="verdict">{% for v in verdicts %}<option value="{{ v }}">{{ v }}</option>{% endfor %}</select>
+        <select name="corrected_label"><option value="">(label)</option>
+          {% for l in labels %}{% if l != p.label %}<option value="{{ l }}">{{ l }}</option>{% endif %}{% endfor %}</select>
+        <input type="text" name="comment" maxlength="1000" placeholder="Comment (optional)">
+        <button type="submit">Save</button>
+      </form>
+    </td>
+    {% endif %}
+  </tr>
+  {% else %}
+  <tr><td colspan="8">No consolidated predictions in the period.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
