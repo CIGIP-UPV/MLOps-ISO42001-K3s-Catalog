@@ -127,7 +127,7 @@ keycloak:
               "publicClient": false,
               "redirectUris": ["http://grafana.platform.local/*"],
               "webOrigins": ["http://grafana.platform.local"],
-              "defaultClientScopes": ["openid", "profile", "email"]
+              "defaultClientScopes": ["profile", "email"]
             },
             {
               "clientId": "mlflow",
