@@ -1,0 +1,11 @@
+# S02: MinIO buckets, versioning and document store retention
+$ mc ls; mc retention info --default s/iso42001-docs; mc version info s/model-cards (pod in minio)
+[2026-09-24 08:52:52 UTC]     0B audit-evidence/
+[2026-09-24 08:29:03 UTC]     0B datasets/
+[2026-09-24 08:52:35 UTC]     0B iso42001-docs/
+[2026-09-24 08:29:04 UTC]     0B loki-logs/
+[2026-09-24 08:29:03 UTC]     0B mlflow-artifacts/
+[2026-09-24 08:52:46 UTC]     0B model-cards/
+Object locking 'GOVERNANCE' is configured for 365DAYS.
+s/model-cards versioning is enabled
+(exit 0)

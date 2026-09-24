@@ -1,0 +1,4 @@
+NAME          STATUS   ROLES                  AGE    VERSION        INTERNAL-IP      EXTERNAL-IP     OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
+edgenode01    Ready    edge                   177d   v1.32.6+k3s1   <ip-edgenode01>   <none>          Ubuntu 22.04.5 LTS   5.15.148-tegra       containerd://2.0.5-k3s1.32
+kb2           Ready    control-plane,master   245d   v1.32.6+k3s1   <ip-kb2>    <ip-kb2>   Ubuntu 22.04.4 LTS   5.15.0-190-generic   containerd://2.0.5-k3s1.32
+worker1-kb2   Ready    <none>                 197d   v1.32.6+k3s1   <ip-worker1-kb2>   <none>          Ubuntu 22.04.4 LTS   6.8.0-138-generic    containerd://2.0.5-k3s1.32

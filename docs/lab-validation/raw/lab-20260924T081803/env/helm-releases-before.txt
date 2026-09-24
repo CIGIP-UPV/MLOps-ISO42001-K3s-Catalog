@@ -1,0 +1,8 @@
+NAME                     	NAMESPACE          	REVISION	UPDATED                                  	STATUS  	CHART                                                                                     	APP VERSION
+cloud-offload            	ros2exp            	1       	2026-07-15 10:30:21.106227092 +0000 UTC  	deployed	ros2-microservices-1.0.0                                                                  	humble     
+fleet-agent-c-fjfvw      	cattle-fleet-system	1       	2026-03-20 11:46:41.625356386 +0000 UTC  	deployed	fleet-agent-c-fjfvw-v0.0.0+s-164db0953d8c788fe1338732dbfa1f8f989bc8e61d38592623391946bea77	           
+kube-state-metrics       	monitoring         	1       	2026-07-08 12:04:03.331958603 +0200 +0200	deployed	kube-state-metrics-7.5.1                                                                  	2.19.1     
+node-exporter            	monitoring         	1       	2026-07-08 12:05:34.303553737 +0200 +0200	deployed	prometheus-node-exporter-4.55.0                                                           	1.11.1     
+nvidia-gpu               	default            	1       	2026-03-30 13:17:05.042401929 +0000 UTC  	deployed	gpu-operator-v26.3.0                                                                      	v26.3.0    
+rancher-webhook          	cattle-system      	2       	2026-03-20 11:46:47.373808815 +0000 UTC  	deployed	rancher-webhook-108.0.3+up0.9.3                                                           	0.9.3      
+system-upgrade-controller	cattle-system      	1       	2026-03-20 11:46:52.391844986 +0000 UTC  	deployed	system-upgrade-controller-108.0.0                                                         	v0.17.0    

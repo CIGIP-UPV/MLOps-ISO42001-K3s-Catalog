@@ -1,0 +1,8 @@
+# S05: RabbitMQ running and listeners
+$ rabbitmq-diagnostics check_running; listeners
+RabbitMQ on node rabbit@edge-rabbitmq-7f56f7dd6-6kbhx is fully booted and running
+Interface: [::], port: 15672, protocol: http, purpose: HTTP API
+Interface: [::], port: 15692, protocol: http/prometheus, purpose: Prometheus exporter API over HTTP
+Interface: [::], port: 25672, protocol: clustering, purpose: inter-node and CLI tool communication
+Interface: [::], port: 5672, protocol: amqp, purpose: AMQP 0-9-1 and AMQP 1.0
+(exit 0)

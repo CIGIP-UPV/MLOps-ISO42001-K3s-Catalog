@@ -1,0 +1,17 @@
+# S13: OpenBao status over TLS (platform CA)
+$ kubectl exec platform-openbao-0 -- bao status
+Key             Value
+---             -----
+Seal Type       shamir
+Initialized     true
+Sealed          false
+Total Shares    1
+Threshold       1
+Version         2.0.0
+Build Date      2024-07-17T22:05:43Z
+Storage Type    file
+Cluster Name    vault-cluster-946f1225
+Cluster ID      523286c1-1a1b-4be3-a030-a6a8bbe114e8
+HA Enabled      false
+(bao status exit 0: 0 unsealed, 2 sealed, 1 error)
+(exit 0)
