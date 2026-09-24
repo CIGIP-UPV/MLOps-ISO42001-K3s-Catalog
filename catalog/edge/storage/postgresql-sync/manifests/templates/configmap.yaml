@@ -32,10 +32,29 @@ data:
         "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${SITE_ID}" "$1"
     }
 
+    # A new pod may be refused for a few seconds, until the NetworkPolicy
+    # controller of the destination node includes it in its rules; a database
+    # may also be restarting. Wait for both before the first batch.
+    wait_for_databases() {
+      i=0
+      until src_psql -tA -c 'SELECT 1' >/dev/null 2>&1 && dst_psql -tA -c 'SELECT 1' >/dev/null 2>&1; do
+        i=$((i + 1))
+        if [ "$i" -ge "${CONNECT_ATTEMPTS:-12}" ]; then
+          log '"event":"databases_unreachable","status":"failed"'
+          return 1
+        fi
+        [ "$i" -eq 1 ] && log '"event":"waiting_for_databases"'
+        sleep 5
+      done
+    }
+
     sync_table() {
       table="$1"
-      wm=$(dst_psql -tA -v site="${SITE_ID}" -v tbl="${table}" -f /scripts/watermark.sql)
-      batch=$(dst_psql -tA -v site="${SITE_ID}" -v tbl="${table}" -v wm="${wm}" -f /scripts/open-batch.sql)
+      # set -e does not apply inside a function called with ||: check every step
+      wm=$(dst_psql -tA -v site="${SITE_ID}" -v tbl="${table}" -f /scripts/watermark.sql) && [ -n "${wm}" ] || {
+        log "\"table\":\"${table}\",\"step\":\"watermark\",\"status\":\"failed\""; return 1; }
+      batch=$(dst_psql -tA -v site="${SITE_ID}" -v tbl="${table}" -v wm="${wm}" -f /scripts/open-batch.sql) && [ -n "${batch}" ] || {
+        log "\"table\":\"${table}\",\"step\":\"open-batch\",\"from_id\":${wm},\"status\":\"failed\""; return 1; }
       if result=$(src_psql -v wm="${wm}" -v n="${BATCH_SIZE}" -f "/scripts/extract-${table}.sql" \
           | dst_psql -tA -F ',' -v site="${SITE_ID}" -v batch="${batch}" -v wm="${wm}" -f "/scripts/load-${table}.sql"); then
         read_rows=$(echo "${result}" | cut -d, -f1)
@@ -49,6 +68,7 @@ data:
       fi
     }
 
+    wait_for_databases || exit 1
     rc=0
     for t in ${TABLES}; do
       sync_table "${t}" || rc=1
