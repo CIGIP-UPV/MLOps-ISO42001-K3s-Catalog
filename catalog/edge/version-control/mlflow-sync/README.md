@@ -80,6 +80,8 @@ the Rancher questionnaire lives in [`questions.yaml`](./manifests/questions.yaml
 - **Pull from the edge.** The edge asks the registry for the alias; the platform needs no network access into the edge.
 - **Alias, not stage.** MLflow aliases replace the deprecated stages and give a single, auditable pointer per environment.
 - **Verify before and after switching.** The version must load before it becomes current, and the server must report it after the reload; otherwise the previous version is restored.
+- **One run at a time.** Runs take a lock on the model store, so a run started by hand while the CronJob runs waits for it instead of downloading the same version at the same time.
+- **Suspension.** When a supervisor suspends the served version in [`enterprise-feedback-interface`](../../../enterprise/human-oversight/feedback-interface/README.md) (tag `suspended=true` in the registry), the next run marks it as suspended in `current.json`, the model server answers `503`, and `model_versions` records `suspended`; removing the tag records `resumed`.
 
 ---
 
