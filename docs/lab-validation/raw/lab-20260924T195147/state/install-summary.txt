@@ -1,0 +1,44 @@
+# INST-00: install.sh, all phases
+$ infrastructure/install.sh --values-dir docs/lab-validation/lab-values --site-id lab-edge-01 [--use-existing-cert-manager] [--skip CHART] [--separate-tiers]
+extra options:  --skip platform-argocd --skip edge-mongodb --only platform-timescaledb --only edge-postgresql-sync --separate-tiers
+[19:53:05] INFO  === Phase security ===
+[19:53:05] INFO  skip platform-cert-manager (not selected)
+[19:53:05] INFO  skip platform-openbao (not selected)
+[19:53:05] INFO  skip platform-postgresql (not selected)
+[19:53:05] INFO  skip enterprise-keycloak (not selected)
+[19:53:05] INFO  skip platform-argocd (not selected)
+[19:53:05] INFO  === Phase data ===
+[19:53:05] INFO  skip platform-minio (not selected)
+[19:53:05] INFO  install platform-timescaledb -> platform
+[19:53:15] INFO    ok in 9 s, pods ready 1/1
+[19:53:15] INFO  skip platform-prometheus (not selected)
+[19:53:15] INFO  skip platform-loki (not selected)
+[19:53:15] INFO  skip platform-grafana (not selected)
+[19:53:15] INFO  skip platform-mlflow (not selected)
+[19:53:15] INFO  skip platform-training-jobs (not selected)
+[19:53:15] INFO  skip platform-evidently (not selected)
+[19:53:15] INFO  === Phase edge ===
+[19:53:15] INFO  skip edge-postgresql (not selected)
+[19:53:15] INFO  skip edge-mongodb (not selected)
+[19:53:15] INFO  skip edge-mosquitto (not selected)
+[19:53:15] INFO  skip edge-rabbitmq (not selected)
+[19:53:15] INFO  skip edge-kafka (not selected)
+[19:53:15] INFO  skip edge-opc-ua-gateway (not selected)
+[19:53:15] INFO  skip edge-node-red (not selected)
+[19:53:15] INFO  skip edge-fastapi-model (not selected)
+[19:53:15] INFO  skip edge-mlflow-sync (not selected)
+[19:53:15] INFO  install edge-postgresql-sync -> edge
+[19:53:16] INFO    ok in 1 s, pods ready 0/11
+[19:53:16] INFO  skip edge-prometheus-agent (not selected)
+[19:53:16] INFO  skip edge-fluent-bit (not selected)
+[19:53:16] INFO  skip edge-falco (not selected)
+[19:53:16] INFO  === Phase enterprise ===
+[19:53:16] INFO  skip enterprise-minio-overlay (not selected)
+[19:53:16] INFO  skip enterprise-grafana-dashboards (not selected)
+[19:53:16] INFO  skip enterprise-zammad (not selected)
+[19:53:16] INFO  skip enterprise-feedback-interface (not selected)
+[19:53:16] INFO  === Done. Run log: /root/MLOps-ISO42001-K3s-Catalog/docs/lab-validation/raw/lab-20260924T195147/install.jsonl ===
+  ok     platform-timescaledb             platform          9 s  pods 1/1
+  ok     edge-postgresql-sync             edge              1 s  pods 0/11
+  2/2 releases ok
+(exit 0)

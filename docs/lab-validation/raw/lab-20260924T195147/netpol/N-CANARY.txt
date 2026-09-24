@@ -1,0 +1,6 @@
+# N-CANARY: NetworkPolicies are enforced on every node (pod behind a deny-all policy)
+$ per node: httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside
+edgenode01: pod 10.42.2.27:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy CONNECTED
+kb2: pod 10.42.0.106:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy NOT-CONNECTED
+worker1-kb2: pod 10.42.1.42:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy NOT-CONNECTED
+(exit 1)

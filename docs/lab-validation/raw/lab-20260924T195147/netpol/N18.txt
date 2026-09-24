@@ -1,0 +1,4 @@
+# N18: feedback -> MLflow (suspension tags)
+$ nc -z -w 5 platform-mlflow.mlops.svc.cluster.local 5000   (pod in namespace feedback)
+client node: worker1-kb2; destination node(s): worker1-kb2
+CONNECTED
