@@ -77,8 +77,17 @@ spec:
         - name: schema
           configMap:
             name: {{ include "platform-timescaledb.fullname" . }}-schema
-      {{- with .Values.affinity }}
+      # Helm hooks are not post-rendered, so install.sh --separate-tiers does not
+      # reach this Job: prefer the nodes that are not edge devices here.
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- if .Values.affinity }}
+        {{- toYaml .Values.affinity | nindent 8 }}
+        {{- else }}
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - { key: node-role.kubernetes.io/edge, operator: DoesNotExist }
+        {{- end }}
 {{- end }}
