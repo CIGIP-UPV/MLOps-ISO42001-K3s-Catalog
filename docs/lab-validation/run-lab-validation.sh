@@ -345,7 +345,8 @@ if os.path.exists(sys.argv[1]):
 PY
   snapshot state/after-install
   # without any release the tests would only time out one after another
-  if ! helm list -A -q 2>/dev/null | grep -qE '^(edge|platform|enterprise)-'; then
+  # count, not grep -q: with pipefail, grep -q can end helm with SIGPIPE and fail the pipeline
+  if [[ "$(helm list -A -q 2>/dev/null | grep -cE '^(edge|platform|enterprise)-')" -eq 0 ]]; then
     log "install.sh did not install any release of the catalog; stopping. See install.log."
     finish; exit 4
   fi
@@ -431,7 +432,7 @@ s_loki() {
 s_falco() {
   local node; node=$(kubectl -n edge get pod -l app.kubernetes.io/instance=edge-fastapi-model -o jsonpath='{.items[0].spec.nodeName}' 2>/dev/null)
   echo "model server node: ${node:-unknown}"
-  if [[ -n "$node" ]] && ! kubectl -n falco get pod -l app.kubernetes.io/name=falco --field-selector "spec.nodeName=${node}" -o name 2>/dev/null | grep -q .; then
+  if [[ -n "$node" ]] && ! kubectl -n falco get pod -l app.kubernetes.io/name=falco --field-selector "spec.nodeName=${node}" -o name 2>/dev/null | grep -c . >/dev/null; then
     echo "not run: no Falco pod on ${node} (the Falco driver cannot run there, see lab-values/edge-falco.yaml)"
     return 3
   fi
@@ -607,7 +608,7 @@ e_consolidation() {
 e_training() {
   job_from mlops platform-training-jobs e2e-train-1; local rc=$?
   kubectl -n mlops logs job/e2e-train-1 | grep '"component"'
-  [[ $rc -eq 0 ]] && kubectl -n mlops logs job/e2e-train-1 | grep -q '"promoted_alias": "champion"'
+  [[ $rc -eq 0 ]] && kubectl -n mlops logs job/e2e-train-1 | grep -c '"promoted_alias": "champion"' >/dev/null
 }
 e_registry() {
   port_forward mlops svc/platform-mlflow 15000:5000 || return 1
@@ -664,7 +665,7 @@ e_drift() {
   job_from mlops platform-evidently-drift e2e-drift-1; local rc=$?
   kubectl -n mlops logs job/e2e-drift-1 --all-containers | grep '"component"'
   psql_ts "SELECT id, model_version, round(drift_share::numeric,3), drifted_columns, recommended, action FROM retraining_recommendations ORDER BY id DESC LIMIT 3"
-  [[ $rc -eq 0 ]] && psql_ts "SELECT recommended FROM retraining_recommendations ORDER BY id DESC LIMIT 1" | grep -q t
+  [[ $rc -eq 0 ]] && psql_ts "SELECT recommended FROM retraining_recommendations ORDER BY id DESC LIMIT 1" | grep -c t >/dev/null
 }
 e_retraining() {
   # the scheduled drift check may start it before e2e-drift-1: accept any
@@ -681,7 +682,7 @@ print("job.batch/" + jobs[-1][1] if jobs else "")' "${since:-9999}")
   if [[ -z "$j" ]]; then
     # a retraining started by an earlier run within the cooldown blocks a
     # new one by design: report it as not run rather than as a failure
-    if psql_ts "SELECT action FROM retraining_recommendations ORDER BY id DESC LIMIT 1" | grep -q 'within the cooldown'; then
+    if psql_ts "SELECT action FROM retraining_recommendations ORDER BY id DESC LIMIT 1" | grep -c 'within the cooldown' >/dev/null; then
       echo "not run: a retraining was already started within the cooldown (earlier run); re-run after the cooldown"
       echo cooldown > "${OUT}/state/retraining-skipped.txt"; return 3
     fi
@@ -689,7 +690,7 @@ print("job.batch/" + jobs[-1][1] if jobs else "")' "${since:-9999}")
   fi
   kubectl -n mlops wait "$j" --for=condition=complete --timeout=900s; local rc=$?
   kubectl -n mlops logs "$j" | grep '"component"'
-  [[ $rc -eq 0 ]] && kubectl -n mlops logs "$j" | grep -q '"trigger": "drift"\|"model_registered"'
+  [[ $rc -eq 0 ]] && kubectl -n mlops logs "$j" | grep -c '"trigger": "drift"\|"model_registered"' >/dev/null
 }
 e_new_version() {
   port_forward edge svc/edge-fastapi-model 18001:8000 || return 1
@@ -847,7 +848,7 @@ phase_netpol() {
   NP_CLIENT_NODE=""
   local n
   for n in $(cat "${OUT}/state/netpol-enforcing-nodes.txt" 2>/dev/null); do
-    kubectl get node "$n" -o jsonpath='{.metadata.labels}' | grep -q 'node-role.kubernetes.io/control-plane' && continue
+    kubectl get node "$n" -o jsonpath='{.metadata.labels}' | grep -c 'node-role.kubernetes.io/control-plane' >/dev/null && continue
     NP_CLIENT_NODE=$n; break
   done
   [[ -z "${NP_CLIENT_NODE}" ]] && NP_CLIENT_NODE=$(head -1 "${OUT}/state/netpol-enforcing-nodes.txt" 2>/dev/null)
@@ -996,7 +997,7 @@ print(json.dumps({"site_id": p["site_id"], "source_id": p["source_id"], "time": 
   id=$(echo "$resp" | head -1 | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
   echo "$id" > "${OUT}/state/feedback-id.txt"
   echo "row in the platform data stock:"
-  psql_ts "SELECT id, created_at, site_id, prediction_source_id, machine_id, model_version, predicted_label, verdict, corrected_label, comment, operator FROM operator_feedback WHERE id = ${id}" | grep -q "lab-operator" \
+  psql_ts "SELECT id, created_at, site_id, prediction_source_id, machine_id, model_version, predicted_label, verdict, corrected_label, comment, operator FROM operator_feedback WHERE id = ${id}" | grep -c "lab-operator" >/dev/null \
     && psql_ts "SELECT id, created_at, site_id, prediction_source_id, machine_id, model_version, predicted_label, verdict, corrected_label, comment, operator FROM operator_feedback WHERE id = ${id}"
 }
 
@@ -1093,7 +1094,7 @@ phase_feedback() {
       "per node: httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside" netpol_canary
     local n
     for n in $(cat "${OUT}/state/netpol-enforcing-nodes.txt" 2>/dev/null); do
-      kubectl get node "$n" -o jsonpath='{.metadata.labels}' | grep -q 'node-role.kubernetes.io/control-plane' && continue
+      kubectl get node "$n" -o jsonpath='{.metadata.labels}' | grep -c 'node-role.kubernetes.io/control-plane' >/dev/null && continue
       NP_CLIENT_NODE=$n; break
     done
     [[ -z "${NP_CLIENT_NODE}" ]] && NP_ENFORCED=false
