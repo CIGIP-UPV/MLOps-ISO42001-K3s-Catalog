@@ -1,0 +1,8 @@
+# E12: Evidently drift check and retraining recommendation
+$ kubectl create job --from=cronjob/platform-evidently-drift e2e-drift-1; psql retraining_recommendations
+job.batch/e2e-drift-1 condition met
+{"ts": "2026-09-24T09:09:07Z", "component": "platform-evidently", "step": "extract", "event": "datasets_ready", "model_name": "zdm-anomaly-detector", "alias": "champion", "current_window": "4 minutes", "bucket": "1 second", "skip": false, "model_version": "1", "run_id": "1dc489b33bcc40e4a664baa423de928d", "reference_rows": 831, "current_rows": 399, "reference_window": "2 hours"}
+{"ts": "2026-09-24T09:09:10Z", "component": "platform-evidently", "step": "drift", "event": "drift_computed", "model_name": "zdm-anomaly-detector", "model_version": "1", "skipped": false, "share_of_drifted_columns": 1.0, "number_of_drifted_columns": 4, "dataset_drift": true, "drifted_columns": ["DipData", "NegativeTrendData", "PositiveTrendData", "SpikeData"], "ui_project_id": "73326266-f3cb-4d96-a423-e6d9abf03297"}
+{"ts": "2026-09-24T09:09:14Z", "component": "platform-evidently", "step": "recommend", "event": "recommendation", "id": 1, "model_name": "zdm-anomaly-detector", "model_version": "1", "share_of_drifted_columns": 1.0, "drifted_columns": ["DipData", "NegativeTrendData", "PositiveTrendData", "SpikeData"], "threshold": 0.5, "recommended": true, "action": "retraining job platform-training-jobs-drift-d8rts created", "report_uri": "runs:/129b1e94335d46ccaf27d012f21b443f/drift/report.html"}
+1 | 1 | 1.000 | {DipData,NegativeTrendData,PositiveTrendData,SpikeData} | t | retraining job platform-training-jobs-drift-d8rts created
+(exit 0)

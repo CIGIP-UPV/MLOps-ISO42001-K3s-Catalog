@@ -1,0 +1,6 @@
+# E05: Training job registers and promotes a model version
+$ kubectl create job --from=cronjob/platform-training-jobs e2e-train-1
+job.batch/e2e-train-1 condition met
+{"ts": "2026-09-24T09:00:44Z", "component": "platform-training-jobs", "event": "training_data_loaded", "samples": 831, "features": ["DipData", "NegativeTrendData", "PositiveTrendData", "SpikeData"], "source": "timescaledb:zdm_platform.sensor_readings", "window": "2 hours", "bucket": "1 second", "raw_rows": 3320, "time_min": "2026-09-24 08:46:46+00:00", "time_max": "2026-09-24 09:00:36+00:00", "max_consolidation_batch": "15", "sites": "lab-edge-01"}
+{"ts": "2026-09-24T09:00:52Z", "component": "platform-training-jobs", "event": "model_registered", "model_name": "zdm-anomaly-detector", "model_version": "1", "run_id": "1dc489b33bcc40e4a664baa423de928d", "samples": 831, "train_anomaly_rate": 0.0205, "release_criteria": true, "promoted_alias": "champion"}
+(exit 0)

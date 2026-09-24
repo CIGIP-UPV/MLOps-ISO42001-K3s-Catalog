@@ -1,0 +1,44 @@
+# INST-00: install.sh, all phases
+$ infrastructure/install.sh --values-dir docs/lab-validation/lab-values --site-id lab-edge-01 [--use-existing-cert-manager] [--skip CHART] [--separate-tiers]
+extra options:  --skip platform-argocd --skip edge-mongodb --separate-tiers
+[08:50:32] INFO    ok in 11 s, pods ready 2/3
+[08:51:09] INFO  install edge-falco -> falco
+[08:52:23] INFO    ok in 74 s, pods ready 3/4
+[08:52:23] INFO  === Phase enterprise ===
+[08:52:23] INFO  install enterprise-minio-overlay -> minio
+[08:52:25] INFO    ok in 1 s, pods ready 0/1
+[08:52:25] INFO  install enterprise-grafana-dashboards -> monitoring
+[08:52:27] INFO    ok in 1 s, pods ready 0/0
+[08:53:21] INFO  install enterprise-zammad -> helpdesk
+[08:57:38] INFO    ok in 256 s, pods ready 4/4
+[08:57:38] INFO  === Done. Run log: /root/MLOps-ISO42001-K3s-Catalog/docs/lab-validation/raw/lab-20260924T081803/install.jsonl ===
+  ok     platform-cert-manager            cert-manager    111 s  pods 3/3
+  ok     platform-cert-manager            cert-manager     11 s  pods 3/3
+  ok     platform-openbao                 openbao           2 s  pods 0/1
+  ok     platform-postgresql              platform         35 s  pods 1/1
+  ok     enterprise-keycloak              security        120 s  pods 1/1
+  ok     platform-minio                   minio            19 s  pods 1/1
+  ok     platform-timescaledb             platform         65 s  pods 1/1
+  ok     platform-prometheus              monitoring       42 s  pods 5/7
+  ok     platform-loki                    monitoring       56 s  pods 1/1
+  ok     platform-grafana                 monitoring       34 s  pods 1/1
+  ok     platform-mlflow                  mlops           280 s  pods 1/1
+  ok     platform-training-jobs           mlops             1 s  pods 0/0
+  ok     platform-evidently               mlops            52 s  pods 1/1
+  ok     edge-postgresql                  edge             36 s  pods 1/1
+  ok     edge-mosquitto                   edge             19 s  pods 1/1
+  ok     edge-rabbitmq                    edge             50 s  pods 1/1
+  ok     edge-kafka                       edge             88 s  pods 1/1
+  ok     edge-opc-ua-gateway              edge             19 s  pods 1/1
+  ok     edge-node-red                    edge             51 s  pods 1/1
+  ok     edge-fastapi-model               edge             52 s  pods 1/1
+  ok     edge-mlflow-sync                 edge              1 s  pods 0/0
+  ok     edge-postgresql-sync             edge              1 s  pods 0/0
+  ok     edge-prometheus-agent            edge             62 s  pods 1/1
+  ok     edge-fluent-bit                  logging          11 s  pods 2/3
+  ok     edge-falco                       falco            74 s  pods 3/4
+  ok     enterprise-minio-overlay         minio             1 s  pods 0/1
+  ok     enterprise-grafana-dashboards    monitoring        1 s  pods 0/0
+  ok     enterprise-zammad                helpdesk        256 s  pods 4/4
+  28/28 releases ok
+(exit 0)

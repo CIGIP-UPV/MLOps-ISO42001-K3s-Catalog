@@ -1,0 +1,9 @@
+# S16: TimescaleDB hypertables and roles
+$ psql: timescaledb_information.hypertables; pg_roles
+oee_kpis
+predictions
+sensor_readings
+grafana
+ml
+sync
+(exit 0)

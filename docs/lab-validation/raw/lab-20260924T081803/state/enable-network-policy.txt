@@ -1,0 +1,4 @@
+# PREP-04: K3s NetworkPolicy controller enabled
+$ remove disable-network-policy from /etc/rancher/k3s/config.yaml; systemctl restart k3s
+disable-network-policy is not set in /etc/rancher/k3s/config.yaml: nothing to change
+(exit 0)
