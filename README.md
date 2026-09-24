@@ -92,6 +92,23 @@ The repository is built from `main` by the GitHub Pages workflow (`infrastructur
 
 `infrastructure/setup-ubuntu.sh` prepares Ubuntu 24.04 nodes (K3s, Helm, Rancher CLI) and enables the Kubernetes API audit log with `infrastructure/audit-policy.yaml`; `infrastructure/enable-audit.sh` does the same on an existing K3s server.
 
+Requirements found in the laboratory validation:
+
+- **NetworkPolicy enforcement.** K3s must run its NetworkPolicy controller (no `disable-network-policy` in the server configuration; restart `k3s-agent` on every agent after changing it), and each node's kernel needs the `hash:ip` ipset type (`CONFIG_IP_SET_HASH_IP`). The NVIDIA JetPack kernel of the laboratory edge device lacks it, so that node does not enforce policies.
+- **Falco** uses the `modern_ebpf` driver, which needs a kernel with BTF (`/sys/kernel/btf/vmlinux`).
+- **Architecture.** Every edge image is available for amd64 and arm64 except the Bitnami MongoDB image of `edge-mongodb` (amd64 only).
+
+---
+
+## Laboratory Validation
+
+The catalog was validated on a three-node K3s 1.32 cluster (control plane, amd64 worker for the platform and enterprise tiers, and an NVIDIA Jetson AGX Orin as the edge device). The report (in Spanish, for the thesis) and the raw evidence of every run are in [`docs/lab-validation/`](docs/lab-validation/):
+
+- [`INFORME_VALIDACION_LAB.md`](docs/lab-validation/INFORME_VALIDACION_LAB.md) and [`results.json`](docs/lab-validation/results.json): environment, component and deployment tables, smoke, end-to-end, traceability and network results, refinements and limitations;
+- [`run-lab-validation.sh`](docs/lab-validation/run-lab-validation.sh) and [`LAB_RUN_INSTRUCTIONS.md`](docs/lab-validation/LAB_RUN_INSTRUCTIONS.md): the runner that installs the catalog and collects the evidence, to repeat the validation on another cluster.
+
+In short: 27 charts installed with `install.sh` without failures; 18 of 18 applicable smoke tests; 16 of 16 end-to-end steps, from an OPC UA simulator to drift-triggered retraining and the new model version served at the edge; label queries return resources for all 19 ISO/IEC 42001 clauses and 14 of the 15 components (CMP-12 has no chart); NetworkPolicy segmentation verified on the nodes that enforce it.
+
 ---
 
 ## Repository Structure
@@ -110,7 +127,9 @@ MLOps-ISO42001-K3s-Catalog/
 │   ├── publish.py                 CHART_META (single source of metadata) and Helm repository build
 │   ├── verify_charts.py           lint, render, kubeconform, labels, questionnaires, values keys
 │   └── iso42001-postrender.py     traceability labels on every rendered object
-└── docs/                          GitHub Pages site and Helm repository (index.yaml, icons/)
+├── docs/                          GitHub Pages site and Helm repository (index.yaml, icons/)
+│   └── lab-validation/            laboratory validation: report, runner, evidence
+└── CHANGELOG.md
 ```
 
 ---
@@ -196,7 +215,7 @@ If you use this catalog in academic work, please cite the catalog itself and the
   title        = {K3s Solution Catalog for ISO/IEC 42001-Compliant Industrial AI Systems},
   year         = {2026},
   publisher    = {Zenodo},
-  version      = {v1.0.1},
+  version      = {v2.0.0},
   doi          = {10.5281/zenodo.19882677},
   url          = {https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog}
 }
