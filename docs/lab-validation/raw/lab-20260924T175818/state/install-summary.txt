@@ -1,0 +1,44 @@
+# INST-00: install.sh, all phases
+$ infrastructure/install.sh --values-dir docs/lab-validation/lab-values --site-id lab-edge-01 [--use-existing-cert-manager] [--skip CHART] [--separate-tiers]
+extra options:  --skip platform-argocd --skip edge-mongodb --only platform-timescaledb --only platform-training-jobs --only enterprise-keycloak --only edge-postgresql --only edge-fastapi-model --only edge-postgresql-sync --only edge-mlflow-sync --only enterprise-grafana-dashboards --only enterprise-feedback-interface --separate-tiers
+[18:01:18] INFO  skip platform-mlflow (not selected)
+[18:01:18] INFO  install platform-training-jobs -> mlops
+[18:01:19] INFO    ok in 1 s, pods ready 0/0
+[18:01:20] INFO  skip platform-evidently (not selected)
+[18:01:20] INFO  === Phase edge ===
+[18:01:46] INFO  install edge-postgresql -> edge
+[18:01:53] INFO    ok in 7 s, pods ready 1/1
+[18:01:53] INFO  skip edge-mongodb (not selected)
+[18:01:53] INFO  skip edge-mosquitto (not selected)
+[18:01:53] INFO  skip edge-rabbitmq (not selected)
+[18:01:53] INFO  skip edge-kafka (not selected)
+[18:01:53] INFO  skip edge-opc-ua-gateway (not selected)
+[18:01:53] INFO  skip edge-node-red (not selected)
+[18:01:53] INFO  install edge-fastapi-model -> edge
+[18:02:08] INFO    ok in 15 s, pods ready 1/1
+[18:02:08] INFO  install edge-mlflow-sync -> edge
+[18:02:09] INFO    ok in 1 s, pods ready 1/1
+[18:02:10] INFO  install edge-postgresql-sync -> edge
+[18:02:11] INFO    ok in 0 s, pods ready 0/12
+[18:02:11] INFO  skip edge-prometheus-agent (not selected)
+[18:02:11] INFO  skip edge-fluent-bit (not selected)
+[18:02:11] INFO  skip edge-falco (not selected)
+[18:02:11] INFO  === Phase enterprise ===
+[18:02:11] INFO  skip enterprise-minio-overlay (not selected)
+[18:02:11] INFO  install enterprise-grafana-dashboards -> monitoring
+[18:02:12] INFO    ok in 1 s, pods ready 0/0
+[18:02:12] INFO  skip enterprise-zammad (not selected)
+[18:02:12] INFO  install enterprise-feedback-interface -> feedback
+[18:02:28] INFO    ok in 16 s, pods ready 1/1
+[18:02:28] INFO  === Done. Run log: /root/MLOps-ISO42001-K3s-Catalog/docs/lab-validation/raw/lab-20260924T175818/install.jsonl ===
+  ok     enterprise-keycloak              security         29 s  pods 1/1
+  ok     platform-timescaledb             platform         47 s  pods 1/1
+  ok     platform-training-jobs           mlops             1 s  pods 0/0
+  ok     edge-postgresql                  edge              7 s  pods 1/1
+  ok     edge-fastapi-model               edge             15 s  pods 1/1
+  ok     edge-mlflow-sync                 edge              1 s  pods 1/1
+  ok     edge-postgresql-sync             edge              0 s  pods 0/12
+  ok     enterprise-grafana-dashboards    monitoring        1 s  pods 0/0
+  ok     enterprise-feedback-interface    feedback         16 s  pods 1/1
+  9/9 releases ok
+(exit 0)
