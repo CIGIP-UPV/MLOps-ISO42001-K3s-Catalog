@@ -182,6 +182,16 @@ preflight() {
   if [[ "${SOURCE}" == repo ]]; then
     helm repo add "${REPO_ALIAS}" "${REPO_URL}" --force-update >/dev/null
     helm repo update "${REPO_ALIAS}" >/dev/null
+  else
+    # helm dependency build needs the repositories of the dependencies
+    info "Helm repositories of the chart dependencies"
+    python3 - "${INFRA}/publish.py" <<'PY'
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("publish", sys.argv[1])
+publish = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(publish)
+publish.ensure_repos()
+PY
   fi
 }
 
