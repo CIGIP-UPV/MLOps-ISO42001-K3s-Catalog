@@ -1,0 +1,7 @@
+# Laboratory setting: the kernel of the edge device (edgenode01, Jetson,
+# 5.15-tegra) has no BTF, which the modern_ebpf driver needs, so Falco runs
+# on the amd64 nodes only. S10 is recorded as SKIP when the model server runs
+# on a node without Falco.
+falco:
+  nodeSelector:
+    kubernetes.io/arch: amd64

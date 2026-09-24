@@ -409,6 +409,12 @@ s_loki() {
     --data-urlencode "start=$(( $(date +%s) - 300 ))000000000" | grep -o "lab smoke line ${ts}" | head -1 | grep -q .  && echo "read back: lab smoke line ${ts}"
 }
 s_falco() {
+  local node; node=$(kubectl -n edge get pod -l app.kubernetes.io/instance=edge-fastapi-model -o jsonpath='{.items[0].spec.nodeName}' 2>/dev/null)
+  echo "model server node: ${node:-unknown}"
+  if [[ -n "$node" ]] && ! kubectl -n falco get pod -l app.kubernetes.io/name=falco --field-selector "spec.nodeName=${node}" -o name 2>/dev/null | grep -q .; then
+    echo "not run: no Falco pod on ${node} (the Falco driver cannot run there, see lab-values/edge-falco.yaml)"
+    return 3
+  fi
   kubectl -n edge exec deploy/edge-fastapi-model -- sh -c 'id' >/dev/null 2>&1
   sleep 20
   kubectl -n falco logs -l app.kubernetes.io/name=falco -c falco --since=3m 2>/dev/null \
@@ -733,27 +739,36 @@ phase_trace() {
 # ===========================================================================
 NP_ENFORCED=true
 netpol_canary() {
-  # a pod behind a deny-all ingress policy must not be reachable from another
-  # namespace; otherwise the cluster does not enforce NetworkPolicies
-  local ip out
+  # on every node, a pod behind a deny-all ingress policy must not be
+  # reachable from another namespace; otherwise that node does not enforce
+  # NetworkPolicies (each node runs its own policy controller)
+  local node ip out rc=0 i=0
   kubectl create namespace lab-np-canary --dry-run=client -o yaml | kubectl apply -f - >/dev/null
-  kubectl -n lab-np-canary delete pod canary --ignore-not-found --wait=true >/dev/null 2>&1
-  kubectl -n lab-np-canary run canary --image="${TOOLS_IMAGE}" --restart=Never --labels=lab-validation=test \
-    --command -- sh -c 'mkdir -p /w && echo ok > /w/index.html && httpd -f -p 8080 -h /w' >/dev/null
-  kubectl -n lab-np-canary wait pod/canary --for=condition=Ready --timeout=180s >/dev/null || { echo "canary pod not ready"; return 1; }
-  ip=$(kubectl -n lab-np-canary get pod canary -o jsonpath='{.status.podIP}')
   kubectl apply -f - >/dev/null <<EOF
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata: {name: deny-all, namespace: lab-np-canary}
 spec: {podSelector: {}, policyTypes: [Ingress]}
 EOF
-  sleep 10
-  out=$(tmp_pod lab-np-outside lab-np-canary-client "${TOOLS_IMAGE}" \
-        "if wget -q -T 5 -O /dev/null http://${ip}:8080/; then echo CONNECTED; else echo BLOCKED; fi" 2>&1)
-  echo "client in lab-np-outside -> pod ${ip}:8080 behind a deny-all ingress policy: ${out}"
+  for node in $(kubectl get nodes -o jsonpath='{.items[*].metadata.name}'); do
+    i=$((i + 1))
+    kubectl -n lab-np-canary delete pod "canary-${i}" --ignore-not-found --wait=true >/dev/null 2>&1
+    # nodeName skips the scheduler, so a NoSchedule taint does not keep it out
+    kubectl -n lab-np-canary run "canary-${i}" --image="${TOOLS_IMAGE}" --restart=Never --labels=lab-validation=test \
+      --overrides="{\"spec\": {\"nodeName\": \"${node}\"}}" \
+      --command -- sh -c 'mkdir -p /w && echo ok > /w/index.html && httpd -f -p 8080 -h /w' >/dev/null
+    if ! kubectl -n lab-np-canary wait "pod/canary-${i}" --for=condition=Ready --timeout=180s >/dev/null; then
+      echo "${node}: canary pod not ready"; rc=1; continue
+    fi
+    ip=$(kubectl -n lab-np-canary get pod "canary-${i}" -o jsonpath='{.status.podIP}')
+    sleep 5
+    out=$(tmp_pod lab-np-outside "lab-np-canary-client-${i}" "${TOOLS_IMAGE}" \
+          "if wget -q -T 5 -O /dev/null http://${ip}:8080/; then echo CONNECTED; else echo BLOCKED; fi" 2>&1 | tail -1)
+    echo "${node}: client in lab-np-outside -> pod ${ip}:8080 behind a deny-all ingress policy: ${out}"
+    [[ "$out" == *BLOCKED* ]] || rc=1
+  done
   kubectl delete namespace lab-np-canary --wait=false >/dev/null 2>&1
-  echo "$out" | grep -q BLOCKED
+  return $rc
 }
 
 nc_test() {
@@ -777,8 +792,8 @@ phase_netpol() {
   log "=== 7. Network policies ==="
   kubectl get networkpolicy -A > "${OUT}/netpol/policies.txt"
   kubectl create namespace lab-np-outside --dry-run=client -o yaml | kubectl apply -f - >/dev/null
-  if ! run_test N-CANARY netpol "NetworkPolicies are enforced (pod behind a deny-all policy)" netpol/N-CANARY.txt \
-       "httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside" netpol_canary; then
+  if ! run_test N-CANARY netpol "NetworkPolicies are enforced on every node (pod behind a deny-all policy)" netpol/N-CANARY.txt \
+       "per node: httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside" netpol_canary; then
     NP_ENFORCED=false
     log "NetworkPolicies are not enforced in this cluster: N01 to N12 are recorded as SKIP (see --enable-network-policy)"
   fi

@@ -41,6 +41,7 @@ into account:
 | `edgenode01` is the edge device; `worker1-kb2` hosts the platform and enterprise tiers | `--edge-nodes edgenode01` (the platform and enterprise pods are kept off it) |
 | An Argo CD that is not the catalog's already runs in `argocd` | `--skip-chart platform-argocd`: nothing is installed or changed in `argocd`; S15 is SKIP |
 | `edgenode01` is arm64 and the Bitnami MongoDB images are amd64 only | `--skip-chart edge-mongodb`; S18 is SKIP (MongoDB is not part of the end-to-end flow) |
+| The kernel of `edgenode01` (5.15-tegra) has no BTF, which the Falco `modern_ebpf` driver needs | Falco runs on the amd64 nodes only (`lab-values/edge-falco.yaml`); S10 is SKIP because the model server runs on `edgenode01` |
 | Another node-exporter already uses host port 9100 | the catalog's node-exporter listens on 9101 (`lab-values/platform-prometheus.yaml`) |
 | No cert-manager in the cluster | the catalog installs its own |
 
@@ -167,8 +168,9 @@ a warning if it finds any; do not commit if it does.
 - **S15 (Argo CD) fails with a repository error** (only when `platform-argocd`
   is installed): the branch is not pushed or the repository is private; pass
   another public branch with `--branch`.
-- **N-CANARY fails**: NetworkPolicies are not enforced (the controller is still
-  disabled, or the CNI does not support them); N01 to N12 are then SKIP.
+- **N-CANARY fails**: NetworkPolicies are not enforced on at least one node (the
+  controller is still disabled, or that node cannot run it); the evidence says
+  which node, and N01 to N12 are then SKIP.
 - **A chart failed during the installation**: the run continues with the next
   chart; the reason is in `install.jsonl` and `state/*-warning-events.txt`.
 
