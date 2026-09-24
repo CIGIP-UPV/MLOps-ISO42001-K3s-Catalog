@@ -4,7 +4,7 @@ apiVersion: v2
 name: enterprise-keycloak
 type: application
 version: 0.3.0
-appVersion: 24.0.0
+appVersion: 25.0.6
 kubeVersion: '>=1.24.0-0'
 description: Identity provider with AI system realm, RBAC roles and pre-configured OIDC clients.
 icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-keycloak.svg

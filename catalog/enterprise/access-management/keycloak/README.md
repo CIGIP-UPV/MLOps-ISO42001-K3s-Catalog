@@ -26,7 +26,7 @@ What the chart deploys:
 
 Single sign-on is **not** switched on in the other charts by default: Grafana, Argo CD and the rest ship the OIDC settings disabled or documented, to be enabled once Keycloak and its client secrets are in place.
 
-Bitnami moved its versioned images to `docker.io/bitnamilegacy`, which receives no new security patches; 24.0.0 was never published there, so 24.0.5 is used.
+Bitnami moved its versioned images to `docker.io/bitnamilegacy`, which receives no new security patches. The image is `bitnamilegacy/keycloak:25.0.6-debian-12-r0`, the Keycloak version that this chart version (22.2.6) configures correctly behind a proxy (`proxyHeaders: xforwarded`); Keycloak 25 serves its metrics on the management port 9000, which the ServiceMonitor scrapes.
 
 ---
 
