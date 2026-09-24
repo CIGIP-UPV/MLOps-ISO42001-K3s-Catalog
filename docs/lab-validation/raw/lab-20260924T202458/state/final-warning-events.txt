@@ -1,0 +1,20 @@
+NAMESPACE    LAST SEEN   TYPE      REASON                 OBJECT                                             MESSAGE
+edge         59m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837970                  Job has reached the specified backoff limit
+edge         57m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837972                  Job has reached the specified backoff limit
+edge         55m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837974                  Job has reached the specified backoff limit
+edge         53m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837976                  Job has reached the specified backoff limit
+edge         51m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837978                  Job has reached the specified backoff limit
+edge         49m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837980                  Job has reached the specified backoff limit
+edge         47m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837982                  Job has reached the specified backoff limit
+edge         45m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837984                  Job has reached the specified backoff limit
+edge         43m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837986                  Job has reached the specified backoff limit
+edge         41m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837988                  Job has reached the specified backoff limit
+edge         39m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837990                  Job has reached the specified backoff limit
+edge         37m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837992                  Job has reached the specified backoff limit
+mlops        35m         Warning   BackoffLimitExceeded   job/e2e-fb-train-1                                 Job has reached the specified backoff limit
+edge         20m         Warning   UnexpectedJob          cronjob/edge-mlflow-sync                           Saw a job that the controller did not create or forgot: e2e-fb-vsync-1
+edge         19m         Warning   UnexpectedJob          cronjob/edge-mlflow-sync                           Saw a job that the controller did not create or forgot: e2e-fb-vsync-2
+edge         4m25s       Warning   UnexpectedJob          cronjob/edge-postgresql-sync                       Saw a job that the controller did not create or forgot: e2e-fb-sync-1
+mlops        4m9s        Warning   UnexpectedJob          cronjob/platform-training-jobs                     Saw a job that the controller did not create or forgot: e2e-fb-train-1
+edge         3m59s       Warning   UnexpectedJob          cronjob/edge-mlflow-sync                           Saw a job that the controller did not create or forgot: e2e-fb-vsync-0
+monitoring   3m39s       Warning   Unhealthy              pod/node-exporter-prometheus-node-exporter-574fl   Readiness probe failed: Get "http://<ip-edgenode01>:9100/": context deadline exceeded (Client.Timeout exceeded while awaiting headers)

@@ -1,0 +1,7 @@
+# E19: Training uses the operator verdicts as labels
+$ kubectl create job --from=cronjob/platform-training-jobs e2e-fb-train-1; feedback_labels_loaded
+platform data stock: 7192 seconds of cnc-01 in the last 2 hours
+job.batch/e2e-fb-train-1 complete
+{"ts": "2026-09-24T20:25:23Z", "component": "platform-training-jobs", "event": "feedback_labels_loaded", "feedback_verdicts": 2, "feedback_labels": 2, "feedback_uncertain": 0, "feedback_agreement": 0.0, "feedback_recall_anomaly": 0.0, "min_labels": 1, "min_agreement": 0.0}
+{"ts": "2026-09-24T20:25:27Z", "component": "platform-training-jobs", "event": "model_registered", "model_name": "zdm-anomaly-detector", "model_version": "6", "run_id": "ae2340dff67840999da8ac4bb9fab56b", "samples": 7188, "train_anomaly_rate": 0.02, "release_criteria": true, "feedback_labels": 2, "feedback_agreement": 0.0, "promoted_alias": "champion"}
+(exit 0)
