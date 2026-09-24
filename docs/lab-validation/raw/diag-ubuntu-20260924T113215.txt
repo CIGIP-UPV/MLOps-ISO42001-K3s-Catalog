@@ -1,0 +1,92 @@
+
+## host
+ubuntu
+Thu Sep 24 09:32:15 AM UTC 2026
+5.15.148-tegra
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+8
+               total        used        free      shared  buff/cache   available
+Mem:            61Gi       3.8Gi        38Gi       1.3Gi        18Gi        55Gi
+Swap:           30Gi          0B        30Gi
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/mmcblk0p1   57G   28G   26G  53% /
+/dev/nvme0n1p1  469G  339G  106G  77% /mnt/ssd
+
+## BTF (Falco modern_ebpf)
+ls: cannot access '/sys/kernel/btf/vmlinux': No such file or directory
+
+## time sync
+System clock synchronized: yes
+              NTP service: active
+
+## k3s
+k3s version v1.32.6+k3s1 (eb603acd)
+k3s: inactive
+k3s-agent: active
+
+## k3s config (filtered)
+kubelet-arg:
+  - "root-dir=/mnt/ssd/k3s-data/kubelet"
+ExecStart=/usr/local/bin/k3s \
+    agent \
+	'--node-name' \
+	'edgenode01' \
+	'--node-label' \
+	'gpu=true' \
+	'--node-label' \
+	'camera=true' \
+	'--node-label' \
+	'hardware=orin' \
+	'--node-label' \
+	'arch=aarch64' \
+	'--node-label' \
+	'role=worker' \
+	'--node-label' \
+	'location=edge' \
+
+## NetworkPolicy controller (kube-router in K3s)
+ActiveEnterTimestamp=Thu 2026-09-24 11:31:15 CEST
+Sep 24 11:31:17 ubuntu k3s[3070862]: E0924 11:31:17.335398 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:31:17 ubuntu k3s[3070862]: E0924 11:31:17.471518 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:31:17 ubuntu k3s[3070862]: E0924 11:31:17.528955 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:31:17 ubuntu k3s[3070862]: E0924 11:31:17.586596 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:31:17 ubuntu k3s[3070862]: E0924 11:31:17.641110 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:31:17 ubuntu k3s[3070862]: E0924 11:31:17.695462 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:31:17 ubuntu k3s[3070862]: E0924 11:31:17.747423 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:31:17 ubuntu k3s[3070862]: E0924 11:31:17.847273 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:31:17 ubuntu k3s[3070862]: E0924 11:31:17.911270 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:31:17 ubuntu k3s[3070862]: E0924 11:31:17.976646 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:31:21 ubuntu k3s[3070862]: E0924 11:31:21.179899 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:31:22 ubuntu k3s[3070862]: E0924 11:31:22.109005 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:32:00 ubuntu k3s[3070862]: E0924 11:32:00.212774 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:32:00 ubuntu k3s[3070862]: E0924 11:32:00.284483 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:32:02 ubuntu k3s[3070862]: E0924 11:32:02.159244 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:32:02 ubuntu k3s[3070862]: E0924 11:32:02.216706 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:32:04 ubuntu k3s[3070862]: E0924 11:32:04.448784 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:32:12 ubuntu k3s[3070862]: E0924 11:32:12.052525 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:32:13 ubuntu k3s[3070862]: E0924 11:32:13.214282 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+Sep 24 11:32:15 ubuntu k3s[3070862]: E0924 11:32:15.505272 3070862 network_policy_controller.go:295] Aborting sync. Failed to sync network policy chains: failed to perform ipset restore: ipset v7.16: Error in line 1: Kernel error received: set type not supported
+kernel modules:
+xt_mark                16384  10
+xt_comment             16384  449
+xt_set                 20480  0
+ip_set                 53248  1 xt_set
+iptable_filter         16384  1
+nf_tables             217088  0
+ip_tables              32768  6 iptable_filter,iptable_nat,iptable_mangle
+  module ip_set available
+  module xt_set available
+  module ip_set_hash_ip NOT available in this kernel
+  module ip_set_hash_net available
+iptables KUBE-ROUTER rules: 9
+ipsets: 0
+
+## registries.yaml
+ls: cannot access '/etc/rancher/k3s/registries.yaml': No such file or directory
+
+## audit policy
+ls: cannot access '/etc/rancher/k3s/audit-policy.yaml': No such file or directory
+ls: cannot access '/var/log/kubernetes/audit': No such file or directory
+
+## cluster
+kubectl cannot reach the cluster from this node (expected on agents)
