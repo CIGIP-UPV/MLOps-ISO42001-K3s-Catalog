@@ -152,6 +152,19 @@ keycloak:
               "publicClient": false,
               "redirectUris": ["http://helpdesk.enterprise.local/*"],
               "webOrigins": ["http://helpdesk.enterprise.local"]
+            },
+            {
+              "clientId": "feedback-interface",
+              "name": "Feedback interface (CMP-12)",
+              "description": "Operator verdicts on predictions; sign-in from the server side of the interface",
+              "enabled": true,
+              "protocol": "openid-connect",
+              "publicClient": true,
+              "standardFlowEnabled": false,
+              "implicitFlowEnabled": false,
+              "directAccessGrantsEnabled": true,
+              "serviceAccountsEnabled": false,
+              "attributes": { "access.token.lifespan": "900" }
             }
           ],
           "browserSecurityHeaders": {
