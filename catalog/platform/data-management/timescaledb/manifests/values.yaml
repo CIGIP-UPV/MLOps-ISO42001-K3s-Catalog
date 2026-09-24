@@ -54,6 +54,11 @@ parameters:
   log_connections: "on"
   log_disconnections: "on"
 
+# Applies files/schema.sql after every install and upgrade (idempotent), so
+# that existing installations receive the objects of later chart versions.
+schemaJob:
+  enabled: true
+
 persistence:
   enabled: true
   storageClass: local-path
