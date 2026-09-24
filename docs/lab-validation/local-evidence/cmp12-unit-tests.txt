@@ -1,0 +1,21 @@
+# Unit tests of the feedback interface (local, not the laboratory), 2026-09-24T16:11:39Z, commit 798f524
+$ docker run --rm -v $PWD/catalog/enterprise/human-oversight/feedback-interface:/src -w /src --entrypoint sh ghcr.io/burakince/mlflow:2.22.1 -c 'pip install pytest httpx; python -m pytest -v tests'
+tests/test_app.py::test_health_needs_no_session PASSED                   [  5%]
+tests/test_app.py::test_without_session_access_is_denied PASSED          [ 11%]
+tests/test_app.py::test_wrong_password_and_missing_role PASSED           [ 16%]
+tests/test_app.py::test_tampered_cookie_is_rejected PASSED               [ 22%]
+tests/test_app.py::test_verdict_requires_csrf PASSED                     [ 27%]
+tests/test_app.py::test_verdict_is_recorded_with_the_session_user PASSED [ 33%]
+tests/test_app.py::test_form_submission_redirects PASSED                 [ 38%]
+tests/test_app.py::test_invalid_verdicts[over0-422] PASSED               [ 44%]
+tests/test_app.py::test_invalid_verdicts[over1-422] PASSED               [ 50%]
+tests/test_app.py::test_invalid_verdicts[over2-422] PASSED               [ 55%]
+tests/test_app.py::test_invalid_verdicts[over3-422] PASSED               [ 61%]
+tests/test_app.py::test_invalid_verdicts[over4-422] PASSED               [ 66%]
+tests/test_app.py::test_invalid_verdicts[over5-422] PASSED               [ 72%]
+tests/test_app.py::test_invalid_verdicts[over6-404] PASSED               [ 77%]
+tests/test_app.py::test_operator_cannot_suspend PASSED                   [ 83%]
+tests/test_app.py::test_supervisor_suspends_and_resumes PASSED           [ 88%]
+tests/test_app.py::test_index_and_listing PASSED                         [ 94%]
+tests/test_app.py::test_security_headers PASSED                          [100%]
+============================== 18 passed in 1.02s ==============================
