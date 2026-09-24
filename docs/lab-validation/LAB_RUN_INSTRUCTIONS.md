@@ -19,6 +19,7 @@ so that the analysis and the report can be completed.
 | 5 | End-to-end test (E01 to E16): OPC UA simulator, gateway, ingestion, consolidation, training, MLflow, propagation to the edge, inference, metrics, induced drift, Evidently, retraining recommendation, new version at the edge, logs in Loki | `e2e/` |
 | 6 | Traceability queries per ISO/IEC 42001 clause and component, label coverage per namespace | `trace/` |
 | 7 | NetworkPolicy tests: a canary that checks that policies are enforced (N-CANARY), an Internet control (N00) and the default deny and allowed conduits (N01 to N13) | `netpol/` |
+| 8 | Feedback interface (CMP-12): sign-in and denied access (S21), operator verdict on a real prediction (E17), disagreement panel in Grafana (E18), verdicts as training labels (E19), suspension of the version in service (E20), events in Loki (E21) and the conduits of the `feedback` namespace (N14 to N18) | `cmp12/`, `netpol/` |
 
 Every test writes one line to `results.jsonl` (PASS, FAIL, or SKIP when a
 precondition is not met, with the reason) and `summary.md` lists them all.
@@ -144,6 +145,25 @@ Leave at least 15 minutes between two runs of phase 5: a retraining started
 within the cooldown (15 minutes in `lab-values/`) blocks a new one by design,
 and E13 and E14 are then recorded as `SKIP` with that reason. Every run keeps
 its own evidence directory; commit them all.
+
+### Feedback interface (CMP-12) on an installed catalog
+
+Upgrades only the charts that the feedback interface changes or adds (the
+base phase also runs: the `feedback` namespace, its NetworkPolicies and the
+Secrets; existing Secrets keep their values and only receive missing keys),
+then repeats the traceability queries and runs phase 8. No database is
+restarted: the schema changes are applied by Jobs.
+
+```bash
+sudo -E ./docs/lab-validation/run-lab-validation.sh --phases "3 6 8" --edge-nodes edgenode01 --skip-chart platform-argocd --skip-chart edge-mongodb --only-chart platform-timescaledb --only-chart platform-training-jobs --only-chart enterprise-keycloak --only-chart edge-postgresql --only-chart edge-fastapi-model --only-chart edge-postgresql-sync --only-chart edge-mlflow-sync --only-chart enterprise-grafana-dashboards --only-chart enterprise-feedback-interface
+```
+
+Phase 8 creates three laboratory users in the `ai-system` realm of the
+catalog's Keycloak (`lab-operator` with the `operator` role, `lab-supervisor`
+with `production-manager`, `lab-viewer` with `data-scientist`), with random
+passwords kept in the Secret `feedback/feedback-lab-users` (never printed).
+It suspends and resumes the model version in service for a few seconds (E20)
+and trains one model version (E19).
 
 ## After the run: commit and push the evidence
 
