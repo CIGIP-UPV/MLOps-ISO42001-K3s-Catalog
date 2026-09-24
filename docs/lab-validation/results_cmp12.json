@@ -1,0 +1,739 @@
+{
+ "report": "docs/lab-validation/ADDENDUM_CMP12.md",
+ "runs": [
+  [
+   "lab-20260924T175818",
+   "fase 3: instalación o actualización de los nueve charts afectados; el script se detuvo después por un fallo propio (sección 8)"
+  ],
+  [
+   "diag-conduits-20260924T194048.txt",
+   "diagnóstico de los conductos del edge nodo a nodo y registros de la consolidación fallida"
+  ],
+  [
+   "lab-20260924T195147",
+   "fases 3, 6 y 8: actualización de las dos correcciones, trazabilidad completa y primera ejecución de la fase 8 (E19 falló por falta de datos recientes en la plataforma)"
+  ],
+  [
+   "lab-20260924T202458",
+   "fase 8 de referencia: S21, E17 a E21, canario y N14 a N18"
+  ]
+ ],
+ "design": [
+  [
+   "Tecnología",
+   "FastAPI con páginas HTML generadas en el servidor (Jinja2), sin JavaScript, sobre la imagen `ghcr.io/burakince/mlflow:2.22.1` que ya usa el catálogo, con el código en un ConfigMap",
+   "Streamlit sobre `python:3.12-slim`: exige instalar paquetes al arrancar (salida a PyPI, que la denegación por defecto no permite) y usa websockets, que complican la autenticación; la imagen del catálogo ya trae FastAPI, Jinja2, psycopg2, PyJWT y prometheus_client"
+  ],
+  [
+   "Datos",
+   "Lee las predicciones consolidadas en la plataforma (TimescaleDB) y escribe los veredictos en una tabla nueva de la plataforma, `operator_feedback`, de solo alta",
+   "Escribir en la tabla del edge y consolidarla: exigiría un conducto de empresa hacia el edge, que cruza zonas, hacia un nodo que no aplica NetworkPolicy"
+  ],
+  [
+   "Etiquetas para el entrenamiento",
+   "Se guardan las entradas de cada predicción (`predictions.features`, en el edge y en la plataforma); el entrenamiento une el último veredicto de cada predicción con sus entradas y mide la concordancia de la versión candidata con los operarios, que puede bloquear su liberación",
+   "Unir veredictos y datos por máquina y hora: aproximado, porque la predicción no guardaba sus entradas"
+  ],
+  [
+   "Suspensión (opcional, incluida)",
+   "Etiqueta `suspended` en la versión del registro de MLflow; `edge-mlflow-sync` la propaga y el servidor del edge responde 503",
+   "Un conducto nuevo de empresa al edge para ordenar la suspensión: cruza zonas; el registro ya es el punto único de control de versiones"
+  ],
+  [
+   "Autenticación",
+   "Keycloak, realm `ai-system`, cliente nuevo `feedback-interface`: la interfaz envía las credenciales desde el servidor y verifica firma y roles del token (`operator` registra veredictos; `production-manager` y `compliance-officer` también suspenden)",
+   "Flujo con redirección del navegador: necesita Keycloak publicado con TLS, que el laboratorio no tiene (Traefik desactivado); el envío de credenciales desde el servidor está desaconsejado por OAuth 2.1 y queda como limitación"
+  ],
+  [
+   "Esquema de las bases de datos",
+   "Jobs de migración idempotentes (hooks de Helm) en `platform-timescaledb` y `edge-postgresql`, sin tocar los scripts de arranque",
+   "Cambiar los scripts de arranque: solo se ejecutan en el primer arranque y, en TimescaleDB, modificarlos reinicia la base de datos"
+  ]
+ ],
+ "chart": {
+  "name": "enterprise-feedback-interface",
+  "version": "0.3.0",
+  "appVersion": "1.0.0",
+  "image": "ghcr.io/burakince/mlflow:2.22.1",
+  "tier": "enterprise",
+  "namespace": "feedback",
+  "category": "Human Oversight",
+  "components": [
+   "CMP-12"
+  ],
+  "clauses": [
+   "B.6.1.3.3",
+   "B.6.2.6.4"
+  ],
+  "path": "catalog/enterprise/human-oversight/feedback-interface",
+  "dependencies": "ninguna (chart propio)"
+ },
+ "changed_charts": [
+  [
+   "platform-timescaledb",
+   "Esquema idempotente (`files/schema.sql`) aplicado por un Job tras cada instalación o actualización: columna `predictions.features`, tabla `operator_feedback`, rol `feedback` y permisos"
+  ],
+  [
+   "edge-postgresql",
+   "Job de migración: columna `predictions.features`"
+  ],
+  [
+   "edge-fastapi-model",
+   "Guarda las entradas de cada predicción; responde 503 mientras la versión está suspendida"
+  ],
+  [
+   "edge-postgresql-sync",
+   "Consolida las entradas; espera a las bases de datos y detiene la tabla si falla un paso (sección 8)"
+  ],
+  [
+   "edge-mlflow-sync",
+   "Propaga la suspensión; ejecuciones serializadas con un cerrojo (sección 8)"
+  ],
+  [
+   "platform-training-jobs",
+   "Veredictos como etiquetas: concordancia con los operarios y criterio de liberación `releaseCriteria.feedback`"
+  ],
+  [
+   "enterprise-keycloak",
+   "Cliente `feedback-interface`; corrección del scope inexistente `openid` (sección 8)"
+  ],
+  [
+   "enterprise-grafana-dashboards",
+   "Cuadro *ZDM: Operator Feedback (CMP-12)*"
+  ],
+  [
+   "infrastructure/",
+   "Namespace `feedback`, 8 NetworkPolicy nuevas, `install.sh` en la fase de empresa y alta de claves nuevas en Secrets existentes"
+  ]
+ ],
+ "installation": [
+  {
+   "chart": "enterprise-keycloak",
+   "namespace": "security",
+   "start": 1790272802,
+   "seconds": 29,
+   "result": "ok",
+   "pods_ready": "1/1",
+   "message": "",
+   "run": "lab-20260924T175818",
+   "note": "fase 3 inicial (nueve charts)",
+   "install_script_seconds": 250
+  },
+  {
+   "chart": "platform-timescaledb",
+   "namespace": "platform",
+   "start": 1790272831,
+   "seconds": 47,
+   "result": "ok",
+   "pods_ready": "1/1",
+   "message": "",
+   "run": "lab-20260924T175818",
+   "note": "fase 3 inicial (nueve charts)",
+   "install_script_seconds": 250
+  },
+  {
+   "chart": "platform-training-jobs",
+   "namespace": "mlops",
+   "start": 1790272878,
+   "seconds": 1,
+   "result": "ok",
+   "pods_ready": "0/0",
+   "message": "",
+   "run": "lab-20260924T175818",
+   "note": "fase 3 inicial (nueve charts)",
+   "install_script_seconds": 250
+  },
+  {
+   "chart": "edge-postgresql",
+   "namespace": "edge",
+   "start": 1790272906,
+   "seconds": 7,
+   "result": "ok",
+   "pods_ready": "1/1",
+   "message": "",
+   "run": "lab-20260924T175818",
+   "note": "fase 3 inicial (nueve charts)",
+   "install_script_seconds": 250
+  },
+  {
+   "chart": "edge-fastapi-model",
+   "namespace": "edge",
+   "start": 1790272913,
+   "seconds": 15,
+   "result": "ok",
+   "pods_ready": "1/1",
+   "message": "",
+   "run": "lab-20260924T175818",
+   "note": "fase 3 inicial (nueve charts)",
+   "install_script_seconds": 250
+  },
+  {
+   "chart": "edge-mlflow-sync",
+   "namespace": "edge",
+   "start": 1790272928,
+   "seconds": 1,
+   "result": "ok",
+   "pods_ready": "1/1",
+   "message": "",
+   "run": "lab-20260924T175818",
+   "note": "fase 3 inicial (nueve charts)",
+   "install_script_seconds": 250
+  },
+  {
+   "chart": "edge-postgresql-sync",
+   "namespace": "edge",
+   "start": 1790272930,
+   "seconds": 0,
+   "result": "ok",
+   "pods_ready": "0/12",
+   "message": "",
+   "run": "lab-20260924T175818",
+   "note": "fase 3 inicial (nueve charts)",
+   "install_script_seconds": 250
+  },
+  {
+   "chart": "enterprise-grafana-dashboards",
+   "namespace": "monitoring",
+   "start": 1790272931,
+   "seconds": 1,
+   "result": "ok",
+   "pods_ready": "0/0",
+   "message": "",
+   "run": "lab-20260924T175818",
+   "note": "fase 3 inicial (nueve charts)",
+   "install_script_seconds": 250
+  },
+  {
+   "chart": "enterprise-feedback-interface",
+   "namespace": "feedback",
+   "start": 1790272932,
+   "seconds": 16,
+   "result": "ok",
+   "pods_ready": "1/1",
+   "message": "",
+   "run": "lab-20260924T175818",
+   "note": "fase 3 inicial (nueve charts)",
+   "install_script_seconds": 250
+  },
+  {
+   "chart": "platform-timescaledb",
+   "namespace": "platform",
+   "start": 1790279585,
+   "seconds": 9,
+   "result": "ok",
+   "pods_ready": "1/1",
+   "message": "",
+   "run": "lab-20260924T195147",
+   "note": "fase 3 tras las correcciones",
+   "install_script_seconds": 89
+  },
+  {
+   "chart": "edge-postgresql-sync",
+   "namespace": "edge",
+   "start": 1790279595,
+   "seconds": 1,
+   "result": "ok",
+   "pods_ready": "0/11",
+   "message": "",
+   "run": "lab-20260924T195147",
+   "note": "fase 3 tras las correcciones",
+   "install_script_seconds": 89
+  }
+ ],
+ "tests": [
+  {
+   "id": "S21",
+   "phase": "smoke",
+   "name": "Feedback interface health, sign-in and denied access without credentials",
+   "result": "PASS",
+   "seconds": 5,
+   "evidence": "cmp12/S21-feedback.txt",
+   "command": "GET /healthz; GET / and /api/predictions and POST /feedback without session; sign-in with a wrong password, without role, as operator",
+   "detail": "sign-in of a user without a role of the interface (data-scientist): 403 (expected 403) sign-in of lab-operator (operator): 200 (expected 200) session: lab-operator ['operator'] can_suspend: False checks passed: 7/7",
+   "summary": "`/healthz` 200; sin sesión, `/` redirige a `/login` y la API y el envío de veredictos responden 401; contraseña errónea, 401; usuario sin rol de la interfaz (`data-scientist`), 403; `lab-operator` entra con el rol `operator` y sin permiso de suspensión; 7 de 7"
+  },
+  {
+   "id": "E17",
+   "phase": "e2e",
+   "name": "Operator verdict on a real prediction, stored in the platform data stock",
+   "result": "PASS",
+   "seconds": 14,
+   "evidence": "cmp12/E17-verdict.txt",
+   "command": "POST edge /predict; job edge-postgresql-sync; GET /api/predictions; POST /feedback (lab-operator); psql operator_feedback",
+   "detail": "9-24 20:25:05.995135+00:00\", \"site_id\": \"lab-edge-01\", \"source_id\": 6, \"machine_id\": \"cnc-01\", \"model_name\": \"zdm-anomaly-detector\", \"model_version\": \"5\", \"score\": 0.5916661770277469, \"label\": \"normal\", \"verdict\": null, \"corrected_label\": null, \"operator\": null, \"verdict_at\": null} POST /feedback: 201 {\"id\":2,\"created_at\":\"2026-09-24 20:25:17.115074+00:00\",\"model_version\":\"5\",\"verdict\":\"incorrect\",\"corrected_label\":\"anomaly\"} row in the platform data stock: 2 | 2026-09-24 20:25:17.115074+00 | lab-edge-01 | 6 | cnc-01 | 5 | normal | incorrect | anomaly | laboratory validation E17 | lab-operator",
+   "summary": "Predicción real de la versión 5 (máquina cnc-01), consolidada en el lote 98; `lab-operator` la marca como incorrecta (etiqueta corregida `anomaly`, comentario); fila 2 de `operator_feedback` con la versión, la etiqueta predicha y el operario tomados del servidor"
+  },
+  {
+   "id": "E18",
+   "phase": "e2e",
+   "name": "Verdict in the Grafana panel of disagreement rate by model version",
+   "result": "PASS",
+   "seconds": 2,
+   "evidence": "cmp12/E18-dashboard.txt",
+   "command": "GET /api/dashboards/uid/zdm-operator-feedback; POST /api/ds/query with the SQL of the panel",
+   "detail": "dashboard: ZDM: Operator Feedback (CMP-12); panel: Operator disagreement rate by model version model_version | incorrect | correct | uncertain | disagreement_rate 5 | 1 | 0 | 0 | 1 3 | 1 | 0 | 0 | 1",
+   "summary": "La consulta del panel «Operator disagreement rate by model version», ejecutada por la API de Grafana, devuelve las versiones 5 y 3 con tasa de desacuerdo 1 (un veredicto incorrecto cada una)"
+  },
+  {
+   "id": "E19",
+   "phase": "e2e",
+   "name": "Training uses the operator verdicts as labels",
+   "result": "PASS",
+   "seconds": 16,
+   "evidence": "cmp12/E19-training.txt",
+   "command": "kubectl create job --from=cronjob/platform-training-jobs e2e-fb-train-1; feedback_labels_loaded",
+   "detail": "\", \"component\": \"platform-training-jobs\", \"event\": \"feedback_labels_loaded\", \"feedback_verdicts\": 2, \"feedback_labels\": 2, \"feedback_uncertain\": 0, \"feedback_agreement\": 0.0, \"feedback_recall_anomaly\": 0.0, \"min_labels\": 1, \"min_agreement\": 0.0} {\"ts\": \"2026-09-24T20:25:27Z\", \"component\": \"platform-training-jobs\", \"event\": \"model_registered\", \"model_name\": \"zdm-anomaly-detector\", \"model_version\": \"6\", \"run_id\": \"ae2340dff67840999da8ac4bb9fab56b\", \"samples\": 7188, \"train_anomaly_rate\": 0.02, \"release_criteria\": true, \"feedback_labels\": 2, \"feedback_agreement\": 0.0, \"promoted_alias\": \"champion\"}",
+   "summary": "La plataforma tiene 7192 s de datos de cnc-01 en las últimas 2 horas; el entrenamiento carga 2 veredictos como etiquetas, mide una concordancia de 0,0 con los operarios (se informa, sin bloquear, en el laboratorio) y registra y promueve la versión 6"
+  },
+  {
+   "id": "E20",
+   "phase": "e2e",
+   "name": "Suspension of the version in service stops it at the edge; resuming restores it",
+   "result": "PASS",
+   "seconds": 67,
+   "evidence": "cmp12/E20-suspension.txt",
+   "command": "POST /models/suspend (lab-supervisor); job edge-mlflow-sync; POST edge /predict (503); POST /models/resume; job; /predict (200)",
+   "detail": "2026-09-24 20:26:33.247621+00 | 6 | resumed 2026-09-24 20:26:11.950795+00 | 6 | suspended 2026-09-24 20:09:42.505075+00 | 4 | resumed 2026-09-24 20:09:24.324843+00 | 4 | suspended",
+   "summary": "`lab-supervisor` suspende la versión 6; el edge la marca como suspendida (la ejecución programada de `edge-mlflow-sync` se adelantó a la manual, que la encontró ya suspendida) y `/predict` responde 503; tras reanudar, 200; `model_versions` registra `suspended` y `resumed`"
+  },
+  {
+   "id": "E21",
+   "phase": "e2e",
+   "name": "Events of the feedback loop in Loki",
+   "result": "PASS",
+   "seconds": 26,
+   "evidence": "cmp12/E21-loki.txt",
+   "command": "LogQL count_over_time per event in namespaces feedback, edge, mlops and platform",
+   "detail": "version_resumed: 2 log lines feedback_labels_loaded: 3 log lines schema_applied: 3 log lines event types found in Loki: 9/9",
+   "summary": "Loki contiene los 9 tipos de evento: `feedback_recorded`, `login_succeeded`, `login_failed`, `model_suspended`, `model_resumed`, `version_suspended`, `version_resumed`, `feedback_labels_loaded` y `schema_applied`"
+  }
+ ],
+ "unit_tests": {
+  "passed": 18,
+  "evidence": "local-evidence/cmp12-unit-tests.txt",
+  "where": "local"
+ },
+ "network_policies": {
+  "canary": "# N-CANARY: NetworkPolicies are enforced on every node (pod behind a deny-all policy)\n$ per node: httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside\nedgenode01: pod 10.42.2.63:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy CONNECTED\nkb2: pod 10.42.0.107:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy NOT-CONNECTED\nworker1-kb2: pod 10.42.1.51:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy NOT-CONNECTED\n(exit 1)\n",
+  "tests": [
+   {
+    "id": "N-CANARY",
+    "phase": "netpol",
+    "name": "NetworkPolicies are enforced on every node (pod behind a deny-all policy)",
+    "result": "FAIL",
+    "seconds": 49,
+    "evidence": "netpol/N-CANARY.txt",
+    "command": "per node: httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside",
+    "detail": "edgenode01: pod 10.42.2.63:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy CONNECTED kb2: pod 10.42.0.107:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy NOT-CONNECTED worker1-kb2: pod 10.42.1.51:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy NOT-CONNECTED",
+    "client_node": "",
+    "destination_nodes": ""
+   },
+   {
+    "id": "N14",
+    "phase": "netpol",
+    "name": "feedback -> platform TimescaleDB (feedback conduit) (expected: allow)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N14.txt",
+    "command": "nc -z -w 5 platform-timescaledb.platform.svc.cluster.local 5432 from a pod in namespace feedback on worker1-kb2",
+    "detail": "CONNECTED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   },
+   {
+    "id": "N15",
+    "phase": "netpol",
+    "name": "feedback -> edge PostgreSQL (no conduit into the edge) (expected: deny)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N15.txt",
+    "command": "nc -z -w 5 edge-postgresql.edge.svc.cluster.local 5432 from a pod in namespace feedback on worker1-kb2",
+    "detail": "destination on edgenode01, which does not enforce NetworkPolicies (N-CANARY); BLOCKED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "edgenode01"
+   },
+   {
+    "id": "N16",
+    "phase": "netpol",
+    "name": "feedback -> platform service PostgreSQL (same namespace as TimescaleDB, not allowed) (expected: deny)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N16.txt",
+    "command": "nc -z -w 5 platform-postgresql.platform.svc.cluster.local 5432 from a pod in namespace feedback on worker1-kb2",
+    "detail": "BLOCKED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   },
+   {
+    "id": "N17",
+    "phase": "netpol",
+    "name": "feedback -> Keycloak (sign-in conduit) (expected: allow)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N17.txt",
+    "command": "nc -z -w 5 enterprise-keycloak.security.svc.cluster.local 80 from a pod in namespace feedback on worker1-kb2",
+    "detail": "CONNECTED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   },
+   {
+    "id": "N18",
+    "phase": "netpol",
+    "name": "feedback -> MLflow (suspension tags) (expected: allow)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N18.txt",
+    "command": "nc -z -w 5 platform-mlflow.mlops.svc.cluster.local 5000 from a pod in namespace feedback on worker1-kb2",
+    "detail": "CONNECTED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   }
+  ]
+ },
+ "traceability": {
+  "before_run": "lab-20260924T081803",
+  "after_run": "lab-20260924T195147",
+  "queries": [
+   {
+    "key": "B.6.1.2.2",
+    "label": "Resources: Monitoring Performance",
+    "before": 20,
+    "after": 20,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.2.2 --no-headers"
+   },
+   {
+    "key": "B.6.1.3.1",
+    "label": "Resources: Access Control",
+    "before": 14,
+    "after": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.1 --no-headers"
+   },
+   {
+    "key": "B.6.1.3.2",
+    "label": "Resources: Version Control",
+    "before": 6,
+    "after": 6,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.2 --no-headers"
+   },
+   {
+    "key": "B.6.1.3.3",
+    "label": "Resources: Human Oversight / Feedback",
+    "before": 8,
+    "after": 11,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.3 --no-headers"
+   },
+   {
+    "key": "B.6.1.3.4",
+    "label": "Resources: Inventory / Registry",
+    "before": 8,
+    "after": 8,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.4 --no-headers"
+   },
+   {
+    "key": "B.6.1.4.1",
+    "label": "Resources: Security of AI Assets",
+    "before": 14,
+    "after": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.4.1 --no-headers"
+   },
+   {
+    "key": "B.6.2.3.1",
+    "label": "Planning: System Documentation",
+    "before": 14,
+    "after": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.3.1 --no-headers"
+   },
+   {
+    "key": "B.6.2.5.1",
+    "label": "Planning: Deployment Plan",
+    "before": 4,
+    "after": 4,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.5.1 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.1",
+    "label": "Operation: Infrastructure Monitoring",
+    "before": 15,
+    "after": 27,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.1 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.2",
+    "label": "Operation: Model Performance",
+    "before": 29,
+    "after": 29,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.2 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.3",
+    "label": "Operation: KPI Assessment (OEE)",
+    "before": 8,
+    "after": 10,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.3 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.4",
+    "label": "Operation: Retraining / Lifecycle",
+    "before": 28,
+    "after": 32,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.4 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.5",
+    "label": "Operation: Update & Repair Plan",
+    "before": 1,
+    "after": 1,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.5 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.6",
+    "label": "Operation: Incident Communication",
+    "before": 14,
+    "after": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.6 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.7",
+    "label": "Operation: Security Monitoring",
+    "before": 6,
+    "after": 6,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.7 --no-headers"
+   },
+   {
+    "key": "B.6.2.8.1",
+    "label": "Operation: Logging / Audit Trail",
+    "before": 41,
+    "after": 52,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.8.1 --no-headers"
+   },
+   {
+    "key": "B.8.0.2.1",
+    "label": "Continual Improvement: Roles",
+    "before": 10,
+    "after": 10,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.8.0.2.1 --no-headers"
+   },
+   {
+    "key": "B.8.0.4.1",
+    "label": "Continual Improvement: Helpdesk",
+    "before": 14,
+    "after": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.8.0.4.1 --no-headers"
+   },
+   {
+    "key": "B.8.0.5.1",
+    "label": "Continual Improvement: Alerts",
+    "before": 37,
+    "after": 37,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.8.0.5.1 --no-headers"
+   },
+   {
+    "key": "CMP-01",
+    "label": "Input Data Monitoring",
+    "before": 17,
+    "after": 17,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-01 --no-headers"
+   },
+   {
+    "key": "CMP-02",
+    "label": "Data Stock",
+    "before": 21,
+    "after": 33,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-02 --no-headers"
+   },
+   {
+    "key": "CMP-03",
+    "label": "Version Control",
+    "before": 6,
+    "after": 6,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-03 --no-headers"
+   },
+   {
+    "key": "CMP-04",
+    "label": "Model",
+    "before": 5,
+    "after": 6,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-04 --no-headers"
+   },
+   {
+    "key": "CMP-05",
+    "label": "Document Store",
+    "before": 5,
+    "after": 5,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-05 --no-headers"
+   },
+   {
+    "key": "CMP-06",
+    "label": "Information Centre",
+    "before": 3,
+    "after": 3,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-06 --no-headers"
+   },
+   {
+    "key": "CMP-07",
+    "label": "User Access & Oversight",
+    "before": 10,
+    "after": 10,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-07 --no-headers"
+   },
+   {
+    "key": "CMP-08",
+    "label": "Infrastructure Technical Monitoring",
+    "before": 20,
+    "after": 20,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-08 --no-headers"
+   },
+   {
+    "key": "CMP-09",
+    "label": "Logger",
+    "before": 9,
+    "after": 9,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-09 --no-headers"
+   },
+   {
+    "key": "CMP-10",
+    "label": "Model Technical Performance Monitoring",
+    "before": 32,
+    "after": 32,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-10 --no-headers"
+   },
+   {
+    "key": "CMP-11",
+    "label": "Goal-Oriented Monitoring",
+    "before": 23,
+    "after": 24,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-11 --no-headers"
+   },
+   {
+    "key": "CMP-12",
+    "label": "Feedback Interface",
+    "before": 0,
+    "after": 3,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-12 --no-headers"
+   },
+   {
+    "key": "CMP-13",
+    "label": "AI Helpdesk",
+    "before": 14,
+    "after": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-13 --no-headers"
+   },
+   {
+    "key": "CMP-14",
+    "label": "Retraining Recommendation",
+    "before": 8,
+    "after": 9,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-14 --no-headers"
+   },
+   {
+    "key": "CMP-15",
+    "label": "Security Monitoring",
+    "before": 20,
+    "after": 20,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-15 --no-headers"
+   },
+   {
+    "key": "iso42001=true",
+    "label": "all catalog resources",
+    "before": 127,
+    "after": 143,
+    "command": "kubectl get pods,svc,deploy,sts -A -l iso42001=true --no-headers"
+   }
+  ],
+  "coverage_catalog_namespaces": {
+   "objects": 438,
+   "with_iso42001_label": 341
+  },
+  "coverage_feedback_namespace": {
+   "objects": 12,
+   "with_iso42001_label": 9,
+   "other_releases": 0
+  }
+ },
+ "catalog_totals": {
+  "charts": 31,
+  "by_tier": {
+   "edge": 13,
+   "platform": 13,
+   "enterprise": 5
+  },
+  "deployed_in_laboratory": 28,
+  "not_deployed": [
+   "platform-rancher",
+   "platform-argocd",
+   "edge-mongodb"
+  ]
+ },
+ "table30_row": {
+  "component": "CMP-12 Feedback Interface",
+  "layer_level": "Entorno; empresa",
+  "criticality": "Recomendado",
+  "charts": [
+   "enterprise-feedback-interface (empresa)"
+  ],
+  "clauses": [
+   "B.6.1.3.3",
+   "B.6.2.6.4"
+  ],
+  "lab_resources": 3,
+  "coverage": "cubierto: veredictos del operario sobre las predicciones consolidadas, usados como etiquetas por el entrenamiento, y suspensión de la versión en servicio"
+ },
+ "incidents": [
+  [
+   "La consolidación programada fallaba en cada ejecución",
+   "Ejecuciones de `edge-postgresql-sync` en error desde las 10:00 UTC (`raw/lab-20260924T095847/state/final-pods.txt`) hasta las 19:52; `Connection refused` hacia TimescaleDB en `raw/diag-conduits-20260924T194048.txt`, mientras un pod de prueba del mismo namespace y nodo sí conectaba",
+   "Desde que `worker1-kb2` aplica NetworkPolicy (reinicio de su agente K3s por la mañana), su controlador tarda un instante en reconocer cada pod nuevo; la consolidación conectaba en los primeros milisegundos y se rechazaba. Además, un paso fallido no detenía el script, que seguía con valores vacíos",
+   "Espera de hasta un minuto a las dos bases de datos y parada de la tabla ante un paso fallido (commit 2da398c); las ejecuciones terminan bien desde la corrección"
+  ],
+  [
+   "Dos sincronizaciones de versión simultáneas se pisaban",
+   "`download_failed` entre `downloaded` y `active` en E07 del informe principal y en el clúster local",
+   "La ejecución manual y la programada descargaban la misma versión en el mismo directorio temporal",
+   "Cerrojo sobre el almacén de modelos y directorio temporal propio de cada ejecución (commit 321288e)"
+  ],
+  [
+   "Toda actualización de `enterprise-keycloak` fallaba",
+   "Job de importación del realm con `NullPointerException ... defaultClientScope is null` en el clúster local",
+   "El cliente de Grafana declaraba el scope `openid`, que no existe en Keycloak; solo falla cuando el realm ya existe",
+   "Scopes `profile` y `email` (commit 0b9ae33); la actualización del laboratorio pasó"
+  ],
+  [
+   "El Job de migración de TimescaleDB se ejecutó en el nodo edge",
+   "`platform-timescaledb-schema` en `edgenode01` (`raw/lab-20260924T175818/state/final-pods.txt`)",
+   "Los hooks de Helm no pasan por el post-renderer, así que `--separate-tiers` no los alcanza",
+   "Preferencia por nodos sin la etiqueta edge en el propio Job (commit 58f9fba)"
+  ],
+  [
+   "El script de validación se detuvo tras una instalación correcta, y E19 esperó 900 s a un Job ya fallido",
+   "`install.sh did not install any release` en `raw/lab-20260924T175818/run.log`; E19 de `raw/lab-20260924T195147`",
+   "`grep -q` bajo `pipefail` puede cortar la salida del comando anterior; la espera de los Jobs solo miraba la condición de completado",
+   "Recuento en lugar de `grep -q` y espera que termina también ante un fallo (commits d18689c y 1f53703)"
+  ]
+ ],
+ "limitations": [
+  {
+   "topic": "Autenticación",
+   "detail": "La interfaz envía las credenciales a Keycloak desde el servidor (concesión de contraseña), desaconsejada por OAuth 2.1; el flujo con redirección del navegador exige publicar Keycloak con TLS, que el laboratorio no tiene. La cookie de sesión no se marca como segura porque la interfaz se usó sin TLS, por port-forward"
+  },
+  {
+   "topic": "Retraso de la retroalimentación",
+   "detail": "El operario solo ve predicciones ya consolidadas: hasta 5 min con los valores por defecto (2 min en el laboratorio); la suspensión llega al edge en la siguiente sincronización (2 min por defecto, 1 en el laboratorio)"
+  },
+  {
+   "topic": "Etiquetas",
+   "detail": "El modelo no es supervisado: los veredictos evalúan y pueden bloquear una versión, pero no entrenan el modelo. En el laboratorio se usaron 2 veredictos y el criterio solo informa; no se probó un bloqueo real de la liberación"
+  },
+  {
+   "topic": "Dispositivo edge",
+   "detail": "La suspensión se probó con el servidor del modelo en `edgenode01`; la tabla `operator_feedback` del edge sigue sin interfaz, reservada para una futura interfaz en planta"
+  },
+  {
+   "topic": "Usuarios de prueba",
+   "detail": "Los tres usuarios de prueba permanecen en el Keycloak del laboratorio y sus contraseñas en un Secret; conviene borrarlos si el clúster se usa para otra cosa"
+  },
+  {
+   "topic": "Sin interfaz de usuario probada con navegador",
+   "detail": "Las pruebas usan la API JSON de la misma aplicación, con la misma sesión y protección de formularios; las páginas HTML se probaron en las pruebas unitarias, no con un navegador en el laboratorio"
+  }
+ ]
+}
