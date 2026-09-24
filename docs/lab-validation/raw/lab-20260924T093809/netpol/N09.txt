@@ -1,0 +1,4 @@
+# N09: security -> platform PostgreSQL (Keycloak database)
+$ nc -z -w 5 platform-postgresql.platform.svc.cluster.local 5432   (pod in namespace security)
+client node: worker1-kb2; destination node(s): worker1-kb2
+CONNECTED

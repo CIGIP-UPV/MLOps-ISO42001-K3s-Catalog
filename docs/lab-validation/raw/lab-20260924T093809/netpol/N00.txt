@@ -1,0 +1,4 @@
+# N00: namespace outside the catalog -> Internet (control, no policy)
+$ nc -z -w 5 github.com 443   (pod in namespace lab-np-outside)
+client node: worker1-kb2; destination node(s): n/a
+CONNECTED

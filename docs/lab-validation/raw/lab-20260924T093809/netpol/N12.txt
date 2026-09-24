@@ -1,0 +1,4 @@
+# N12: logging -> Loki (log conduit)
+$ nc -z -w 5 platform-loki.monitoring.svc.cluster.local 3100   (pod in namespace logging)
+client node: worker1-kb2; destination node(s): worker1-kb2
+CONNECTED
