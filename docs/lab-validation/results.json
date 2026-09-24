@@ -2467,7 +2467,7 @@
    "commits": "c02a7b4"
   },
   {
-   "change": "Documentación alineada (README, catalog/README.md, index.html, CITATION.cff 1.0.1)",
+   "change": "Documentación alineada (README, catalog/README.md, index.html, CITATION.cff) y versión 2.0.0 con CHANGELOG",
    "gap": "Deriva documental y etiquetas ISO distintas en tres sitios",
    "effect": "Una sola fuente (CHART_META) para tablas y metadatos",
    "detected_in": "Fase 1",
