@@ -1,0 +1,2683 @@
+{
+ "report": "docs/lab-validation/INFORME_VALIDACION_LAB.md",
+ "runs": {
+  "lab-20260924T081803": "fases 1 a 7: entorno, preparación, instalación completa, humo, extremo a extremo, trazabilidad y red (red no evaluable: canario fallido)",
+  "lab-20260924T092125": "fases 4 y 7: humo de referencia tras corregir S04",
+  "lab-20260924T093809": "fase 7: clientes en un nodo que aplica políticas, sin espera de sincronización",
+  "lab-20260924T095847": "fase 7 de referencia: canario con control positivo, espera de sincronización y N13"
+ },
+ "environment": {
+  "k3s": "k3s version v1.32.6+k3s1 (eb603acd)",
+  "kubernetes_server": "v1.32.6+k3s1",
+  "kubectl_client": "v1.29.0",
+  "helm": "v3.19.0+g3d8990f",
+  "rancher": "gestionado por un Rancher externo; agente rancher/rancher-agent:v2.13.3 (no hay servidor Rancher en el clúster)",
+  "cert_manager_before": "ninguno (lo instala el catálogo)",
+  "storage_class": "local-path (por defecto), provisioner rancher.io/local-path, reclaimPolicy Delete, WaitForFirstConsumer",
+  "cni": "flannel (K3s) con el controlador de NetworkPolicy de K3s (kube-router), activado para la validación",
+  "catalog_commit_install": "d7d83a7a25937449d49717daebe5760cc094cef9 (lab-validation)",
+  "nodes": [
+   {
+    "name": "kb2",
+    "role": "plano de control (máquina virtual Hyper-V); solo DaemonSets del catálogo (taint NoSchedule)",
+    "os": "Ubuntu 22.04.4 LTS",
+    "kernel": "5.15.0-190-generic",
+    "arch": "amd64",
+    "kubelet": "v1.32.6+k3s1",
+    "runtime": "containerd://2.0.5-k3s1.32",
+    "cpu": 4,
+    "memory_gib": 7.8,
+    "usage_before_install": {
+     "cpu": "1769m",
+     "cpu_pct": "44%",
+     "memory": "4034Mi",
+     "memory_pct": "50%"
+    },
+    "usage_after_install": {
+     "cpu": "1654m",
+     "cpu_pct": "41%",
+     "memory": "4661Mi",
+     "memory_pct": "58%"
+    },
+    "usage_final": {
+     "cpu": "858m",
+     "cpu_pct": "21%",
+     "memory": "4517Mi",
+     "memory_pct": "56%"
+    }
+   },
+   {
+    "name": "worker1-kb2",
+    "role": "trabajador (Dell Precision 3640); niveles plataforma y empresa",
+    "os": "Ubuntu 22.04.4 LTS",
+    "kernel": "6.8.0-138-generic",
+    "arch": "amd64",
+    "kubelet": "v1.32.6+k3s1",
+    "runtime": "containerd://2.0.5-k3s1.32",
+    "cpu": 16,
+    "memory_gib": 31.1,
+    "usage_before_install": {
+     "cpu": "115m",
+     "cpu_pct": "0%",
+     "memory": "1857Mi",
+     "memory_pct": "5%"
+    },
+    "usage_after_install": {
+     "cpu": "610m",
+     "cpu_pct": "3%",
+     "memory": "6632Mi",
+     "memory_pct": "20%"
+    },
+    "usage_final": {
+     "cpu": "433m",
+     "cpu_pct": "2%",
+     "memory": "7192Mi",
+     "memory_pct": "22%"
+    }
+   },
+   {
+    "name": "edgenode01",
+    "role": "dispositivo edge (NVIDIA Jetson AGX Orin); nivel edge",
+    "os": "Ubuntu 22.04.5 LTS",
+    "kernel": "5.15.148-tegra",
+    "arch": "arm64",
+    "kubelet": "v1.32.6+k3s1",
+    "runtime": "containerd://2.0.5-k3s1.32",
+    "cpu": 8,
+    "memory_gib": 61.4,
+    "usage_before_install": {
+     "cpu": "1404m",
+     "cpu_pct": "17%",
+     "memory": "6532Mi",
+     "memory_pct": "10%"
+    },
+    "usage_after_install": {
+     "cpu": "2108m",
+     "cpu_pct": "26%",
+     "memory": "8511Mi",
+     "memory_pct": "13%"
+    },
+    "usage_final": {
+     "cpu": "823m",
+     "cpu_pct": "10%",
+     "memory": "8797Mi",
+     "memory_pct": "13%"
+    }
+   }
+  ]
+ },
+ "catalog": {
+  "total": 30,
+  "by_tier": {
+   "edge": 13,
+   "platform": 13,
+   "enterprise": 4
+  },
+  "charts": [
+   {
+    "name": "edge-fastapi-model",
+    "tier": "edge",
+    "namespace": "edge",
+    "display": "FastAPI Model Server",
+    "version": "0.3.0",
+    "appVersion": "1.0.0",
+    "deps": [],
+    "components": [
+     "CMP-04",
+     "CMP-10"
+    ],
+    "clauses": [
+     "B.6.2.6.2",
+     "B.6.2.6.4"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "edge-kafka",
+    "tier": "edge",
+    "namespace": "edge",
+    "display": "Apache Kafka (Edge)",
+    "version": "0.3.0",
+    "appVersion": "3.6",
+    "deps": [
+     {
+      "name": "kafka",
+      "version": "30.1.8",
+      "repository": "https://charts.bitnami.com/bitnami"
+     }
+    ],
+    "components": [
+     "CMP-01"
+    ],
+    "clauses": [
+     "B.6.2.6.4",
+     "B.6.2.8.1"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "edge-mosquitto",
+    "tier": "edge",
+    "namespace": "edge",
+    "display": "Eclipse Mosquitto",
+    "version": "0.3.0",
+    "appVersion": "2.0",
+    "deps": [],
+    "components": [
+     "CMP-01"
+    ],
+    "clauses": [
+     "B.6.1.3.1",
+     "B.6.2.6.4"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "edge-rabbitmq",
+    "tier": "edge",
+    "namespace": "edge",
+    "display": "RabbitMQ (Edge)",
+    "version": "0.3.0",
+    "appVersion": "3.13",
+    "deps": [],
+    "components": [
+     "CMP-01"
+    ],
+    "clauses": [
+     "B.6.2.6.4",
+     "B.6.2.8.1"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "edge-node-red",
+    "tier": "edge",
+    "namespace": "edge",
+    "display": "Node-RED",
+    "version": "0.3.0",
+    "appVersion": "3.1.3",
+    "deps": [
+     {
+      "name": "node-red",
+      "version": "0.30.0",
+      "repository": "https://schwarzit.github.io/node-red-chart/"
+     }
+    ],
+    "components": [
+     "CMP-01"
+    ],
+    "clauses": [
+     "B.6.2.6.4"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "edge-opc-ua-gateway",
+    "tier": "edge",
+    "namespace": "edge",
+    "display": "OPC-UA Gateway",
+    "version": "0.3.0",
+    "appVersion": "1.32.3",
+    "deps": [],
+    "components": [
+     "CMP-01"
+    ],
+    "clauses": [
+     "B.6.1.3.1",
+     "B.6.2.6.4"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "edge-fluent-bit",
+    "tier": "edge",
+    "namespace": "logging",
+    "display": "Fluent Bit",
+    "version": "0.3.0",
+    "appVersion": "3.0",
+    "deps": [
+     {
+      "name": "fluent-bit",
+      "version": "0.47.10",
+      "repository": "https://fluent.github.io/helm-charts"
+     }
+    ],
+    "components": [
+     "CMP-09"
+    ],
+    "clauses": [
+     "B.6.2.8.1"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "edge-prometheus-agent",
+    "tier": "edge",
+    "namespace": "edge",
+    "display": "Prometheus Agent",
+    "version": "0.3.0",
+    "appVersion": "25.3",
+    "deps": [
+     {
+      "name": "prometheus",
+      "version": "25.30.2",
+      "repository": "https://prometheus-community.github.io/helm-charts"
+     }
+    ],
+    "components": [
+     "CMP-08",
+     "CMP-10"
+    ],
+    "clauses": [
+     "B.6.1.2.2",
+     "B.6.2.6.1"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "edge-falco",
+    "tier": "edge",
+    "namespace": "falco",
+    "display": "Falco",
+    "version": "0.3.0",
+    "appVersion": "0.37",
+    "deps": [
+     {
+      "name": "falco",
+      "version": "4.22.0",
+      "repository": "https://falcosecurity.github.io/charts"
+     }
+    ],
+    "components": [
+     "CMP-15"
+    ],
+    "clauses": [
+     "B.6.2.6.7",
+     "B.6.2.8.1"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "edge-mongodb",
+    "tier": "edge",
+    "namespace": "edge",
+    "display": "MongoDB (Edge Buffer)",
+    "version": "0.3.0",
+    "appVersion": "7.0",
+    "deps": [
+     {
+      "name": "mongodb",
+      "version": "15.6.26",
+      "repository": "https://charts.bitnami.com/bitnami"
+     }
+    ],
+    "components": [
+     "CMP-02"
+    ],
+    "clauses": [
+     "B.6.2.6.1"
+    ],
+    "tier_es": "edge",
+    "lab": "no instalado: el nodo edge es arm64 y las imágenes de Bitnami MongoDB solo existen para amd64 (--skip-chart edge-mongodb)"
+   },
+   {
+    "name": "edge-postgresql",
+    "tier": "edge",
+    "namespace": "edge",
+    "display": "PostgreSQL (Edge Cache)",
+    "version": "0.3.0",
+    "appVersion": "16",
+    "deps": [
+     {
+      "name": "postgresql",
+      "version": "15.5.38",
+      "repository": "https://charts.bitnami.com/bitnami"
+     }
+    ],
+    "components": [
+     "CMP-02"
+    ],
+    "clauses": [
+     "B.6.2.6.1",
+     "B.6.2.6.3",
+     "B.6.2.8.1"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "edge-postgresql-sync",
+    "tier": "edge",
+    "namespace": "edge",
+    "display": "Edge Data Consolidation",
+    "version": "0.3.0",
+    "appVersion": "1.0.0",
+    "deps": [],
+    "components": [
+     "CMP-02"
+    ],
+    "clauses": [
+     "B.6.2.6.1",
+     "B.6.2.8.1"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "edge-mlflow-sync",
+    "tier": "edge",
+    "namespace": "edge",
+    "display": "Edge Version Control (MLflow Sync)",
+    "version": "0.3.0",
+    "appVersion": "1.0.0",
+    "deps": [],
+    "components": [
+     "CMP-03"
+    ],
+    "clauses": [
+     "B.6.1.3.2",
+     "B.6.2.6.4",
+     "B.6.2.8.1"
+    ],
+    "tier_es": "edge",
+    "lab": "instalado"
+   },
+   {
+    "name": "platform-mlflow",
+    "tier": "platform",
+    "namespace": "mlops",
+    "display": "MLflow",
+    "version": "0.3.0",
+    "appVersion": "2.22.1",
+    "deps": [
+     {
+      "name": "mlflow",
+      "version": "0.18.0",
+      "repository": "https://community-charts.github.io/helm-charts"
+     }
+    ],
+    "components": [
+     "CMP-03"
+    ],
+    "clauses": [
+     "B.6.1.3.2",
+     "B.6.1.3.4",
+     "B.6.2.6.4"
+    ],
+    "tier_es": "plataforma",
+    "lab": "instalado"
+   },
+   {
+    "name": "platform-training-jobs",
+    "tier": "platform",
+    "namespace": "mlops",
+    "display": "Training Jobs",
+    "version": "0.3.0",
+    "appVersion": "1.0.0",
+    "deps": [],
+    "components": [
+     "CMP-04",
+     "CMP-14"
+    ],
+    "clauses": [
+     "B.6.2.6.4"
+    ],
+    "tier_es": "plataforma",
+    "lab": "instalado"
+   },
+   {
+    "name": "platform-evidently",
+    "tier": "platform",
+    "namespace": "mlops",
+    "display": "Evidently AI",
+    "version": "0.3.0",
+    "appVersion": "0.4",
+    "deps": [],
+    "components": [
+     "CMP-10",
+     "CMP-14"
+    ],
+    "clauses": [
+     "B.6.2.6.2",
+     "B.6.2.8.1",
+     "B.8.0.5.1"
+    ],
+    "tier_es": "plataforma",
+    "lab": "instalado"
+   },
+   {
+    "name": "platform-minio",
+    "tier": "platform",
+    "namespace": "minio",
+    "display": "MinIO",
+    "version": "0.3.0",
+    "appVersion": "5.0",
+    "deps": [
+     {
+      "name": "minio",
+      "version": "5.4.0",
+      "repository": "https://charts.min.io/"
+     }
+    ],
+    "components": [
+     "CMP-02",
+     "CMP-05"
+    ],
+    "clauses": [
+     "B.6.2.3.1",
+     "B.6.2.5.1"
+    ],
+    "tier_es": "plataforma",
+    "lab": "instalado"
+   },
+   {
+    "name": "platform-postgresql",
+    "tier": "platform",
+    "namespace": "platform",
+    "display": "PostgreSQL (Platform)",
+    "version": "0.3.0",
+    "appVersion": "15.0",
+    "deps": [
+     {
+      "name": "postgresql",
+      "version": "15.5.38",
+      "repository": "https://charts.bitnami.com/bitnami"
+     }
+    ],
+    "components": [
+     "CMP-02"
+    ],
+    "clauses": [
+     "B.6.1.3.4"
+    ],
+    "tier_es": "plataforma",
+    "lab": "instalado"
+   },
+   {
+    "name": "platform-timescaledb",
+    "tier": "platform",
+    "namespace": "platform",
+    "display": "TimescaleDB",
+    "version": "0.3.0",
+    "appVersion": "2.17.2-pg16",
+    "deps": [],
+    "components": [
+     "CMP-02",
+     "CMP-11"
+    ],
+    "clauses": [
+     "B.6.2.6.1",
+     "B.6.2.6.3"
+    ],
+    "tier_es": "plataforma",
+    "lab": "instalado"
+   },
+   {
+    "name": "platform-grafana",
+    "tier": "platform",
+    "namespace": "monitoring",
+    "display": "Grafana",
+    "version": "0.3.0",
+    "appVersion": "11.6.1",
+    "deps": [
+     {
+      "name": "grafana",
+      "version": "8.15.0",
+      "repository": "https://grafana.github.io/helm-charts"
+     }
+    ],
+    "components": [
+     "CMP-06",
+     "CMP-10",
+     "CMP-11"
+    ],
+    "clauses": [
+     "B.6.1.3.1",
+     "B.6.1.3.3",
+     "B.6.2.6.2"
+    ],
+    "tier_es": "plataforma",
+    "lab": "instalado"
+   },
+   {
+    "name": "platform-loki",
+    "tier": "platform",
+    "namespace": "monitoring",
+    "display": "Loki",
+    "version": "0.3.0",
+    "appVersion": "6.0",
+    "deps": [
+     {
+      "name": "loki",
+      "version": "6.55.0",
+      "repository": "https://grafana.github.io/helm-charts"
+     }
+    ],
+    "components": [
+     "CMP-09"
+    ],
+    "clauses": [
+     "B.6.2.8.1"
+    ],
+    "tier_es": "plataforma",
+    "lab": "instalado"
+   },
+   {
+    "name": "platform-prometheus",
+    "tier": "platform",
+    "namespace": "monitoring",
+    "display": "Prometheus + Alertmanager",
+    "version": "0.3.0",
+    "appVersion": "61.0",
+    "deps": [
+     {
+      "name": "kube-prometheus-stack",
+      "version": "61.9.0",
+      "repository": "https://prometheus-community.github.io/helm-charts"
+     }
+    ],
+    "components": [
+     "CMP-08",
+     "CMP-10",
+     "CMP-11"
+    ],
+    "clauses": [
+     "B.6.1.2.2",
+     "B.6.2.6.2",
+     "B.8.0.5.1"
+    ],
+    "tier_es": "plataforma",
+    "lab": "instalado"
+   },
+   {
+    "name": "platform-rancher",
+    "tier": "platform",
+    "namespace": "cattle-system",
+    "display": "Rancher",
+    "version": "0.3.0",
+    "appVersion": "2.11.3",
+    "deps": [
+     {
+      "name": "rancher",
+      "version": "2.11.3",
+      "repository": "https://releases.rancher.com/server-charts/latest"
+     }
+    ],
+    "components": [],
+    "clauses": [
+     "B.6.2.5.1"
+    ],
+    "tier_es": "plataforma",
+    "lab": "no instalado: el clúster ya lo gestiona un Rancher externo (install.sh nunca instala un segundo Rancher)"
+   },
+   {
+    "name": "platform-argocd",
+    "tier": "platform",
+    "namespace": "argocd",
+    "display": "Argo CD",
+    "version": "0.3.0",
+    "appVersion": "2.12",
+    "deps": [
+     {
+      "name": "argo-cd",
+      "version": "7.9.1",
+      "repository": "https://argoproj.github.io/argo-helm"
+     }
+    ],
+    "components": [
+     "CMP-03"
+    ],
+    "clauses": [
+     "B.6.2.5.1",
+     "B.6.2.6.4",
+     "B.6.2.8.1"
+    ],
+    "tier_es": "plataforma",
+    "lab": "no instalado: el namespace argocd ya tenía otro Argo CD (--skip-chart platform-argocd)"
+   },
+   {
+    "name": "platform-openbao",
+    "tier": "platform",
+    "namespace": "openbao",
+    "display": "OpenBao",
+    "version": "0.3.0",
+    "appVersion": "2.0",
+    "deps": [
+     {
+      "name": "openbao",
+      "version": "0.16.4",
+      "repository": "https://openbao.github.io/openbao-helm"
+     }
+    ],
+    "components": [
+     "CMP-07",
+     "CMP-15"
+    ],
+    "clauses": [
+     "B.6.1.3.3",
+     "B.6.1.4.1",
+     "B.8.0.2.1"
+    ],
+    "tier_es": "plataforma",
+    "lab": "instalado"
+   },
+   {
+    "name": "platform-cert-manager",
+    "tier": "platform",
+    "namespace": "cert-manager",
+    "display": "cert-manager",
+    "version": "0.3.0",
+    "appVersion": "v1.17.4",
+    "deps": [
+     {
+      "name": "cert-manager",
+      "version": "v1.17.4",
+      "repository": "https://charts.jetstack.io"
+     }
+    ],
+    "components": [
+     "CMP-15"
+    ],
+    "clauses": [
+     "B.6.1.4.1",
+     "B.6.2.3.1"
+    ],
+    "tier_es": "plataforma",
+    "lab": "instalado"
+   },
+   {
+    "name": "enterprise-keycloak",
+    "tier": "enterprise",
+    "namespace": "security",
+    "display": "Keycloak",
+    "version": "0.3.0",
+    "appVersion": "25.0.6",
+    "deps": [
+     {
+      "name": "keycloak",
+      "version": "22.2.6",
+      "repository": "https://charts.bitnami.com/bitnami"
+     }
+    ],
+    "components": [
+     "CMP-07"
+    ],
+    "clauses": [
+     "B.6.1.3.1",
+     "B.8.0.2.1"
+    ],
+    "tier_es": "empresa",
+    "lab": "instalado"
+   },
+   {
+    "name": "enterprise-grafana-dashboards",
+    "tier": "enterprise",
+    "namespace": "monitoring",
+    "display": "Grafana Dashboards (Overlay)",
+    "version": "0.3.0",
+    "appVersion": "1.0.0",
+    "deps": [],
+    "components": [
+     "CMP-06",
+     "CMP-11"
+    ],
+    "clauses": [
+     "B.6.1.3.3",
+     "B.6.2.6.2"
+    ],
+    "tier_es": "empresa",
+    "lab": "instalado"
+   },
+   {
+    "name": "enterprise-minio-overlay",
+    "tier": "enterprise",
+    "namespace": "minio",
+    "display": "MinIO Docs Overlay",
+    "version": "0.3.0",
+    "appVersion": "1.0.0",
+    "deps": [],
+    "components": [
+     "CMP-05"
+    ],
+    "clauses": [
+     "B.6.2.3.1",
+     "B.6.2.6.5"
+    ],
+    "tier_es": "empresa",
+    "lab": "instalado"
+   },
+   {
+    "name": "enterprise-zammad",
+    "tier": "enterprise",
+    "namespace": "helpdesk",
+    "display": "Zammad",
+    "version": "0.3.0",
+    "appVersion": "6.2.0-1",
+    "deps": [
+     {
+      "name": "zammad",
+      "version": "10.3.4",
+      "repository": "https://zammad.github.io/zammad-helm"
+     }
+    ],
+    "components": [
+     "CMP-13"
+    ],
+    "clauses": [
+     "B.6.2.6.6",
+     "B.8.0.4.1",
+     "B.8.0.5.1"
+    ],
+    "tier_es": "empresa",
+    "lab": "instalado"
+   }
+  ]
+ },
+ "component_map": [
+  {
+   "id": "CMP-01",
+   "name": "Input Data Monitoring",
+   "layer_level": "Entorno; dispositivo (en la práctica, pasarela edge)",
+   "criticality": "Recomendado",
+   "charts": [
+    "edge-kafka (edge)",
+    "edge-mosquitto (edge)",
+    "edge-rabbitmq (edge)",
+    "edge-node-red (edge)",
+    "edge-opc-ua-gateway (edge)"
+   ],
+   "clauses": [
+    "B.6.1.3.1",
+    "B.6.2.6.4",
+    "B.6.2.8.1"
+   ],
+   "lab_resources": 17,
+   "notes": "Validación declarativa de la entrada en Node-RED (rangos, antigüedad, muestras rechazadas); transporte MQTT, Kafka y RabbitMQ; pasarela OPC UA",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-02",
+   "name": "Data Stock",
+   "layer_level": "Datos; edge y plataforma",
+   "criticality": "Recomendado",
+   "charts": [
+    "edge-mongodb (edge)",
+    "edge-postgresql (edge)",
+    "edge-postgresql-sync (edge)",
+    "platform-minio (plataforma)",
+    "platform-postgresql (plataforma)",
+    "platform-timescaledb (plataforma)"
+   ],
+   "clauses": [
+    "B.6.1.3.4",
+    "B.6.2.3.1",
+    "B.6.2.5.1",
+    "B.6.2.6.1",
+    "B.6.2.6.3",
+    "B.6.2.8.1"
+   ],
+   "lab_resources": 21,
+   "notes": "Edge: PostgreSQL (y MongoDB, no desplegado en el laboratorio); plataforma: TimescaleDB, PostgreSQL de servicios y MinIO; consolidación edge a plataforma",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-03",
+   "name": "Version Control",
+   "layer_level": "Integración; edge y plataforma",
+   "criticality": "Obligatorio",
+   "charts": [
+    "edge-mlflow-sync (edge)",
+    "platform-mlflow (plataforma)",
+    "platform-argocd (plataforma)"
+   ],
+   "clauses": [
+    "B.6.1.3.2",
+    "B.6.1.3.4",
+    "B.6.2.5.1",
+    "B.6.2.6.4",
+    "B.6.2.8.1"
+   ],
+   "lab_resources": 6,
+   "notes": "Plataforma: registro de modelos MLflow (y Argo CD para GitOps, no desplegado en el laboratorio); edge: edge-mlflow-sync",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-04",
+   "name": "Model",
+   "layer_level": "Modelo de IA; edge y plataforma",
+   "criticality": "Obligatorio",
+   "charts": [
+    "edge-fastapi-model (edge)",
+    "platform-training-jobs (plataforma)"
+   ],
+   "clauses": [
+    "B.6.2.6.2",
+    "B.6.2.6.4"
+   ],
+   "lab_resources": 5,
+   "notes": "Edge: servidor FastAPI con la versión propagada; plataforma: entrenamiento (sin servicio de inferencia propio en plataforma)",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-05",
+   "name": "Document Store",
+   "layer_level": "Datos; empresa",
+   "criticality": "Obligatorio",
+   "charts": [
+    "platform-minio (plataforma)",
+    "enterprise-minio-overlay (empresa)"
+   ],
+   "clauses": [
+    "B.6.2.3.1",
+    "B.6.2.5.1",
+    "B.6.2.6.5"
+   ],
+   "lab_resources": 5,
+   "notes": "Bucket con object lock (GOVERNANCE, 365 días) y versionado para documentación y fichas de modelo",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-06",
+   "name": "Information Centre",
+   "layer_level": "Entorno; empresa",
+   "criticality": "Recomendado",
+   "charts": [
+    "platform-grafana (plataforma)",
+    "enterprise-grafana-dashboards (empresa)"
+   ],
+   "clauses": [
+    "B.6.1.3.1",
+    "B.6.1.3.3",
+    "B.6.2.6.2"
+   ],
+   "lab_resources": 3,
+   "notes": "Grafana con fuentes de datos y 6 cuadros de mando ZDM",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-07",
+   "name": "User Access & Oversight",
+   "layer_level": "Entorno; empresa (Control de Acceso en plataforma)",
+   "criticality": "Recomendado",
+   "charts": [
+    "platform-openbao (plataforma)",
+    "enterprise-keycloak (empresa)"
+   ],
+   "clauses": [
+    "B.6.1.3.1",
+    "B.6.1.3.3",
+    "B.6.1.4.1",
+    "B.8.0.2.1"
+   ],
+   "lab_resources": 10,
+   "notes": "Keycloak (realm ai-system); OpenBao para secretos",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-08",
+   "name": "Infrastructure Technical Monitoring",
+   "layer_level": "Entorno; empresa",
+   "criticality": "Recomendado",
+   "charts": [
+    "edge-prometheus-agent (edge)",
+    "platform-prometheus (plataforma)"
+   ],
+   "clauses": [
+    "B.6.1.2.2",
+    "B.6.2.6.1",
+    "B.6.2.6.2",
+    "B.8.0.5.1"
+   ],
+   "lab_resources": 20,
+   "notes": "Prometheus y Alertmanager en plataforma; agente Prometheus en edge (remote-write)",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-09",
+   "name": "Logger",
+   "layer_level": "Entorno en edge y plataforma; Datos en empresa",
+   "criticality": "Recomendado",
+   "charts": [
+    "edge-fluent-bit (edge)",
+    "platform-loki (plataforma)"
+   ],
+   "clauses": [
+    "B.6.2.8.1"
+   ],
+   "lab_resources": 9,
+   "notes": "Fluent Bit en todos los nodos hacia Loki, con almacenamiento en MinIO; configurado también para el log de auditoría del API (su llegada a Loki no se comprobó)",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-10",
+   "name": "Model Technical Performance Monitoring",
+   "layer_level": "Datos en plataforma; subcomponente en edge",
+   "criticality": "Obligatorio",
+   "charts": [
+    "edge-fastapi-model (edge)",
+    "edge-prometheus-agent (edge)",
+    "platform-evidently (plataforma)",
+    "platform-grafana (plataforma)",
+    "platform-prometheus (plataforma)"
+   ],
+   "clauses": [
+    "B.6.1.2.2",
+    "B.6.1.3.1",
+    "B.6.1.3.3",
+    "B.6.2.6.1",
+    "B.6.2.6.2",
+    "B.6.2.6.4",
+    "B.6.2.8.1",
+    "B.8.0.5.1"
+   ],
+   "lab_resources": 32,
+   "notes": "Métricas del modelo en edge (agente) y plataforma; deriva con Evidently",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-11",
+   "name": "Goal-Oriented Monitoring",
+   "layer_level": "Datos en plataforma; Entorno en empresa",
+   "criticality": "Recomendado",
+   "charts": [
+    "platform-timescaledb (plataforma)",
+    "platform-grafana (plataforma)",
+    "platform-prometheus (plataforma)",
+    "enterprise-grafana-dashboards (empresa)"
+   ],
+   "clauses": [
+    "B.6.1.2.2",
+    "B.6.1.3.1",
+    "B.6.1.3.3",
+    "B.6.2.6.1",
+    "B.6.2.6.2",
+    "B.6.2.6.3",
+    "B.8.0.5.1"
+   ],
+   "lab_resources": 23,
+   "notes": "TimescaleDB (KPI, lotes de consolidación) y cuadros de mando de objetivos",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-12",
+   "name": "Feedback Interface",
+   "layer_level": "Entorno; empresa",
+   "criticality": "Recomendado",
+   "charts": [],
+   "clauses": [],
+   "lab_resources": 0,
+   "notes": "Sin chart: hueco no cubierto (la tabla operator_feedback existe en el almacén edge, pero no hay interfaz)",
+   "coverage": "no cubierto"
+  },
+  {
+   "id": "CMP-13",
+   "name": "AI Helpdesk",
+   "layer_level": "Entorno; empresa",
+   "criticality": "Obligatorio",
+   "charts": [
+    "enterprise-zammad (empresa)"
+   ],
+   "clauses": [
+    "B.6.2.6.6",
+    "B.8.0.4.1",
+    "B.8.0.5.1"
+   ],
+   "lab_resources": 14,
+   "notes": "Zammad",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-14",
+   "name": "Retraining Recommendation",
+   "layer_level": "Modelo de IA; plataforma",
+   "criticality": "Recomendado",
+   "charts": [
+    "platform-training-jobs (plataforma)",
+    "platform-evidently (plataforma)"
+   ],
+   "clauses": [
+    "B.6.2.6.2",
+    "B.6.2.6.4",
+    "B.6.2.8.1",
+    "B.8.0.5.1"
+   ],
+   "lab_resources": 8,
+   "notes": "CronJob de deriva (Evidently) que registra la recomendación y lanza el reentrenamiento",
+   "coverage": "cubierto"
+  },
+  {
+   "id": "CMP-15",
+   "name": "Security Monitoring",
+   "layer_level": "Entorno; edge y plataforma",
+   "criticality": "Recomendado",
+   "charts": [
+    "edge-falco (edge)",
+    "platform-openbao (plataforma)",
+    "platform-cert-manager (plataforma)"
+   ],
+   "clauses": [
+    "B.6.1.3.3",
+    "B.6.1.4.1",
+    "B.6.2.3.1",
+    "B.6.2.6.7",
+    "B.6.2.8.1",
+    "B.8.0.2.1"
+   ],
+   "lab_resources": 20,
+   "notes": "Falco en edge y plataforma (no en el dispositivo edge del laboratorio); cert-manager y OpenBao",
+   "coverage": "cubierto"
+  }
+ ],
+ "subcomponents_and_flows": [
+  {
+   "item": "Flujo de consolidación de datos (Data Stock edge a plataforma)",
+   "charts": "edge-postgresql-sync",
+   "coverage": "cubierto",
+   "evidence": "E04 y E11"
+  },
+  {
+   "item": "Flujo de propagación de versiones (Version Control plataforma a edge)",
+   "charts": "edge-mlflow-sync",
+   "coverage": "cubierto",
+   "evidence": "E07 y E14"
+  },
+  {
+   "item": "Industrial Protocol Gateway",
+   "charts": "edge-opc-ua-gateway (Telegraf, OPC UA a MQTT)",
+   "coverage": "cubierto",
+   "evidence": "E02"
+  },
+  {
+   "item": "Model Training Pipeline",
+   "charts": "platform-training-jobs",
+   "coverage": "cubierto",
+   "evidence": "E05 y E13"
+  },
+  {
+   "item": "Access Control (plataforma)",
+   "charts": "enterprise-keycloak, platform-openbao, NetworkPolicies de infrastructure/",
+   "coverage": "cubierto",
+   "evidence": "S11, S13b, N01 a N13"
+  },
+  {
+   "item": "Business Dashboard",
+   "charts": "enterprise-grafana-dashboards",
+   "coverage": "cubierto",
+   "evidence": "S08"
+  },
+  {
+   "item": "RAW Data",
+   "charts": "platform-minio (bucket datasets), tema sensor-raw de edge-kafka",
+   "coverage": "parcial: almacenamiento disponible, sin flujo que lo alimente",
+   "evidence": "S02, S03"
+  },
+  {
+   "item": "Dataset Catalogue",
+   "charts": "sin chart; procedencia de datos en las etiquetas de cada versión de MLflow",
+   "coverage": "parcial",
+   "evidence": "E06"
+  },
+  {
+   "item": "Feature Engineering Pipeline",
+   "charts": "sin chart propio; agregación por intervalos en el job de entrenamiento",
+   "coverage": "parcial",
+   "evidence": "E05"
+  },
+  {
+   "item": "API Gateway",
+   "charts": "sin chart",
+   "coverage": "no cubierto",
+   "evidence": "-"
+  },
+  {
+   "item": "ERP/MES Integration",
+   "charts": "sin chart",
+   "coverage": "no cubierto",
+   "evidence": "-"
+  }
+ ],
+ "deployment": {
+  "rows": [
+   {
+    "chart": "platform-cert-manager",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "cert-manager",
+    "result": "correcto",
+    "seconds": 111,
+    "pods_ready_at_end_of_helm": "3/3",
+    "notes": "Dos pasadas por diseño: la segunda crea los emisores de la CA de plataforma cuando ya existen los CRD"
+   },
+   {
+    "chart": "platform-cert-manager (2.ª pasada)",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "cert-manager",
+    "result": "correcto",
+    "seconds": 11,
+    "pods_ready_at_end_of_helm": "3/3",
+    "notes": "Segunda pasada (emisores)"
+   },
+   {
+    "chart": "platform-openbao",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "openbao",
+    "result": "correcto",
+    "seconds": 2,
+    "pods_ready_at_end_of_helm": "0/1",
+    "notes": "0/1 listo al terminar Helm porque OpenBao arranca sellado; S13b lo inicializa y desella (1/1)"
+   },
+   {
+    "chart": "platform-postgresql",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "platform",
+    "result": "correcto",
+    "seconds": 35,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "enterprise-keycloak",
+    "tier": "enterprise",
+    "tier_es": "empresa",
+    "namespace": "security",
+    "result": "correcto",
+    "seconds": 120,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": "Imagen 25.0.6 con proxyHeaders xforwarded"
+   },
+   {
+    "chart": "platform-minio",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "minio",
+    "result": "correcto",
+    "seconds": 19,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "platform-timescaledb",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "platform",
+    "result": "correcto",
+    "seconds": 65,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "platform-prometheus",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "monitoring",
+    "result": "parcial",
+    "seconds": 42,
+    "pods_ready_at_end_of_helm": "5/7",
+    "notes": "5/7 en el instante de la medida; al final, todo en Running. El node-exporter del dispositivo edge responde 503 (1 de 30 targets caído)"
+   },
+   {
+    "chart": "platform-loki",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "monitoring",
+    "result": "correcto",
+    "seconds": 56,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "platform-grafana",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "monitoring",
+    "result": "correcto",
+    "seconds": 34,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "platform-mlflow",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "mlops",
+    "result": "correcto",
+    "seconds": 280,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": "El más lento de plataforma (descarga de la imagen de MLflow)"
+   },
+   {
+    "chart": "platform-training-jobs",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "mlops",
+    "result": "correcto",
+    "seconds": 1,
+    "pods_ready_at_end_of_helm": "0/0",
+    "notes": "Solo CronJob (sin pods permanentes)"
+   },
+   {
+    "chart": "platform-evidently",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "mlops",
+    "result": "correcto",
+    "seconds": 52,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "edge-postgresql",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "edge",
+    "result": "correcto",
+    "seconds": 36,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "edge-mosquitto",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "edge",
+    "result": "correcto",
+    "seconds": 19,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "edge-rabbitmq",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "edge",
+    "result": "correcto",
+    "seconds": 50,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "edge-kafka",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "edge",
+    "result": "correcto",
+    "seconds": 88,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": "KRaft de un nodo en el dispositivo edge (arm64)"
+   },
+   {
+    "chart": "edge-opc-ua-gateway",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "edge",
+    "result": "correcto",
+    "seconds": 19,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "edge-node-red",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "edge",
+    "result": "correcto",
+    "seconds": 51,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "edge-fastapi-model",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "edge",
+    "result": "correcto",
+    "seconds": 52,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "edge-mlflow-sync",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "edge",
+    "result": "correcto",
+    "seconds": 1,
+    "pods_ready_at_end_of_helm": "0/0",
+    "notes": "Solo CronJob"
+   },
+   {
+    "chart": "edge-postgresql-sync",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "edge",
+    "result": "correcto",
+    "seconds": 1,
+    "pods_ready_at_end_of_helm": "0/0",
+    "notes": "Solo CronJob"
+   },
+   {
+    "chart": "edge-prometheus-agent",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "edge",
+    "result": "correcto",
+    "seconds": 62,
+    "pods_ready_at_end_of_helm": "1/1",
+    "notes": ""
+   },
+   {
+    "chart": "edge-fluent-bit",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "logging",
+    "result": "correcto",
+    "seconds": 11,
+    "pods_ready_at_end_of_helm": "2/3",
+    "notes": "DaemonSet en los 3 nodos (2/3 en el instante de la medida, 3/3 al final)"
+   },
+   {
+    "chart": "edge-falco",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "falco",
+    "result": "parcial",
+    "seconds": 74,
+    "pods_ready_at_end_of_helm": "3/4",
+    "notes": "Solo en los nodos amd64 (el kernel del dispositivo edge no tiene BTF); 3/4 en el instante de la medida, todo en Running al final"
+   },
+   {
+    "chart": "enterprise-minio-overlay",
+    "tier": "enterprise",
+    "tier_es": "empresa",
+    "namespace": "minio",
+    "result": "correcto",
+    "seconds": 1,
+    "pods_ready_at_end_of_helm": "0/1",
+    "notes": "0/1: el pod es el Job de aprovisionamiento, que termina en Completed"
+   },
+   {
+    "chart": "enterprise-grafana-dashboards",
+    "tier": "enterprise",
+    "tier_es": "empresa",
+    "namespace": "monitoring",
+    "result": "correcto",
+    "seconds": 1,
+    "pods_ready_at_end_of_helm": "0/0",
+    "notes": "Solo ConfigMaps"
+   },
+   {
+    "chart": "enterprise-zammad",
+    "tier": "enterprise",
+    "tier_es": "empresa",
+    "namespace": "helpdesk",
+    "result": "correcto",
+    "seconds": 256,
+    "pods_ready_at_end_of_helm": "4/4",
+    "notes": "El más lento del catálogo; 4/4 pods listos"
+   },
+   {
+    "chart": "platform-rancher",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "cattle-system",
+    "result": "omitido",
+    "seconds": null,
+    "pods_ready_at_end_of_helm": null,
+    "notes": "no instalado: el clúster ya lo gestiona un Rancher externo (install.sh nunca instala un segundo Rancher)"
+   },
+   {
+    "chart": "platform-argocd",
+    "tier": "platform",
+    "tier_es": "plataforma",
+    "namespace": "argocd",
+    "result": "omitido",
+    "seconds": null,
+    "pods_ready_at_end_of_helm": null,
+    "notes": "no instalado: el namespace argocd ya tenía otro Argo CD (--skip-chart platform-argocd)"
+   },
+   {
+    "chart": "edge-mongodb",
+    "tier": "edge",
+    "tier_es": "edge",
+    "namespace": "edge",
+    "result": "omitido",
+    "seconds": null,
+    "pods_ready_at_end_of_helm": null,
+    "notes": "no instalado: el nodo edge es arm64 y las imágenes de Bitnami MongoDB solo existen para amd64 (--skip-chart edge-mongodb)"
+   }
+  ],
+  "helm_seconds_total": 1550,
+  "install_script_seconds": 2336,
+  "run": "lab-20260924T081803",
+  "command": "infrastructure/install.sh --values-dir docs/lab-validation/lab-values --site-id lab-edge-01 --skip platform-argocd --skip edge-mongodb --separate-tiers"
+ },
+ "smoke": {
+  "run": "lab-20260924T092125",
+  "tests": [
+   {
+    "id": "S01",
+    "phase": "smoke",
+    "name": "MLflow tracking API",
+    "result": "PASS",
+    "seconds": 2,
+    "evidence": "smoke/S01-mlflow.txt",
+    "command": "POST /api/2.0/mlflow/experiments/search (port-forward svc/platform-mlflow)",
+    "detail": "experiments: ['zdm-drift-monitoring', 'zdm-anomaly-detection', 'Default']"
+   },
+   {
+    "id": "S02",
+    "phase": "smoke",
+    "name": "MinIO buckets, versioning and document store retention",
+    "result": "PASS",
+    "seconds": 11,
+    "evidence": "smoke/S02-minio.txt",
+    "command": "mc ls; mc retention info --default s/iso42001-docs; mc version info s/model-cards (pod in minio)",
+    "detail": "[2026-09-24 08:29:03 UTC]     0B mlflow-artifacts/ [2026-09-24 08:52:46 UTC]     0B model-cards/ Object locking 'GOVERNANCE' is configured for 365DAYS. s/model-cards versioning is enabled"
+   },
+   {
+    "id": "S03",
+    "phase": "smoke",
+    "name": "Kafka produce and consume",
+    "result": "PASS",
+    "seconds": 37,
+    "evidence": "smoke/S03-kafka.txt",
+    "command": "kafka-console-producer.sh / kafka-console-consumer.sh on topic alerts",
+    "detail": "predictions sensor-raw sensor-validated consumed lab-smoke-1790241698"
+   },
+   {
+    "id": "S04",
+    "phase": "smoke",
+    "name": "Mosquitto authenticated publish/subscribe, anonymous refused",
+    "result": "PASS",
+    "seconds": 7,
+    "evidence": "smoke/S04-mosquitto.txt",
+    "command": "mosquitto_sub (nodered) + mosquitto_pub (gateway); anonymous mosquitto_pub",
+    "detail": "received: hello (after 1 publish attempts) anonymous refused"
+   },
+   {
+    "id": "S05",
+    "phase": "smoke",
+    "name": "RabbitMQ running and listeners",
+    "result": "PASS",
+    "seconds": 8,
+    "evidence": "smoke/S05-rabbitmq.txt",
+    "command": "rabbitmq-diagnostics check_running; listeners",
+    "detail": "Interface: [::], port: 15672, protocol: http, purpose: HTTP API Interface: [::], port: 15692, protocol: http/prometheus, purpose: Prometheus exporter API over HTTP Interface: [::], port: 25672, protocol: clustering, purpose: inter-node and CLI tool communication Interface: [::], port: 5672, protocol: amqp, purpose: AMQP 0-9-1 and AMQP 1.0"
+   },
+   {
+    "id": "S06",
+    "phase": "smoke",
+    "name": "Node-RED ingestion metrics and protected editor",
+    "result": "PASS",
+    "seconds": 1,
+    "evidence": "smoke/S06-node-red.txt",
+    "command": "GET /metrics; GET /admin/flows (expect 401)",
+    "detail": "ingest_values_written_total 9780 ingest_db_errors_total 5 ingest_last_sample_timestamp_seconds 1790241750 editor /admin/flows without credentials: HTTP 401"
+   },
+   {
+    "id": "S07",
+    "phase": "smoke",
+    "name": "Prometheus scrape targets",
+    "result": "PASS",
+    "seconds": 1,
+    "evidence": "smoke/S07-prometheus.txt",
+    "command": "GET /api/v1/targets (port-forward svc/platform-prometheus-prometheus)",
+    "detail": "up         2  platform-prometheus-prometheus up         1  platform-timescaledb up 29 of 30 targets down: node-exporter http://<ip-edgenode01>:9101/metrics server returned HTTP status 503 Service Unavailable"
+   },
+   {
+    "id": "S08",
+    "phase": "smoke",
+    "name": "Grafana health, data sources and dashboards",
+    "result": "PASS",
+    "seconds": 3,
+    "evidence": "smoke/S08-grafana.txt",
+    "command": "GET /api/health; /api/datasources/uid/<uid>/health; /api/search?query=ZDM",
+    "detail": "data source timescaledb: {\"message\":\"Database Connection OK\",\"status\":\"OK\"} data source edgepg: {\"message\":\"Database Connection OK\",\"status\":\"OK\"} 6 ZDM dashboards: ['ZDM AI System', 'ZDM: Data Consolidation, KPIs and Drift (CMP-02, CMP-11, CMP-14)', 'ZDM: Edge Predictions and Model Versions', 'ZDM: Input Data Monitoring (CMP-01)', 'ZDM: Model Health (CMP-10)', 'ZDM: Security Events and Audit Trail (CMP-15, CMP-09)'] healthy data sources: 4/4"
+   },
+   {
+    "id": "S09",
+    "phase": "smoke",
+    "name": "Loki write and query",
+    "result": "PASS",
+    "seconds": 6,
+    "evidence": "smoke/S09-loki.txt",
+    "command": "POST /loki/api/v1/push; GET /loki/api/v1/query_range",
+    "detail": "pushed read back: lab smoke line 1790241756000000000"
+   },
+   {
+    "id": "S10",
+    "phase": "smoke",
+    "name": "Falco runtime event (shell in the model server)",
+    "result": "SKIP",
+    "seconds": 0,
+    "evidence": "smoke/S10-falco.txt",
+    "command": "kubectl exec deploy/edge-fastapi-model -- sh -c id; kubectl logs falco",
+    "detail": "model server node: edgenode01 not run: no Falco pod on edgenode01 (the Falco driver cannot run there, see lab-values/edge-falco.yaml)"
+   },
+   {
+    "id": "S11",
+    "phase": "smoke",
+    "name": "Keycloak realm ai-system",
+    "result": "PASS",
+    "seconds": 1,
+    "evidence": "smoke/S11-keycloak.txt",
+    "command": "GET /realms/ai-system/.well-known/openid-configuration",
+    "detail": "issuer: http://127.0.0.1:18080/realms/ai-system"
+   },
+   {
+    "id": "S12",
+    "phase": "smoke",
+    "name": "Zammad web and API",
+    "result": "PASS",
+    "seconds": 1,
+    "evidence": "smoke/S12-zammad.txt",
+    "command": "GET /; GET /api/v1/getting_started",
+    "detail": "web: HTTP 200 {\"setup_done\":false,\"import_mode\":false,\"import_backend\":\"\",\"system_online_service\":false}"
+   },
+   {
+    "id": "S13",
+    "phase": "smoke",
+    "name": "OpenBao status over TLS (platform CA)",
+    "result": "PASS",
+    "seconds": 1,
+    "evidence": "smoke/S13-openbao.txt",
+    "command": "kubectl exec platform-openbao-0 -- bao status",
+    "detail": "Cluster Name    vault-cluster-946f1225 Cluster ID      523286c1-1a1b-4be3-a030-a6a8bbe114e8 HA Enabled      false (bao status exit 0: 0 unsealed, 2 sealed, 1 error)"
+   },
+   {
+    "id": "S13b",
+    "phase": "smoke",
+    "name": "OpenBao init, unseal, KV write/read, audit device",
+    "result": "PASS",
+    "seconds": 1,
+    "evidence": "smoke/S13b-openbao-init.txt",
+    "command": "bao operator init/unseal; bao secrets enable kv; bao audit enable file; bao kv put/get",
+    "detail": "Sealed          false Path     Type    Description ----     ----    ----------- file/    file    n/a"
+   },
+   {
+    "id": "S14",
+    "phase": "smoke",
+    "name": "cert-manager test certificate from the platform CA",
+    "result": "PASS",
+    "seconds": 3,
+    "evidence": "smoke/S14-cert-manager.txt",
+    "command": "kubectl apply Certificate (issuer platform-ca); kubectl wait --for=condition=Ready",
+    "detail": "lab-smoke-cert   True    lab-smoke-cert   2s subject= issuer=CN = ZDM MLOps platform CA notAfter=Dec 23 09:22:48 2026 GMT"
+   },
+   {
+    "id": "S15",
+    "phase": "smoke",
+    "name": "Argo CD sync of a catalog chart from git (lab-validation)",
+    "result": "SKIP",
+    "seconds": 0,
+    "evidence": "smoke/S15-argocd.txt",
+    "command": "kubectl apply Application lab-smoke-dashboards; wait Synced/Healthy",
+    "detail": "not run: release platform-argocd is not installed in namespace argocd (skipped in this laboratory, see the run options)"
+   },
+   {
+    "id": "S16",
+    "phase": "smoke",
+    "name": "TimescaleDB hypertables and roles",
+    "result": "PASS",
+    "seconds": 1,
+    "evidence": "smoke/S16-timescaledb.txt",
+    "command": "psql: timescaledb_information.hypertables; pg_roles",
+    "detail": "sensor_readings grafana ml sync"
+   },
+   {
+    "id": "S17",
+    "phase": "smoke",
+    "name": "Edge PostgreSQL schema",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "smoke/S17-edge-postgresql.txt",
+    "command": "psql: information_schema.tables",
+    "detail": "operator_feedback predictions sensor_features system_events"
+   },
+   {
+    "id": "S18",
+    "phase": "smoke",
+    "name": "MongoDB edge buffer collections",
+    "result": "SKIP",
+    "seconds": 0,
+    "evidence": "smoke/S18-mongodb.txt",
+    "command": "mongosh: getCollectionNames()",
+    "detail": "not run: release edge-mongodb is not installed in namespace edge (skipped in this laboratory, see the run options)"
+   },
+   {
+    "id": "S19",
+    "phase": "smoke",
+    "name": "Platform PostgreSQL service databases",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "smoke/S19-platform-postgresql.txt",
+    "command": "psql: pg_database",
+    "detail": "grafana keycloak mlflow zammad"
+   },
+   {
+    "id": "S20",
+    "phase": "smoke",
+    "name": "Evidently UI API",
+    "result": "PASS",
+    "seconds": 1,
+    "evidence": "smoke/S20-evidently.txt",
+    "command": "GET /api/version",
+    "detail": "{\"application\":\"Evidently UI\",\"version\":\"0.4.33\",\"commit\":\"-\"}"
+   }
+  ],
+  "first_run_differences": {
+   "S04": {
+    "id": "S04",
+    "phase": "smoke",
+    "name": "Mosquitto authenticated publish/subscribe, anonymous refused",
+    "result": "FAIL",
+    "seconds": 29,
+    "evidence": "smoke/S04-mosquitto.txt",
+    "command": "mosquitto_sub (nodered) + mosquitto_pub (gateway); anonymous mosquitto_pub",
+    "detail": "Timed out received:  anonymous refused"
+   }
+  }
+ },
+ "end_to_end": {
+  "run": "lab-20260924T081803",
+  "tests": [
+   {
+    "id": "E01",
+    "phase": "e2e",
+    "name": "OPC UA simulator (OPC PLC) in the edge namespace",
+    "result": "PASS",
+    "seconds": 1,
+    "evidence": "e2e/E01-simulator.txt",
+    "command": "kubectl apply -f docs/lab-validation/manifests/opc-plc-simulator.yaml",
+    "detail": "deployment.apps/opc-plc unchanged service/opc-plc unchanged deployment \"opc-plc\" successfully rolled out",
+    "summary": "Simulador OPC PLC (mcr.microsoft.com/iotedge/opc-plc:2.15.5) desplegado en el namespace edge"
+   },
+   {
+    "id": "E02",
+    "phase": "e2e",
+    "name": "OPC UA gateway reads the simulator",
+    "result": "PASS",
+    "seconds": 30,
+    "evidence": "e2e/E02-gateway.txt",
+    "command": "wget localhost:9273/metrics in edge-opc-ua-gateway",
+    "detail": "internal_gather_errors{input=\"opcua\",site_id=\"lab-edge-01\",version=\"1.32.3\"} 0 internal_gather_metrics_gathered{input=\"opcua\",site_id=\"lab-edge-01\",version=\"1.32.3\"} 3548",
+    "summary": "Telegraf lee el simulador por OPC UA: 3548 métricas recogidas, 0 errores"
+   },
+   {
+    "id": "E03",
+    "phase": "e2e",
+    "name": "Ingestion: MQTT -> Node-RED validation -> edge data stock",
+    "result": "PASS",
+    "seconds": 31,
+    "evidence": "e2e/E03-ingestion.txt",
+    "command": "psql: count(*) FROM sensor_features, 30 s apart",
+    "detail": "cnc-01 | DipData | 827 | -1000.00 | 84.43 cnc-01 | NegativeTrendData | 823 | 41.80 | 58.30 cnc-01 | PositiveTrendData | 824 | 141.60 | 158.10 cnc-01 | SpikeData | 827 | -99.80 | 1000.00",
+    "summary": "Node-RED valida y escribe en el almacén edge: sensor_features pasa de 3181 a 3299 filas en 30 s (4 variables de cnc-01)"
+   },
+   {
+    "id": "E04",
+    "phase": "e2e",
+    "name": "Data consolidation edge -> platform (batch log)",
+    "result": "PASS",
+    "seconds": 8,
+    "evidence": "e2e/E04-consolidation.txt",
+    "command": "kubectl create job --from=cronjob/edge-postgresql-sync; psql consolidation_batches",
+    "detail": "15 | lab-edge-01 | sensor_features | 3181 | 3320 | 139 | 139 | ok 14 | lab-edge-01 | predictions | 0 | 0 | 0 | 0 | ok 13 | lab-edge-01 | sensor_features | 2701 | 3181 | 480 | 480 | ok cnc-01 | 3320",
+    "summary": "edge-postgresql-sync consolida en TimescaleDB: lote 15, filas 3181 a 3320, 139 leídas y 139 escritas, estado ok"
+   },
+   {
+    "id": "E05",
+    "phase": "e2e",
+    "name": "Training job registers and promotes a model version",
+    "result": "PASS",
+    "seconds": 16,
+    "evidence": "e2e/E05-training.txt",
+    "command": "kubectl create job --from=cronjob/platform-training-jobs e2e-train-1",
+    "detail": "ta\", \"PositiveTrendData\", \"SpikeData\"], \"source\": \"timescaledb:zdm_platform.sensor_readings\", \"window\": \"2 hours\", \"bucket\": \"1 second\", \"raw_rows\": 3320, \"time_min\": \"2026-09-24 08:46:46+00:00\", \"time_max\": \"2026-09-24 09:00:36+00:00\", \"max_consolidation_batch\": \"15\", \"sites\": \"lab-edge-01\"} {\"ts\": \"2026-09-24T09:00:52Z\", \"component\": \"platform-training-jobs\", \"event\": \"model_registered\", \"model_name\": \"zdm-anomaly-detector\", \"model_version\": \"1\", \"run_id\": \"1dc489b33bcc40e4a664baa423de928d\", \"samples\": 831, \"train_anomaly_rate\": 0.0205, \"release_criteria\": true, \"promoted_alias\": \"champion\"}",
+    "summary": "Entrenamiento con 831 muestras de TimescaleDB; versión 1 registrada y promovida (tasa de anomalías 0,0205, criterio de liberación cumplido)"
+   },
+   {
+    "id": "E06",
+    "phase": "e2e",
+    "name": "MLflow registry: version, alias and provenance tags",
+    "result": "PASS",
+    "seconds": 1,
+    "evidence": "e2e/E06-registry.txt",
+    "command": "GET /api/2.0/mlflow/registered-models/get; model-versions/get",
+    "detail": "aliases: [{'alias': 'champion', 'version': '1'}] versions: ['1'] v1 tags: {'trigger': 'schedule', 'train_anomaly_rate': '0.0205', 'data_window': '2 hours', 'data.source': 'timescaledb:zdm_platform.sensor_readings', 'data.window': '2 hours', 'data.bucket': '1 second', 'data.raw_rows': '3320', 'data.time_min': '2026-09-24 08:46:46+00:00', 'data.time_max': '2026-09-24 09:00:36+00:00', 'data.max_consolidation_batch': '15', 'data.sites': 'lab-edge-01', 'release_criteria': 'passed'}",
+    "summary": "Registro MLflow: alias champion a la versión 1, con etiquetas de procedencia (origen, ventana, intervalo, filas, lote de consolidación)"
+   },
+   {
+    "id": "E07",
+    "phase": "e2e",
+    "name": "Version propagation platform -> edge (edge-mlflow-sync)",
+    "result": "PASS",
+    "seconds": 26,
+    "evidence": "e2e/E07-propagation.txt",
+    "command": "kubectl create job --from=cronjob/edge-mlflow-sync e2e-vsync-1; psql model_versions",
+    "detail": "{\"ts\": \"2026-09-24T09:01:17Z\", \"component\": \"edge-mlflow-sync\", \"event\": \"version_activated\", \"model_name\": \"zdm-anomaly-detector\", \"model_version\": \"1\", \"alias\": \"champion\", \"previous_version\": null, \"sha256\": \"8ce9e0113b5f6f974ff61f37464cb4284ec664765a81f65e485fef29873ebeef\"} 2026-09-24 09:01:15.490778+00 | zdm-anomaly-detector | 1 | downloaded | 8ce9e0113b5f 2026-09-24 09:01:17.052355+00 | zdm-anomaly-detector | 1 | download_failed |  2026-09-24 09:01:17.957081+00 | zdm-anomaly-detector | 1 | active | 8ce9e0113b5f",
+    "summary": "edge-mlflow-sync detecta la versión 1, la descarga (sha256 8ce9e011...) y la activa; model_versions registra downloaded, download_failed (ejecución concurrente del CronJob) y active"
+   },
+   {
+    "id": "E08",
+    "phase": "e2e",
+    "name": "Inference with the propagated version",
+    "result": "PASS",
+    "seconds": 2,
+    "evidence": "e2e/E08-inference.txt",
+    "command": "GET /version; POST /predict (port-forward svc/edge-fastapi-model)",
+    "detail": "features of the last 30 s: { \"SpikeData\" : -1.4210854715202005e-15, \"PositiveTrendData\" : 158.89000000000001, \"DipData\" : -30.006577571905765, \"NegativeTrendData\" : 41.01 } {\"model_name\":\"zdm-anomaly-detector\",\"model_version\":\"1\",\"predictions\":[{\"machine_id\":\"cnc-01\",\"score\":0.5731829116903856,\"label\":\"normal\"},{\"machine_id\":\"cnc-01\",\"score\":0.7075893154813926,\"label\":\"anomaly\"}]} 2026-09-24 09:01:25.008309+00 | 1 | anomaly | 0.7076 2026-09-24 09:01:25.008309+00 | 1 | normal | 0.5732",
+    "summary": "Inferencia con la versión 1: una muestra normal (0,5732) y una anómala (0,7076), registradas en predictions"
+   },
+   {
+    "id": "E09",
+    "phase": "e2e",
+    "name": "Edge metrics in the platform Prometheus (remote-write)",
+    "result": "PASS",
+    "seconds": 46,
+    "evidence": "e2e/E09-metrics.txt",
+    "command": "PromQL on platform-prometheus: model_predictions_total, model_info, ingest_messages_valid_total",
+    "detail": "max by (model_version) (model_info) => [({'model_version': '1'}, '1')] sum(ingest_messages_valid_total) => [({}, '3688')] sum(internal_gather_metrics_gathered{input=\"opcua\"}) => [({}, '4020')] queries with data: 4/4",
+    "summary": "Prometheus de plataforma recibe por remote-write model_predictions_total, model_info (versión 1), ingest_messages_valid_total (3688) y métricas de la pasarela: 4 de 4 consultas con datos"
+   },
+   {
+    "id": "E10",
+    "phase": "e2e",
+    "name": "Induced drift: shifted samples of machine cnc-02 through MQTT",
+    "result": "PASS",
+    "seconds": 400,
+    "evidence": "e2e/E10-drift-injection.txt",
+    "command": "mosquitto_pub 300 s of shifted samples (pod in edge)",
+    "detail": "published 300 seconds of shifted samples for machine cnc-02",
+    "summary": "300 s de muestras desplazadas de la máquina cnc-02 publicadas por MQTT con el usuario de la pasarela"
+   },
+   {
+    "id": "E11",
+    "phase": "e2e",
+    "name": "Consolidation of the drifted data",
+    "result": "PASS",
+    "seconds": 10,
+    "evidence": "e2e/E11-consolidation-2.txt",
+    "command": "kubectl create job --from=cronjob/edge-postgresql-sync e2e-sync-2",
+    "detail": "24 | lab-edge-01 | predictions | 2 | 2 | 0 | 0 | ok 23 | lab-edge-01 | sensor_features | 5300 | 6154 | 854 | 854 | ok cnc-01 | 5320 cnc-02 | 1200",
+    "summary": "Segunda consolidación: lotes 23 y 25 (854 y 366 filas); cnc-01 con 5320 filas y cnc-02 con 1200 en plataforma"
+   },
+   {
+    "id": "E12",
+    "phase": "e2e",
+    "name": "Evidently drift check and retraining recommendation",
+    "result": "PASS",
+    "seconds": 15,
+    "evidence": "e2e/E12-drift.txt",
+    "command": "kubectl create job --from=cronjob/platform-evidently-drift e2e-drift-1; psql retraining_recommendations",
+    "detail": "09:14Z\", \"component\": \"platform-evidently\", \"step\": \"recommend\", \"event\": \"recommendation\", \"id\": 1, \"model_name\": \"zdm-anomaly-detector\", \"model_version\": \"1\", \"share_of_drifted_columns\": 1.0, \"drifted_columns\": [\"DipData\", \"NegativeTrendData\", \"PositiveTrendData\", \"SpikeData\"], \"threshold\": 0.5, \"recommended\": true, \"action\": \"retraining job platform-training-jobs-drift-d8rts created\", \"report_uri\": \"runs:/129b1e94335d46ccaf27d012f21b443f/drift/report.html\"} 1 | 1 | 1.000 | {DipData,NegativeTrendData,PositiveTrendData,SpikeData} | t | retraining job platform-training-jobs-drift-d8rts created",
+    "summary": "Evidently: deriva en las 4 variables (proporción 1,0 frente al umbral 0,5); recomendación 1 registrada y Job de reentrenamiento creado"
+   },
+   {
+    "id": "E13",
+    "phase": "e2e",
+    "name": "Retraining job started by the recommendation",
+    "result": "PASS",
+    "seconds": 31,
+    "evidence": "e2e/E13-retraining.txt",
+    "command": "kubectl get jobs (platform-training-jobs-drift-*); kubectl wait",
+    "detail": "a\", \"PositiveTrendData\", \"SpikeData\"], \"source\": \"timescaledb:zdm_platform.sensor_readings\", \"window\": \"2 hours\", \"bucket\": \"1 second\", \"raw_rows\": 6520, \"time_min\": \"2026-09-24 08:46:46+00:00\", \"time_max\": \"2026-09-24 09:08:56+00:00\", \"max_consolidation_batch\": \"25\", \"sites\": \"lab-edge-01\"} {\"ts\": \"2026-09-24T09:09:39Z\", \"component\": \"platform-training-jobs\", \"event\": \"model_registered\", \"model_name\": \"zdm-anomaly-detector\", \"model_version\": \"2\", \"run_id\": \"ff33ce11b65f402a9d34c20aae75d03f\", \"samples\": 1631, \"train_anomaly_rate\": 0.0202, \"release_criteria\": true, \"promoted_alias\": \"champion\"}",
+    "summary": "Reentrenamiento lanzado por la recomendación con 1631 muestras; versión 2 registrada y promovida"
+   },
+   {
+    "id": "E14",
+    "phase": "e2e",
+    "name": "New version propagated to the edge and served",
+    "result": "PASS",
+    "seconds": 28,
+    "evidence": "e2e/E14-new-version.txt",
+    "command": "kubectl create job --from=cronjob/edge-mlflow-sync e2e-vsync-2; GET /version; POST /predict",
+    "detail": "\"zdm-anomaly-detector\", \"model_version\": \"2\", \"alias\": \"champion\", \"previous_version\": \"1\", \"run_id\": \"ff33ce11b65f402a9d34c20aae75d03f\"} {\"ts\": \"2026-09-24T09:10:11Z\", \"component\": \"edge-mlflow-sync\", \"event\": \"version_activated\", \"model_name\": \"zdm-anomaly-detector\", \"model_version\": \"2\", \"alias\": \"champion\", \"previous_version\": \"1\", \"sha256\": \"f1c3befc1e9491b9379d20836d3b70e0501ec17ad67a41f989c3e0932db9cd1b\"} served version before the drift: 1, now: 2 {\"model_name\":\"zdm-anomaly-detector\",\"model_version\":\"2\",\"predictions\":[{\"machine_id\":\"cnc-01\",\"score\":0.5434003436048725,\"label\":\"normal\"}]}",
+    "summary": "edge-mlflow-sync activa la versión 2 (antes 1); la inferencia responde con model_version 2"
+   },
+   {
+    "id": "E15",
+    "phase": "e2e",
+    "name": "MLOps events collected by Fluent Bit in Loki",
+    "result": "PASS",
+    "seconds": 22,
+    "evidence": "e2e/E15-loki-events.txt",
+    "command": "LogQL count_over_time({namespace=~\"edge|mlops\"} |= <event> [3h])",
+    "detail": "prediction: 19 log lines sample_rejected: 0 log lines edge-postgresql-sync: 25 log lines event types found in Loki: 6/7",
+    "summary": "Loki (vía Fluent Bit) contiene los eventos model_registered, version_activated, recommendation, drift_computed, prediction y los del job de consolidación (6 de 7 tipos; sample_rejected no se produjo porque no se enviaron muestras inválidas)"
+   },
+   {
+    "id": "E16",
+    "phase": "e2e",
+    "name": "Drift reports stored in the Evidently UI",
+    "result": "PASS",
+    "seconds": 1,
+    "evidence": "e2e/E16-evidently-ui.txt",
+    "command": "GET /api/projects (port-forward svc/platform-evidently)",
+    "detail": "projects: ['zdm-anomaly-detector']",
+    "summary": "La interfaz de Evidently contiene el proyecto zdm-anomaly-detector con los informes de deriva"
+   }
+  ]
+ },
+ "network_policies": {
+  "run": "lab-20260924T095847",
+  "canary": "# N-CANARY: NetworkPolicies are enforced on every node (pod behind a deny-all policy)\n$ per node: httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside\nedgenode01: pod 10.42.2.151:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy CONNECTED\nkb2: pod 10.42.0.103:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy NOT-CONNECTED\nworker1-kb2: pod 10.42.1.212:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy NOT-CONNECTED\n(exit 1)\n",
+  "tests": [
+   {
+    "id": "N-CANARY",
+    "phase": "netpol",
+    "name": "NetworkPolicies are enforced on every node (pod behind a deny-all policy)",
+    "result": "FAIL",
+    "seconds": 47,
+    "evidence": "netpol/N-CANARY.txt",
+    "command": "per node: httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside",
+    "detail": "edgenode01: pod 10.42.2.151:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy CONNECTED kb2: pod 10.42.0.103:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy NOT-CONNECTED worker1-kb2: pod 10.42.1.212:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy NOT-CONNECTED",
+    "client_node": "",
+    "destination_nodes": ""
+   },
+   {
+    "id": "N00",
+    "phase": "netpol",
+    "name": "namespace outside the catalog -> Internet (control, no policy) (expected: allow)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N00.txt",
+    "command": "nc -z -w 5 github.com 443 from a pod in namespace lab-np-outside on worker1-kb2",
+    "detail": "CONNECTED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "n/a"
+   },
+   {
+    "id": "N01",
+    "phase": "netpol",
+    "name": "edge -> platform TimescaleDB (consolidation conduit) (expected: allow)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N01.txt",
+    "command": "nc -z -w 5 platform-timescaledb.platform.svc.cluster.local 5432 from a pod in namespace edge on worker1-kb2",
+    "detail": "CONNECTED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   },
+   {
+    "id": "N02",
+    "phase": "netpol",
+    "name": "edge -> MLflow (version sync conduit) (expected: allow)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N02.txt",
+    "command": "nc -z -w 5 platform-mlflow.mlops.svc.cluster.local 5000 from a pod in namespace edge on worker1-kb2",
+    "detail": "CONNECTED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   },
+   {
+    "id": "N03",
+    "phase": "netpol",
+    "name": "edge -> edge PostgreSQL (same namespace) (expected: allow)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N03.txt",
+    "command": "nc -z -w 5 edge-postgresql.edge.svc.cluster.local 5432 from a pod in namespace edge on worker1-kb2",
+    "detail": "destination on edgenode01, which does not enforce NetworkPolicies (N-CANARY); CONNECTED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "edgenode01"
+   },
+   {
+    "id": "N04",
+    "phase": "netpol",
+    "name": "edge -> MinIO (no conduit) (expected: deny)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N04.txt",
+    "command": "nc -z -w 5 platform-minio.minio.svc.cluster.local 9000 from a pod in namespace edge on worker1-kb2",
+    "detail": "BLOCKED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   },
+   {
+    "id": "N05",
+    "phase": "netpol",
+    "name": "edge -> Zammad (no conduit) (expected: deny)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N05.txt",
+    "command": "nc -z -w 5 enterprise-zammad.helpdesk.svc.cluster.local 8080 from a pod in namespace edge on worker1-kb2",
+    "detail": "BLOCKED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   },
+   {
+    "id": "N06",
+    "phase": "netpol",
+    "name": "namespace outside the catalog -> edge PostgreSQL (default deny ingress) (expected: deny)",
+    "result": "FAIL",
+    "seconds": 0,
+    "evidence": "netpol/N06.txt",
+    "command": "nc -z -w 5 edge-postgresql.edge.svc.cluster.local 5432 from a pod in namespace lab-np-outside on worker1-kb2",
+    "detail": "destination on edgenode01, which does not enforce NetworkPolicies (N-CANARY); CONNECTED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "edgenode01"
+   },
+   {
+    "id": "N07",
+    "phase": "netpol",
+    "name": "mlops -> MinIO (artefact conduit) (expected: allow)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N07.txt",
+    "command": "nc -z -w 5 platform-minio.minio.svc.cluster.local 9000 from a pod in namespace mlops on worker1-kb2",
+    "detail": "CONNECTED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   },
+   {
+    "id": "N08",
+    "phase": "netpol",
+    "name": "mlops -> Internet (default deny egress) (expected: deny)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N08.txt",
+    "command": "nc -z -w 5 github.com 443 from a pod in namespace mlops on worker1-kb2",
+    "detail": "BLOCKED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "n/a"
+   },
+   {
+    "id": "N09",
+    "phase": "netpol",
+    "name": "security -> platform PostgreSQL (Keycloak database) (expected: allow)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N09.txt",
+    "command": "nc -z -w 5 platform-postgresql.platform.svc.cluster.local 5432 from a pod in namespace security on worker1-kb2",
+    "detail": "CONNECTED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   },
+   {
+    "id": "N10",
+    "phase": "netpol",
+    "name": "helpdesk -> MLflow (no conduit) (expected: deny)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N10.txt",
+    "command": "nc -z -w 5 platform-mlflow.mlops.svc.cluster.local 5000 from a pod in namespace helpdesk on worker1-kb2",
+    "detail": "BLOCKED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   },
+   {
+    "id": "N11",
+    "phase": "netpol",
+    "name": "argocd -> Internet 443 (Git and Helm repositories) (expected: allow)",
+    "result": "SKIP",
+    "seconds": 0,
+    "evidence": "",
+    "command": "nc -z -w 5 github.com 443 from a pod in namespace argocd",
+    "detail": "not run: platform-argocd is not installed; the argocd namespace belongs to another deployment",
+    "client_node": "",
+    "destination_nodes": ""
+   },
+   {
+    "id": "N12",
+    "phase": "netpol",
+    "name": "logging -> Loki (log conduit) (expected: allow)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N12.txt",
+    "command": "nc -z -w 5 platform-loki.monitoring.svc.cluster.local 3100 from a pod in namespace logging on worker1-kb2",
+    "detail": "CONNECTED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "worker1-kb2"
+   },
+   {
+    "id": "N13",
+    "phase": "netpol",
+    "name": "mlops -> edge PostgreSQL (no conduit; egress rule of mlops) (expected: deny)",
+    "result": "PASS",
+    "seconds": 0,
+    "evidence": "netpol/N13.txt",
+    "command": "nc -z -w 5 edge-postgresql.edge.svc.cluster.local 5432 from a pod in namespace mlops on worker1-kb2",
+    "detail": "destination on edgenode01, which does not enforce NetworkPolicies (N-CANARY); BLOCKED",
+    "client_node": "worker1-kb2",
+    "destination_nodes": "edgenode01"
+   }
+  ]
+ },
+ "traceability": {
+  "run": "lab-20260924T081803",
+  "queries": [
+   {
+    "key": "B.6.1.2.2",
+    "label": "Resources: Monitoring Performance",
+    "resources": 20,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.2.2 --no-headers"
+   },
+   {
+    "key": "B.6.1.3.1",
+    "label": "Resources: Access Control",
+    "resources": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.1 --no-headers"
+   },
+   {
+    "key": "B.6.1.3.2",
+    "label": "Resources: Version Control",
+    "resources": 6,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.2 --no-headers"
+   },
+   {
+    "key": "B.6.1.3.3",
+    "label": "Resources: Human Oversight / Feedback",
+    "resources": 8,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.3 --no-headers"
+   },
+   {
+    "key": "B.6.1.3.4",
+    "label": "Resources: Inventory / Registry",
+    "resources": 8,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.4 --no-headers"
+   },
+   {
+    "key": "B.6.1.4.1",
+    "label": "Resources: Security of AI Assets",
+    "resources": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.4.1 --no-headers"
+   },
+   {
+    "key": "B.6.2.3.1",
+    "label": "Planning: System Documentation",
+    "resources": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.3.1 --no-headers"
+   },
+   {
+    "key": "B.6.2.5.1",
+    "label": "Planning: Deployment Plan",
+    "resources": 4,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.5.1 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.1",
+    "label": "Operation: Infrastructure Monitoring",
+    "resources": 15,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.1 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.2",
+    "label": "Operation: Model Performance",
+    "resources": 29,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.2 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.3",
+    "label": "Operation: KPI Assessment (OEE)",
+    "resources": 8,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.3 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.4",
+    "label": "Operation: Retraining / Lifecycle",
+    "resources": 28,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.4 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.5",
+    "label": "Operation: Update & Repair Plan",
+    "resources": 1,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.5 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.6",
+    "label": "Operation: Incident Communication",
+    "resources": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.6 --no-headers"
+   },
+   {
+    "key": "B.6.2.6.7",
+    "label": "Operation: Security Monitoring",
+    "resources": 6,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.7 --no-headers"
+   },
+   {
+    "key": "B.6.2.8.1",
+    "label": "Operation: Logging / Audit Trail",
+    "resources": 41,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.8.1 --no-headers"
+   },
+   {
+    "key": "B.8.0.2.1",
+    "label": "Continual Improvement: Roles",
+    "resources": 10,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.8.0.2.1 --no-headers"
+   },
+   {
+    "key": "B.8.0.4.1",
+    "label": "Continual Improvement: Helpdesk",
+    "resources": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.8.0.4.1 --no-headers"
+   },
+   {
+    "key": "B.8.0.5.1",
+    "label": "Continual Improvement: Alerts",
+    "resources": 37,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.8.0.5.1 --no-headers"
+   },
+   {
+    "key": "CMP-01",
+    "label": "Input Data Monitoring",
+    "resources": 17,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-01 --no-headers"
+   },
+   {
+    "key": "CMP-02",
+    "label": "Data Stock",
+    "resources": 21,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-02 --no-headers"
+   },
+   {
+    "key": "CMP-03",
+    "label": "Version Control",
+    "resources": 6,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-03 --no-headers"
+   },
+   {
+    "key": "CMP-04",
+    "label": "Model",
+    "resources": 5,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-04 --no-headers"
+   },
+   {
+    "key": "CMP-05",
+    "label": "Document Store",
+    "resources": 5,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-05 --no-headers"
+   },
+   {
+    "key": "CMP-06",
+    "label": "Information Centre",
+    "resources": 3,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-06 --no-headers"
+   },
+   {
+    "key": "CMP-07",
+    "label": "User Access & Oversight",
+    "resources": 10,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-07 --no-headers"
+   },
+   {
+    "key": "CMP-08",
+    "label": "Infrastructure Technical Monitoring",
+    "resources": 20,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-08 --no-headers"
+   },
+   {
+    "key": "CMP-09",
+    "label": "Logger",
+    "resources": 9,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-09 --no-headers"
+   },
+   {
+    "key": "CMP-10",
+    "label": "Model Technical Performance Monitoring",
+    "resources": 32,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-10 --no-headers"
+   },
+   {
+    "key": "CMP-11",
+    "label": "Goal-Oriented Monitoring",
+    "resources": 23,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-11 --no-headers"
+   },
+   {
+    "key": "CMP-12",
+    "label": "Feedback Interface",
+    "resources": 0,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-12 --no-headers"
+   },
+   {
+    "key": "CMP-13",
+    "label": "AI Helpdesk",
+    "resources": 14,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-13 --no-headers"
+   },
+   {
+    "key": "CMP-14",
+    "label": "Retraining Recommendation",
+    "resources": 8,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-14 --no-headers"
+   },
+   {
+    "key": "CMP-15",
+    "label": "Security Monitoring",
+    "resources": 20,
+    "command": "kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-15 --no-headers"
+   },
+   {
+    "key": "iso42001=true",
+    "label": "all catalog resources",
+    "resources": 127,
+    "command": "kubectl get pods,svc,deploy,sts -A -l iso42001=true --no-headers"
+   }
+  ],
+  "coverage_by_namespace": {
+   "argocd": {
+    "objects": 49,
+    "with_iso42001_label": 0,
+    "other_releases": 0
+   },
+   "cert-manager": {
+    "objects": 18,
+    "with_iso42001_label": 12,
+    "other_releases": 0
+   },
+   "edge": {
+    "objects": 92,
+    "with_iso42001_label": 75,
+    "other_releases": 0
+   },
+   "falco": {
+    "objects": 22,
+    "with_iso42001_label": 19,
+    "other_releases": 0
+   },
+   "helpdesk": {
+    "objects": 33,
+    "with_iso42001_label": 28,
+    "other_releases": 0
+   },
+   "logging": {
+    "objects": 16,
+    "with_iso42001_label": 13,
+    "other_releases": 0
+   },
+   "minio": {
+    "objects": 18,
+    "with_iso42001_label": 14,
+    "other_releases": 0
+   },
+   "mlops": {
+    "objects": 38,
+    "with_iso42001_label": 32,
+    "other_releases": 0
+   },
+   "monitoring": {
+    "objects": 97,
+    "with_iso42001_label": 72,
+    "other_releases": 6
+   },
+   "openbao": {
+    "objects": 19,
+    "with_iso42001_label": 12,
+    "other_releases": 0
+   },
+   "platform": {
+    "objects": 22,
+    "with_iso42001_label": 17,
+    "other_releases": 0
+   },
+   "security": {
+    "objects": 16,
+    "with_iso42001_label": 13,
+    "other_releases": 0
+   }
+  },
+  "coverage_catalog_namespaces": {
+   "objects": 391,
+   "with_iso42001_label": 307
+  },
+  "static_verification": {
+   "charts": 30,
+   "resources": 394,
+   "labelled_resources": 387,
+   "workloads": 53,
+   "labelled_pod_templates": 52,
+   "unlabelled": {
+    "platform-mlflow": [
+     "Secret/platform-mlflow-flask-server-secret-key (hook)"
+    ],
+    "platform-minio": [
+     "Job/platform-minio-post-job (hook)"
+    ],
+    "platform-rancher": [
+     "ServiceAccount/platform-rancher-post-delete (hook)",
+     "ConfigMap/platform-rancher-post-delete (hook)",
+     "ClusterRole/platform-rancher-post-delete (hook)",
+     "ClusterRoleBinding/platform-rancher-post-delete (hook)",
+     "Job/platform-rancher-post-delete (hook)"
+    ]
+   }
+  }
+ },
+ "refinements": [
+  {
+   "change": "Chart nuevo edge-postgresql-sync",
+   "gap": "Flujo de consolidación de datos (Data Stock edge a plataforma) sin soporte",
+   "effect": "CronJob con marca de agua y lotes idempotentes registrados en consolidation_batches; validado en E04 y E11",
+   "detected_in": "Fase 1 (auditoría)",
+   "commits": "41eb9d7"
+  },
+  {
+   "change": "Chart nuevo edge-mlflow-sync y servidor de modelo funcional",
+   "gap": "Flujo de propagación de versiones y CMP-03 en edge sin chart; edge-fastapi-model sin imagen utilizable",
+   "effect": "Sigue el alias champion de MLflow, descarga, verifica sha256, activa y recarga el servidor; validado en E07, E08 y E14",
+   "detected_in": "Fase 1",
+   "commits": "a37727f"
+  },
+  {
+   "change": "Pipeline de entrenamiento y recomendación de reentrenamiento",
+   "gap": "CMP-14 sin implementación operativa",
+   "effect": "Entrenamiento con criterios de liberación y CronJob de deriva (Evidently) que recomienda y lanza el reentrenamiento; validado en E05, E12 y E13",
+   "detected_in": "Fase 1",
+   "commits": "cd6711d"
+  },
+  {
+   "change": "Flujo declarativo de validación de entrada en Node-RED",
+   "gap": "CMP-01 solo tenía transporte, sin validación de datos de entrada",
+   "effect": "Rangos, antigüedad y muestras rechazadas con métricas; validado en E03 y S06",
+   "detected_in": "Fase 1",
+   "commits": "74a4af5"
+  },
+  {
+   "change": "Pasarela OPC UA con Telegraf en lugar de Neuron",
+   "gap": "La edición libre de Neuron no tiene controlador OPC UA (subcomponente Industrial Protocol Gateway)",
+   "effect": "OPC UA a MQTT con autenticación; validado en E02",
+   "detected_in": "Fase 1",
+   "commits": "e34129b"
+  },
+  {
+   "change": "TimescaleDB con plantillas propias",
+   "gap": "timescaledb-single está obsoleto; almacén de plataforma y KPI (CMP-02, CMP-11)",
+   "effect": "Hipertablas, roles y tablas de consolidación y recomendaciones; validado en S16",
+   "detected_in": "Fase 1",
+   "commits": "057e418"
+  },
+  {
+   "change": "Almacén documental con object lock",
+   "gap": "El overlay de MinIO no aplicaba el bloqueo ni lo consumía nadie (CMP-05)",
+   "effect": "Job de aprovisionamiento con object lock GOVERNANCE 365 días y versionado; validado en S02",
+   "detected_in": "Fase 1",
+   "commits": "2ca5579"
+  },
+  {
+   "change": "Cuadros de mando importables y reglas de alerta reales",
+   "gap": "Cuadros de mando en pseudo-JSON y reglas sobre métricas inexistentes (CMP-06, CMP-08, CMP-11)",
+   "effect": "6 cuadros de mando ZDM y 8 reglas; validado en S07 y S08",
+   "detected_in": "Fase 1",
+   "commits": "1601171"
+  },
+  {
+   "change": "Correcciones de charts de terceros (Kafka, MongoDB, PostgreSQL, MLflow, RabbitMQ, Keycloak, Zammad, Argo CD, cert-manager, OpenBao, Rancher, Falco, agente Prometheus)",
+   "gap": "Imágenes retiradas, secretos inexistentes, claves de values ignoradas, plantillas ausentes y reglas de Falco que no compilaban",
+   "effect": "Los 30 charts pasan lint, render y kubeconform (1.32); 27 charts desplegados sin fallos en el laboratorio",
+   "detected_in": "Fase 1 y pruebas locales",
+   "commits": "5dab858, 19b88cd, 609c926, 07f33a0, a59efca, e93c232, f960157, ba644a6, af8fd35"
+  },
+  {
+   "change": "Imágenes oficiales desde el espejo público de ECR",
+   "gap": "Límite de descargas anónimas de Docker Hub (429) durante las pruebas",
+   "effect": "Menos dependencia de Docker Hub",
+   "detected_in": "Pruebas locales",
+   "commits": "95a75d7"
+  },
+  {
+   "change": "Política de auditoría del API y enable-audit.sh",
+   "gap": "setup-ubuntu.sh activaba la auditoría sin política, sin registrar nada (B.6.2.8.1)",
+   "effect": "Log de auditoría activo en el laboratorio (7429 eventos al comprobarlo); Fluent Bit está configurado para enviarlo a Loki, sin comprobación en esta validación",
+   "detected_in": "Fase 1",
+   "commits": "26a92cd"
+  },
+  {
+   "change": "NetworkPolicy por zonas en todos los namespaces",
+   "gap": "platform, minio, falco, logging y cattle-system sin políticas; egress de mlops solo DNS UDP",
+   "effect": "Denegación por defecto y conductos explícitos; validado en N01 a N13 en los nodos que aplican políticas",
+   "detected_in": "Fase 1",
+   "commits": "26a92cd"
+  },
+  {
+   "change": "install.sh por fases con los charts propios",
+   "gap": "Instalaba charts de terceros, manifiestos inexistentes y dejaba fuera 10 charts",
+   "effect": "Fases base, seguridad, datos, edge y empresa con secretos generados, post-renderer de etiquetas y registro JSON; validado en el laboratorio (27 charts, 28 ejecuciones de Helm)",
+   "detected_in": "Fase 1",
+   "commits": "4f17e2d, 2712b1e"
+  },
+  {
+   "change": "publish.py con helm dependency build y paquetes publicados por CI",
+   "gap": "index.yaml apuntaba a .tgz inexistentes (404) y los envolventes salían sin subcharts",
+   "effect": "30 paquetes con dependencias; repositorio validado en local (30/30)",
+   "detected_in": "Fase 1",
+   "commits": "c8cab72, 8d83879"
+  },
+  {
+   "change": "verify_charts.py e iso42001-postrender.py",
+   "gap": "Sin verificación automática ni etiquetas en recursos de subcharts sin gancho de etiquetas",
+   "effect": "387 de 394 recursos renderizados etiquetados (los 7 restantes son hooks de Helm)",
+   "detected_in": "Fase 1",
+   "commits": "c02a7b4"
+  },
+  {
+   "change": "Documentación alineada (README, catalog/README.md, index.html, CITATION.cff 1.0.1)",
+   "gap": "Deriva documental y etiquetas ISO distintas en tres sitios",
+   "effect": "Una sola fuente (CHART_META) para tablas y metadatos",
+   "detected_in": "Fase 1",
+   "commits": "d7a3202, 3d90b41, 39eb2a5"
+  },
+  {
+   "change": "Fichero de contraseñas de Mosquitto propiedad del broker",
+   "gap": "El broker (uid 1883) no podía leer el fichero y el pod no arrancaba",
+   "effect": "Mosquitto arranca con autenticación; S04 y E03",
+   "detected_in": "Pruebas locales (Kubernetes)",
+   "commits": "d7048db"
+  },
+  {
+   "change": "Paso de preparación de Node-RED con el usuario de Node-RED",
+   "gap": "Las credenciales escritas por el init container no eran legibles",
+   "effect": "Node-RED arranca y se conecta al broker",
+   "detected_in": "Pruebas locales (Kubernetes)",
+   "commits": "5473a3f"
+  },
+  {
+   "change": "Métricas de Keycloak en el puerto de gestión 9000",
+   "gap": "El ServiceMonitor apuntaba a 8080, donde /metrics da 404",
+   "effect": "Target de Keycloak activo",
+   "detected_in": "Pruebas locales (Kubernetes)",
+   "commits": "02838e8"
+  },
+  {
+   "change": "NetworkPolicies de los subcharts de Bitnami desactivadas",
+   "gap": "Kafka, MongoDB, las dos PostgreSQL y Keycloak creaban políticas que admitían tráfico desde cualquier namespace y anulaban la denegación por defecto",
+   "effect": "Un pod de fuera del catálogo ya no alcanza la PostgreSQL del edge (N06 en el clúster local)",
+   "detected_in": "Pruebas locales (Kubernetes)",
+   "commits": "8b7937e"
+  },
+  {
+   "change": "Regla del API server solo en el puerto 6443",
+   "gap": "La regla abría 443 hacia 0.0.0.0/0 en todos los namespaces (salida HTTPS a Internet)",
+   "effect": "mlops ya no sale a Internet (N08 en el laboratorio)",
+   "detected_in": "Pruebas locales (análisis de N08)",
+   "commits": "5202b6a"
+  },
+  {
+   "change": "install.sh registra los repositorios de las dependencias",
+   "gap": "Con Helm sin repositorios, helm dependency build fallaba y la instalación se detenía en la fase base",
+   "effect": "Instalación completa en el laboratorio",
+   "detected_in": "Laboratorio (primer intento)",
+   "commits": "0a4cc19"
+  },
+  {
+   "change": "install.sh --separate-tiers y namespaces ajenos intactos",
+   "gap": "El planificador podía colocar pods de plataforma en el dispositivo edge; un namespace argocd ajeno habría recibido nuestras políticas",
+   "effect": "Pods edge en edgenode01, plataforma y empresa en worker1-kb2, kb2 solo con DaemonSets",
+   "detected_in": "Diagnóstico del laboratorio",
+   "commits": "693b349"
+  },
+  {
+   "change": "appVersion de Keycloak alineado con la imagen",
+   "gap": "Chart.yaml declaraba 24.0.0 y se despliega 25.0.6",
+   "effect": "Metadatos coherentes",
+   "detected_in": "Redacción del informe",
+   "commits": "d5428ea"
+  }
+ ],
+ "answers": [
+  {
+   "question": "Número total de charts",
+   "answer": "30 charts en la rama `lab-validation`: 13 de edge, 13 de plataforma y 4 de empresa. En `main` había 28 (11, 13 y 4); los dos nuevos son `edge-postgresql-sync` (consolidación de datos) y `edge-mlflow-sync` (propagación de versiones). En el laboratorio se desplegaron 27: no se instalaron `platform-rancher` (el clúster ya lo gestiona un Rancher externo), `platform-argocd` (había otro Argo CD en su namespace) ni `edge-mongodb` (sin imagen arm64 para el dispositivo edge).",
+   "evidence": "`CHART_META` de `infrastructure/publish.py`; `raw/lab-20260924T081803/install.jsonl`."
+  },
+  {
+   "question": "Qué charts materializan CMP-01, CMP-08 y CMP-12",
+   "answer": "CMP-01 (Input Data Monitoring): `edge-node-red`, con el flujo declarativo de validación de la entrada, sobre el transporte de `edge-mosquitto`, `edge-kafka`, `edge-rabbitmq` y la pasarela `edge-opc-ua-gateway`. CMP-08 (Infrastructure Technical Monitoring): `platform-prometheus` (Prometheus, Alertmanager, node-exporter y kube-state-metrics) y `edge-prometheus-agent` (remote-write desde el edge). CMP-12 (Feedback Interface): ningún chart; es un hueco no cubierto, y la consulta de su etiqueta devuelve 0 recursos.",
+   "evidence": "Sección 3; `trace/traceability.tsv` (CMP-01: 17, CMP-08: 20, CMP-12: 0 recursos); pruebas E03, S06, S07 y E09."
+  },
+  {
+   "question": "Si la instalación es reproducible desde el repositorio Helm publicado",
+   "answer": "Hoy no. El repositorio publicado en GitHub Pages se construyó desde `main` (commit cb20350, 3 de junio de 2026): su `index.yaml` lista 28 charts en la versión 0.2.0 y los 28 paquetes devuelven HTTP 404. La rama corrige la causa: `publish.py` construye las dependencias y empaqueta, y el flujo de Pages publica los paquetes al fusionar en `main`. Esa vía se validó en el clúster local, no en el laboratorio: un repositorio generado con `publish.py` y servido por HTTP devuelve los 30 charts, los 30 se descargan y renderizan con el post-renderer, y 29 se actualizan con `--dry-run=server` sobre las releases instaladas (Rancher no estaba instalado). La instalación del laboratorio usó los charts del repositorio git (`install.sh --source local`); falta repetirla con `--source repo` una vez fusionada la rama.",
+   "evidence": "`local-evidence/published-helm-repository.txt` (curl del índice y de los paquetes); `local-evidence/helm-repository.txt`; `install.jsonl`."
+  },
+  {
+   "question": "Si install.sh funciona de principio a fin",
+   "answer": "Sí, en el laboratorio, con las opciones que exige el entorno (`--values-dir` de laboratorio, `--skip platform-argocd`, `--skip edge-mongodb` y `--separate-tiers`): 28 ejecuciones de Helm correctas (1550 s de Helm; 2336 s de `install.sh` completo), con las fases base, seguridad, datos, edge y empresa. El primer intento se detuvo en la fase base porque `install.sh` no registraba los repositorios de las dependencias antes de `helm dependency build` y Helm no tenía ninguno en `kb2`; se corrigió (commit 0a4cc19) y el segundo intento completó la instalación.",
+   "evidence": "`raw/lab-20260924T081803/install.log`, `install.jsonl` y `state/install-summary.txt`; anexo."
+  },
+  {
+   "question": "Si todos los recursos llevan la etiqueta iso42001",
+   "answer": "Todos los recursos que definen los charts sí, salvo los hooks de Helm: 387 de 394 recursos renderizados (los 7 restantes son hooks, que Helm no pasa por el post-renderer) y 52 de 53 plantillas de pod. En el clúster, 307 de 391 objetos de los namespaces del catálogo (79 %) llevan `iso42001=true`; casi todo el resto no lo renderiza ningún chart: registros de release de Helm, `kube-root-ca.crt` y la ServiceAccount `default` de cada namespace, PVC generados desde `volumeClaimTemplates` y objetos generados por los operadores; la excepción son los hooks de Helm. La consulta `kubectl get pods,svc,deploy,sts -A -l iso42001=true` devuelve 127 recursos.",
+   "evidence": "`local-evidence/verify-charts.txt` (verificación estática); `trace/traceability.json`; `local-evidence/unlabelled-objects.txt` (clasificación en el clúster local)."
+  },
+  {
+   "question": "Si el orden de instalación recomendado queda validado",
+   "answer": "Sí. El orden base (namespaces, NetworkPolicy, CRD de Prometheus y Secrets), seguridad, datos, edge y empresa instaló cada chart con `--wait` a la primera, sin fallos de dependencias. Algunas dependencias que el orden respeta: PostgreSQL de plataforma antes que Keycloak (su base de datos); los CRD antes de los ServiceMonitor; las dos pasadas de cert-manager (la CA de plataforma) antes del TLS de OpenBao; MinIO antes que MLflow, Loki y el overlay documental; y la plataforma antes que los jobs del edge que escriben en ella. La fase de seguridad se validó sin Argo CD, que no se instaló.",
+   "evidence": "`raw/lab-20260924T081803/install.log` e `install.jsonl` (orden y resultado de cada chart)."
+  }
+ ],
+ "discrepancies": [
+  {
+   "topic": "Número de charts",
+   "thesis": "28 charts, aunque sus listas suman 27 (según el enunciado)",
+   "repository_and_laboratory": "`main`: 28 (11 edge, 13 plataforma, 4 empresa); rama: 30 (13, 13, 4)",
+   "proposal": "Citar 30 y actualizar las listas con los dos charts nuevos"
+  },
+  {
+   "topic": "Gestor de secretos",
+   "thesis": "HashiCorp Vault",
+   "repository_and_laboratory": "OpenBao 2.0 (bifurcación de Vault con licencia MPL); el inyector, que usaba la imagen `hashicorp/vault-k8s`, está desactivado",
+   "proposal": "Nombrar OpenBao y mencionar su origen"
+  },
+  {
+   "topic": "Edge Version Control",
+   "thesis": "Chart con ese nombre",
+   "repository_and_laboratory": "No existía en `main`; ahora es `edge-mlflow-sync` (nombre visible «Edge Version Control (MLflow Sync)»)",
+   "proposal": "Usar el nombre del chart"
+  },
+  {
+   "topic": "Edge Model Monitor",
+   "thesis": "Chart con ese nombre",
+   "repository_and_laboratory": "No existe; la monitorización del modelo en el edge (CMP-10) la hacen `edge-prometheus-agent` y las métricas de `edge-fastapi-model`",
+   "proposal": "Sustituir por esos dos charts"
+  },
+  {
+   "topic": "Topología del laboratorio",
+   "thesis": "Dos nodos amd64 (kb2 como plano de control y trabajo, worker1-kb2) sin nodo edge físico",
+   "repository_and_laboratory": "Tres nodos: kb2 (VM, 4 vCPU, 8 GiB, solo plano de control y DaemonSets), worker1-kb2 (16 hilos, 31 GiB) y edgenode01 (Jetson AGX Orin, arm64, 8 núcleos, 61 GiB) como dispositivo edge",
+   "proposal": "Describir la topología real; el edge sí es un dispositivo físico"
+  },
+  {
+   "topic": "Versiones",
+   "thesis": "Helm 3.16.4",
+   "repository_and_laboratory": "Helm 3.19.0 y kubectl 1.29.0 en kb2 (fuera del desfase soportado respecto a 1.32; `install.log` lo advierte); K3s 1.32.6 coincide",
+   "proposal": "Actualizar"
+  },
+  {
+   "topic": "Rancher",
+   "thesis": "Clúster gestionado con Rancher",
+   "repository_and_laboratory": "Gestionado por un Rancher externo (agente 2.13.3); no hay servidor Rancher en el clúster. `platform-rancher` (Rancher 2.11.3) no se desplegó ni validó",
+   "proposal": "Indicar que el chart de Rancher no se validó"
+  },
+  {
+   "topic": "cert-manager",
+   "thesis": "Se suponía instalado con Rancher",
+   "repository_and_laboratory": "No había ninguno; el catálogo instala el suyo (v1.17.4)",
+   "proposal": "Sin cambios en la tesis"
+  },
+  {
+   "topic": "Nivel de CMP-08",
+   "thesis": "Empresa",
+   "repository_and_laboratory": "Prometheus en plataforma y agente en edge; los cuadros de mando, en empresa",
+   "proposal": "Explicar que la recogida está en plataforma y la consulta en empresa"
+  },
+  {
+   "topic": "CMP-12 Feedback Interface",
+   "thesis": "Componente recomendado de la arquitectura",
+   "repository_and_laboratory": "Sin chart; solo existe la tabla `operator_feedback` en el almacén edge",
+   "proposal": "Declararlo como hueco o trabajo futuro"
+  },
+  {
+   "topic": "Nivel edge sobre arm64",
+   "thesis": "Implementaciones de referencia sin restricción de arquitectura",
+   "repository_and_laboratory": "Bitnami MongoDB no publica imágenes arm64; Falco no funciona sin BTF y NetworkPolicy no se aplica sin `ip_set_hash_ip` en el kernel de JetPack",
+   "proposal": "Añadir requisitos del dispositivo edge (arquitectura y opciones del kernel)"
+  }
+ ],
+ "limitations": [
+  {
+   "topic": "Dispositivo edge",
+   "detail": "El kernel de JetPack (`5.15.148-tegra`) no tiene BTF ni `ip_set_hash_ip`: Falco no se desplegó en `edgenode01` (S10 no se ejecutó) y las NetworkPolicy no se aplican en él (N06). Además, su node-exporter responde HTTP 503 (1 de 30 targets caído; el node-exporter previo de ese nodo acumulaba 2396 reinicios), y MongoDB no se instaló por falta de imagen arm64"
+  },
+  {
+   "topic": "Componentes no validados",
+   "detail": "`platform-argocd` (S15 y N11), `platform-rancher` y `edge-mongodb` no se instalaron; CMP-12 no tiene chart"
+  },
+  {
+   "topic": "Repositorio Helm",
+   "detail": "La instalación del laboratorio usó los charts del repositorio git; la instalación desde el repositorio publicado solo se validó en el clúster local, porque el publicado sigue construido desde `main`"
+  },
+  {
+   "topic": "GPU",
+   "detail": "La GPU de la Jetson no se usó: el modelo (Isolation Forest de scikit-learn) se sirve en CPU"
+  },
+  {
+   "topic": "Datos",
+   "detail": "Los datos de planta proceden de un simulador (OPC PLC), y la deriva se indujo con muestras desplazadas; las ventanas de laboratorio son cortas (intervalos de 1 s, ventana actual de 4 min, histórico de 2 h, espera entre reentrenamientos de 15 min) frente a los valores por defecto de los charts"
+  },
+  {
+   "topic": "Pocas ejecuciones",
+   "detail": "La instalación y la prueba de extremo a extremo se ejecutaron una vez, las pruebas de humo dos y las de red cuatro (hasta aislar sus causas); no hay repeticiones ni medidas estadísticas. Los consumos de CPU y memoria son muestras puntuales de `kubectl top`, y los pods listos, muestras al terminar cada `helm --wait`"
+  },
+  {
+   "topic": "Caminos no ejercitados",
+   "detail": "No se enviaron muestras inválidas, así que el rechazo de entrada (`sample_rejected`) no se observó en Loki; la llegada del log de auditoría del API a Loki no se comprobó; SSO con Keycloak en los demás servicios está desactivado por defecto; no se probaron alta disponibilidad, copias de seguridad ni recuperación"
+  },
+  {
+   "topic": "OpenBao",
+   "detail": "Se inicializó con una sola clave de desellado guardada en un Secret del laboratorio; al reiniciarse vuelve a quedar sellado (S13 lo muestra sellado antes de S13b) porque no hay desellado automático"
+  },
+  {
+   "topic": "Imágenes",
+   "detail": "Las imágenes de Bitnami proceden de `bitnamilegacy`, congeladas y sin parches de seguridad; las oficiales de Docker, del espejo público de ECR"
+  },
+  {
+   "topic": "Concurrencia",
+   "detail": "El job manual de sincronización y el CronJob de `edge-mlflow-sync` coincidieron una vez (E07: un `download_failed` entre `downloaded` y `active`); el estado final fue correcto, pero un job lanzado a mano no respeta la política de concurrencia del CronJob"
+  },
+  {
+   "topic": "Pruebas de red",
+   "detail": "Los clientes se lanzaron en `worker1-kb2` (el nodo sin plano de control que aplica políticas) y esperan 15 s a la sincronización del controlador; la protección de entrada de los pods del edge no se pudo comprobar"
+  },
+  {
+   "topic": "Entorno compartido",
+   "detail": "El clúster tenía cargas y despliegues ajenos (Argo CD, node-exporter y kube-state-metrics en `monitoring`, GPU operator); se retiró `ros2exp` con la confirmación del usuario y el resto se dejó intacto, compartiendo el namespace `monitoring`"
+  }
+ ]
+}
