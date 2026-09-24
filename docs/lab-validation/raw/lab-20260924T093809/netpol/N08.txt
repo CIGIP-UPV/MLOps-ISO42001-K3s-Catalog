@@ -1,0 +1,4 @@
+# N08: mlops -> Internet (default deny egress)
+$ nc -z -w 5 github.com 443   (pod in namespace mlops)
+client node: worker1-kb2; destination node(s): n/a
+CONNECTED

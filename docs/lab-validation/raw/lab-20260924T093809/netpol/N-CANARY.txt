@@ -1,0 +1,6 @@
+# N-CANARY: NetworkPolicies are enforced on every node (pod behind a deny-all policy)
+$ per node: httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside
+edgenode01: client in lab-np-outside -> pod 10.42.2.95:8080 behind a deny-all ingress policy: CONNECTED
+kb2: client in lab-np-outside -> pod 10.42.0.102:8080 behind a deny-all ingress policy: wget: can't connect to remote host (10.42.0.102): Connection refused
+worker1-kb2: client in lab-np-outside -> pod 10.42.1.197:8080 behind a deny-all ingress policy: BLOCKED
+(exit 1)

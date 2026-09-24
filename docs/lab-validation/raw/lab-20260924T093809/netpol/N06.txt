@@ -1,0 +1,4 @@
+# N06: namespace outside the catalog -> edge PostgreSQL (default deny ingress)
+$ nc -z -w 5 edge-postgresql.edge.svc.cluster.local 5432   (pod in namespace lab-np-outside)
+client node: worker1-kb2; destination node(s): edgenode01
+destination on edgenode01, which does not enforce NetworkPolicies (N-CANARY); CONNECTED
