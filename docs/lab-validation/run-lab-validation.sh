@@ -332,6 +332,11 @@ if os.path.exists(sys.argv[1]):
                 "detail": f"pods ready {r['pods_ready']}" + (f"; {r['message']}" if r["message"] else "")}) + "\n")
 PY
   snapshot state/after-install
+  # without any release the tests would only time out one after another
+  if ! helm list -A -q 2>/dev/null | grep -qE '^(edge|platform|enterprise)-'; then
+    log "install.sh did not install any release of the catalog; stopping. See install.log."
+    finish; exit 4
+  fi
 }
 
 snapshot() {
