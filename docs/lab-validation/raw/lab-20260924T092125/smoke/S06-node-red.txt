@@ -1,0 +1,8 @@
+# S06: Node-RED ingestion metrics and protected editor
+$ GET /metrics; GET /admin/flows (expect 401)
+ingest_messages_valid_total 9780
+ingest_values_written_total 9780
+ingest_db_errors_total 5
+ingest_last_sample_timestamp_seconds 1790241750
+editor /admin/flows without credentials: HTTP 401
+(exit 0)

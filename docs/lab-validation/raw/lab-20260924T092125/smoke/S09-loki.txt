@@ -1,0 +1,5 @@
+# S09: Loki write and query
+$ POST /loki/api/v1/push; GET /loki/api/v1/query_range
+pushed
+read back: lab smoke line 1790241756000000000
+(exit 0)

@@ -1,0 +1,12 @@
+date: 2026-09-24T08:18:03+00:00
+host: kb2
+PRETTY_NAME="Ubuntu 22.04.4 LTS"
+VERSION_ID="22.04"
+kernel: 5.15.0-190-generic
+k3s: k3s version v1.32.6+k3s1 (eb603acd)
+kubectl client: v1.29.0
+kubernetes server: v1.32.6+k3s1
+helm: v3.19.0+g3d8990f
+rancher: not found
+cert-manager: 
+catalog commit: d7d83a7a25937449d49717daebe5760cc094cef9 (lab-validation)

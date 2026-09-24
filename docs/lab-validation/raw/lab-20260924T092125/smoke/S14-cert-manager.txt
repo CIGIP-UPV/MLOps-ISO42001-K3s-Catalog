@@ -1,0 +1,10 @@
+# S14: cert-manager test certificate from the platform CA
+$ kubectl apply Certificate (issuer platform-ca); kubectl wait --for=condition=Ready
+certificate.cert-manager.io/lab-smoke-cert created
+certificate.cert-manager.io/lab-smoke-cert condition met
+NAME             READY   SECRET           AGE
+lab-smoke-cert   True    lab-smoke-cert   2s
+subject=
+issuer=CN = ZDM MLOps platform CA
+notAfter=Dec 23 09:22:48 2026 GMT
+(exit 0)

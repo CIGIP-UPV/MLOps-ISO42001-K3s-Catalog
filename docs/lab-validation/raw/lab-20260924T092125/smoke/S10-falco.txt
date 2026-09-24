@@ -1,0 +1,5 @@
+# S10: Falco runtime event (shell in the model server)
+$ kubectl exec deploy/edge-fastapi-model -- sh -c id; kubectl logs falco
+model server node: edgenode01
+not run: no Falco pod on edgenode01 (the Falco driver cannot run there, see lab-values/edge-falco.yaml)
+(exit 3)

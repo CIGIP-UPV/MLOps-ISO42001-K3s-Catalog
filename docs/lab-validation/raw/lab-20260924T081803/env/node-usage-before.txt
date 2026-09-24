@@ -1,0 +1,9 @@
+NAME          CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%   
+edgenode01    1404m        17%    6532Mi          10%       
+kb2           1769m        44%    4034Mi          50%       
+worker1-kb2   115m         0%     1857Mi          5%        
+
+NODE          TAINTS
+edgenode01    <none>
+kb2           [map[effect:NoSchedule key:node-role.kubernetes.io/control-plane value:true]]
+worker1-kb2   <none>

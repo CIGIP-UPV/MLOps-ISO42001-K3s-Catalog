@@ -1,0 +1,130 @@
+{
+ "nodes": 3,
+ "catalog_requests_cpu": 0.66,
+ "catalog_requests_memory_gib": 1.69,
+ "allocatable_cpu": 28.0,
+ "allocatable_memory_gib": 100.18,
+ "requested_by_other_pods_cpu": 0.62,
+ "requested_by_other_pods_memory_gib": 0.9,
+ "free_cpu": 27.39,
+ "free_memory_gib": 99.28,
+ "fits": true,
+ "per_chart": {
+  "platform-timescaledb": {
+   "cpu": 0.27,
+   "memory_gib": 0.53
+  },
+  "edge-fastapi-model": {
+   "cpu": 0.1,
+   "memory_gib": 0.38
+  },
+  "edge-rabbitmq": {
+   "cpu": 0.1,
+   "memory_gib": 0.25
+  },
+  "platform-evidently": {
+   "cpu": 0.05,
+   "memory_gib": 0.25
+  },
+  "platform-cert-manager": {
+   "cpu": 0.04,
+   "memory_gib": 0.16
+  },
+  "edge-mosquitto": {
+   "cpu": 0.05,
+   "memory_gib": 0.06
+  },
+  "edge-opc-ua-gateway": {
+   "cpu": 0.05,
+   "memory_gib": 0.06
+  },
+  "edge-kafka": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "edge-node-red": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "edge-fluent-bit": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "edge-prometheus-agent": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "edge-falco": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "edge-mongodb": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "edge-postgresql-sync": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "edge-postgresql": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "edge-mlflow-sync": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "enterprise-keycloak": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "enterprise-grafana-dashboards": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "enterprise-minio-overlay": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "enterprise-zammad": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "platform-mlflow": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "platform-training-jobs": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "platform-minio": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "platform-postgresql": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "platform-grafana": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "platform-loki": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "platform-prometheus": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "platform-argocd": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  },
+  "platform-openbao": {
+   "cpu": 0.0,
+   "memory_gib": 0.0
+  }
+ }
+}
