@@ -156,6 +156,18 @@ git push
 Before committing, the script checks the evidence for key material and prints
 a warning if it finds any; do not commit if it does.
 
+## Regenerating the report
+
+`INFORME_VALIDACION_LAB.md` and `results.json` are generated from the evidence
+in `raw/` and `local-evidence/` and from the catalog metadata; the texts of
+the report are in `tools/report/`:
+
+```bash
+python3 docs/lab-validation/tools/build_report.py
+```
+
+The runs it reads are set at the top of `tools/build_report.py`.
+
 ## Troubleshooting
 
 - **Image pulls fail with `429 Too Many Requests`**: anonymous Docker Hub

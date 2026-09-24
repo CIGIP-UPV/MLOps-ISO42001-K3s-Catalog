@@ -1,6 +1,6 @@
 # Informe de validación en laboratorio del catálogo AR-MLOps-ZDM
 
-Validación del catálogo `MLOps-ISO42001-K3s-Catalog` (rama `lab-validation`) en el clúster K3s del laboratorio, como aportación de datos reales al capítulo 7 de la tesis. Los tres criterios del capítulo se evalúan así:
+Validación del catálogo `MLOps-ISO42001-K3s-Catalog` (rama `lab-validation`, publicada como versión 2.0.0) en el clúster K3s del laboratorio, como aportación de datos reales al capítulo 7 de la tesis. Los tres criterios del capítulo se evalúan así:
 
 - **Instanciabilidad:** instalación de los charts con `infrastructure/install.sh` (sección 4), pruebas de humo por chart y prueba de extremo a extremo de los flujos (sección 5).
 - **Coherencia:** separación de niveles en nodos distintos, flujos de consolidación de datos y de propagación de versiones, y segmentación de red entre zonas (secciones 3, 4 y 5).
@@ -363,7 +363,7 @@ En los namespaces del catálogo (sin `argocd`, que es de otro despliegue) llevan
 | install.sh por fases con los charts propios | Instalaba charts de terceros, manifiestos inexistentes y dejaba fuera 10 charts | Fases base, seguridad, datos, edge y empresa con secretos generados, post-renderer de etiquetas y registro JSON; validado en el laboratorio (27 charts, 28 ejecuciones de Helm) | Fase 1 | 4f17e2d, 2712b1e |
 | publish.py con helm dependency build y paquetes publicados por CI | index.yaml apuntaba a .tgz inexistentes (404) y los envolventes salían sin subcharts | 30 paquetes con dependencias; repositorio validado en local (30/30) | Fase 1 | c8cab72, 8d83879 |
 | verify_charts.py e iso42001-postrender.py | Sin verificación automática ni etiquetas en recursos de subcharts sin gancho de etiquetas | 387 de 394 recursos renderizados etiquetados (los 7 restantes son hooks de Helm) | Fase 1 | c02a7b4 |
-| Documentación alineada (README, catalog/README.md, index.html, CITATION.cff 1.0.1) | Deriva documental y etiquetas ISO distintas en tres sitios | Una sola fuente (CHART_META) para tablas y metadatos | Fase 1 | d7a3202, 3d90b41, 39eb2a5 |
+| Documentación alineada (README, catalog/README.md, index.html, CITATION.cff) y versión 2.0.0 con CHANGELOG | Deriva documental y etiquetas ISO distintas en tres sitios | Una sola fuente (CHART_META) para tablas y metadatos | Fase 1 | d7a3202, 3d90b41, 39eb2a5 |
 | Fichero de contraseñas de Mosquitto propiedad del broker | El broker (uid 1883) no podía leer el fichero y el pod no arrancaba | Mosquitto arranca con autenticación; S04 y E03 | Pruebas locales (Kubernetes) | d7048db |
 | Paso de preparación de Node-RED con el usuario de Node-RED | Las credenciales escritas por el init container no eran legibles | Node-RED arranca y se conecta al broker | Pruebas locales (Kubernetes) | 5473a3f |
 | Métricas de Keycloak en el puerto de gestión 9000 | El ServiceMonitor apuntaba a 8080, donde /metrics da 404 | Target de Keycloak activo | Pruebas locales (Kubernetes) | 02838e8 |
