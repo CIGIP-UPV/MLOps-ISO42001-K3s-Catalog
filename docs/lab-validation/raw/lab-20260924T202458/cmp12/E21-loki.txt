@@ -1,0 +1,13 @@
+# E21: Events of the feedback loop in Loki
+$ LogQL count_over_time per event in namespaces feedback, edge, mlops and platform
+feedback_recorded: 2 log lines
+login_succeeded: 4 log lines
+login_failed: 4 log lines
+model_suspended: 2 log lines
+model_resumed: 2 log lines
+version_suspended: 2 log lines
+version_resumed: 2 log lines
+feedback_labels_loaded: 3 log lines
+schema_applied: 3 log lines
+event types found in Loki: 9/9
+(exit 0)

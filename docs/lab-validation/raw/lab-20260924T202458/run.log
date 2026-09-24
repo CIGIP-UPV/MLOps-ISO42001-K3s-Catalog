@@ -1,0 +1,37 @@
+[20:24:58] === 8. Feedback interface (CMP-12) ===
+[20:25:03] PASS S21 Feedback interface health, sign-in and denied access without credentials
+[20:25:17] PASS E17 Operator verdict on a real prediction, stored in the platform data stock
+[20:25:19] PASS E18 Verdict in the Grafana panel of disagreement rate by model version
+[20:25:35] PASS E19 Training uses the operator verdicts as labels
+[20:26:42] PASS E20 Suspension of the version in service stops it at the edge; resuming restores it
+[20:27:08] PASS E21 Events of the feedback loop in Loki
+[20:27:57] FAIL N-CANARY NetworkPolicies are enforced on every node (pod behind a deny-all policy)
+[20:28:17] PASS N14 feedback -> platform TimescaleDB (feedback conduit) (expected: allow)
+[20:28:38] PASS N15 feedback -> edge PostgreSQL (no conduit into the edge) (expected: deny)
+[20:28:58] PASS N16 feedback -> platform service PostgreSQL (same namespace as TimescaleDB, not allowed) (expected: deny)
+[20:29:18] PASS N17 feedback -> Keycloak (sign-in conduit) (expected: allow)
+[20:29:38] PASS N18 feedback -> MLflow (suspension tags) (expected: allow)
+# Laboratory validation run: summary
+
+| Phase | PASS | FAIL | SKIP |
+|---|---|---|---|
+| smoke | 1 | 0 | 0 |
+| e2e | 5 | 0 | 0 |
+| netpol | 5 | 1 | 0 |
+
+| ID | Result | Name | Seconds | Evidence | Detail |
+|---|---|---|---|---|---|
+| S21 | PASS | Feedback interface health, sign-in and denied access without credentials | 5 | cmp12/S21-feedback.txt | sign-in of a user without a role of the interface (data-scientist): 403 (expected 403) sign-in of lab-operator (operator): 200 (expected 200 |
+| E17 | PASS | Operator verdict on a real prediction, stored in the platform data stock | 14 | cmp12/E17-verdict.txt | 9-24 20:25:05.995135+00:00", "site_id": "lab-edge-01", "source_id": 6, "machine_id": "cnc-01", "model_name": "zdm-anomaly-detector", "model_ |
+| E18 | PASS | Verdict in the Grafana panel of disagreement rate by model version | 2 | cmp12/E18-dashboard.txt | dashboard: ZDM: Operator Feedback (CMP-12); panel: Operator disagreement rate by model version model_version / incorrect / correct / uncerta |
+| E19 | PASS | Training uses the operator verdicts as labels | 16 | cmp12/E19-training.txt | ", "component": "platform-training-jobs", "event": "feedback_labels_loaded", "feedback_verdicts": 2, "feedback_labels": 2, "feedback_uncerta |
+| E20 | PASS | Suspension of the version in service stops it at the edge; resuming restores it | 67 | cmp12/E20-suspension.txt | 2026-09-24 20:26:33.247621+00 / 6 / resumed 2026-09-24 20:26:11.950795+00 / 6 / suspended 2026-09-24 20:09:42.505075+00 / 4 / resumed 2026-0 |
+| E21 | PASS | Events of the feedback loop in Loki | 26 | cmp12/E21-loki.txt | version_resumed: 2 log lines feedback_labels_loaded: 3 log lines schema_applied: 3 log lines event types found in Loki: 9/9 |
+| N-CANARY | FAIL | NetworkPolicies are enforced on every node (pod behind a deny-all policy) | 49 | netpol/N-CANARY.txt | edgenode01: pod 10.42.2.63:8080 from another namespace: without policy CONNECTED, with a deny-all ingress policy CONNECTED kb2: pod 10.42.0. |
+| N14 | PASS | feedback -> platform TimescaleDB (feedback conduit) (expected: allow) | 0 | netpol/N14.txt | CONNECTED |
+| N15 | PASS | feedback -> edge PostgreSQL (no conduit into the edge) (expected: deny) | 0 | netpol/N15.txt | destination on edgenode01, which does not enforce NetworkPolicies (N-CANARY); BLOCKED |
+| N16 | PASS | feedback -> platform service PostgreSQL (same namespace as TimescaleDB, not allowed) (expected: deny) | 0 | netpol/N16.txt | BLOCKED |
+| N17 | PASS | feedback -> Keycloak (sign-in conduit) (expected: allow) | 0 | netpol/N17.txt | CONNECTED |
+| N18 | PASS | feedback -> MLflow (suspension tags) (expected: allow) | 0 | netpol/N18.txt | CONNECTED |
+
+[20:29:41] Evidence in /root/MLOps-ISO42001-K3s-Catalog/docs/lab-validation/raw/lab-20260924T202458

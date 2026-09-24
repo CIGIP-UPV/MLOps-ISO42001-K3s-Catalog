@@ -1,0 +1,7 @@
+# E18: Verdict in the Grafana panel of disagreement rate by model version
+$ GET /api/dashboards/uid/zdm-operator-feedback; POST /api/ds/query with the SQL of the panel
+dashboard: ZDM: Operator Feedback (CMP-12); panel: Operator disagreement rate by model version
+model_version | incorrect | correct | uncertain | disagreement_rate
+5 | 1 | 0 | 0 | 1
+3 | 1 | 0 | 0 | 1
+(exit 0)

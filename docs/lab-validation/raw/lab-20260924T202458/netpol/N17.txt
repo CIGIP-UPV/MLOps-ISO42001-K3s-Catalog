@@ -1,0 +1,4 @@
+# N17: feedback -> Keycloak (sign-in conduit)
+$ nc -z -w 5 enterprise-keycloak.security.svc.cluster.local 80   (pod in namespace feedback)
+client node: worker1-kb2; destination node(s): worker1-kb2
+CONNECTED
