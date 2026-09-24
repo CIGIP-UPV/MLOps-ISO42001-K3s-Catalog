@@ -1,0 +1,10 @@
+# PREP-02: API audit policy enabled
+$ infrastructure/enable-audit.sh --apply
+Policy file : /etc/rancher/k3s/audit-policy.yaml (present)
+Log dir     : /var/log/kubernetes/audit (present)
+Config file : /etc/rancher/k3s/config.yaml
+kube-apiserver-arg entries already present.
+Restarting k3s...
+API server ready.
+Audit log is being written: 7429 events so far.
+(exit 0)

@@ -1,0 +1,16 @@
+# PREP-03: resource estimate (catalog requests vs free allocatable)
+$ docs/lab-validation/tools/estimate_resources.py
+{
+ "nodes": 3,
+ "catalog_requests_cpu": 0.66,
+ "catalog_requests_memory_gib": 1.69,
+ "allocatable_cpu": 28.0,
+ "allocatable_memory_gib": 100.18,
+ "requested_by_other_pods_cpu": 0.62,
+ "requested_by_other_pods_memory_gib": 0.9,
+ "free_cpu": 27.39,
+ "free_memory_gib": 99.28,
+ "fits": true
+}
+largest requests: [('platform-timescaledb', {'cpu': 0.27, 'memory_gib': 0.53}), ('edge-fastapi-model', {'cpu': 0.1, 'memory_gib': 0.38}), ('edge-rabbitmq', {'cpu': 0.1, 'memory_gib': 0.25}), ('platform-evidently', {'cpu': 0.05, 'memory_gib': 0.25}), ('platform-cert-manager', {'cpu': 0.04, 'memory_gib': 0.16}), ('edge-mosquitto', {'cpu': 0.05, 'memory_gib': 0.06})]
+(exit 0)

@@ -1,0 +1,4 @@
+# S18: MongoDB edge buffer collections
+$ mongosh: getCollectionNames()
+not run: release edge-mongodb is not installed in namespace edge (skipped in this laboratory, see the run options)
+(exit 3)

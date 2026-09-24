@@ -1,0 +1,18 @@
+# S13: OpenBao status over TLS (platform CA)
+$ kubectl exec platform-openbao-0 -- bao status
+Key                Value
+---                -----
+Seal Type          shamir
+Initialized        false
+Sealed             true
+Total Shares       0
+Threshold          0
+Unseal Progress    0/0
+Unseal Nonce       n/a
+Version            2.0.0
+Build Date         2024-07-17T22:05:43Z
+Storage Type       file
+HA Enabled         false
+command terminated with exit code 2
+(bao status exit 2: 0 unsealed, 2 sealed, 1 error)
+(exit 0)

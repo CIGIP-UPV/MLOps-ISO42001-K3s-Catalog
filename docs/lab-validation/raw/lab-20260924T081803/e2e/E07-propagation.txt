@@ -1,0 +1,9 @@
+# E07: Version propagation platform -> edge (edge-mlflow-sync)
+$ kubectl create job --from=cronjob/edge-mlflow-sync e2e-vsync-1; psql model_versions
+job.batch/e2e-vsync-1 condition met
+{"ts": "2026-09-24T09:01:10Z", "component": "edge-mlflow-sync", "event": "new_version_detected", "model_name": "zdm-anomaly-detector", "model_version": "1", "alias": "champion", "previous_version": null, "run_id": "1dc489b33bcc40e4a664baa423de928d"}
+{"ts": "2026-09-24T09:01:17Z", "component": "edge-mlflow-sync", "event": "version_activated", "model_name": "zdm-anomaly-detector", "model_version": "1", "alias": "champion", "previous_version": null, "sha256": "8ce9e0113b5f6f974ff61f37464cb4284ec664765a81f65e485fef29873ebeef"}
+2026-09-24 09:01:15.490778+00 | zdm-anomaly-detector | 1 | downloaded | 8ce9e0113b5f
+2026-09-24 09:01:17.052355+00 | zdm-anomaly-detector | 1 | download_failed | 
+2026-09-24 09:01:17.957081+00 | zdm-anomaly-detector | 1 | active | 8ce9e0113b5f
+(exit 0)

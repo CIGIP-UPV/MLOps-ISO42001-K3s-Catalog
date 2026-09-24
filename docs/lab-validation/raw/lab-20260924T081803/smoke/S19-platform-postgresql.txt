@@ -1,0 +1,7 @@
+# S19: Platform PostgreSQL service databases
+$ psql: pg_database
+grafana
+keycloak
+mlflow
+zammad
+(exit 0)

@@ -1,0 +1,8 @@
+# S17: Edge PostgreSQL schema
+$ psql: information_schema.tables
+model_versions
+operator_feedback
+predictions
+sensor_features
+system_events
+(exit 0)

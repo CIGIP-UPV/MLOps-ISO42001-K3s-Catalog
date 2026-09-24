@@ -1,0 +1,8 @@
+# E03: Ingestion: MQTT -> Node-RED validation -> edge data stock
+$ psql: count(*) FROM sensor_features, 30 s apart
+sensor_features rows: 3181 -> 3299
+cnc-01 | DipData | 827 | -1000.00 | 84.43
+cnc-01 | NegativeTrendData | 823 | 41.80 | 58.30
+cnc-01 | PositiveTrendData | 824 | 141.60 | 158.10
+cnc-01 | SpikeData | 827 | -99.80 | 1000.00
+(exit 0)

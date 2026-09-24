@@ -1,0 +1,8 @@
+# E14: New version propagated to the edge and served
+$ kubectl create job --from=cronjob/edge-mlflow-sync e2e-vsync-2; GET /version; POST /predict
+job.batch/e2e-vsync-2 condition met
+{"ts": "2026-09-24T09:10:06Z", "component": "edge-mlflow-sync", "event": "new_version_detected", "model_name": "zdm-anomaly-detector", "model_version": "2", "alias": "champion", "previous_version": "1", "run_id": "ff33ce11b65f402a9d34c20aae75d03f"}
+{"ts": "2026-09-24T09:10:11Z", "component": "edge-mlflow-sync", "event": "version_activated", "model_name": "zdm-anomaly-detector", "model_version": "2", "alias": "champion", "previous_version": "1", "sha256": "f1c3befc1e9491b9379d20836d3b70e0501ec17ad67a41f989c3e0932db9cd1b"}
+served version before the drift: 1, now: 2
+{"model_name":"zdm-anomaly-detector","model_version":"2","predictions":[{"machine_id":"cnc-01","score":0.5434003436048725,"label":"normal"}]}
+(exit 0)

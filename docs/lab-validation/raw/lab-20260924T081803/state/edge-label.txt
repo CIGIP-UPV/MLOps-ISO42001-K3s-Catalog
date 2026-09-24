@@ -1,0 +1,6 @@
+# PREP-01: edge label on the nodes
+$ kubectl label node <nodes> node-role.kubernetes.io/edge=true --overwrite
+node/edgenode01 not labeled
+NAME         STATUS   ROLES   AGE    VERSION
+edgenode01   Ready    edge    177d   v1.32.6+k3s1
+(exit 0)

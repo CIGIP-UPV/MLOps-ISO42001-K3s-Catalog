@@ -1,0 +1,8 @@
+# S03: Kafka produce and consume
+$ kafka-console-producer.sh / kafka-console-consumer.sh on topic alerts
+alerts
+predictions
+sensor-raw
+sensor-validated
+consumed lab-smoke-1790240267
+(exit 0)

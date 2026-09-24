@@ -1,0 +1,5 @@
+# E02: OPC UA gateway reads the simulator
+$ wget localhost:9273/metrics in edge-opc-ua-gateway
+internal_gather_errors{input="opcua",site_id="lab-edge-01",version="1.32.3"} 0
+internal_gather_metrics_gathered{input="opcua",site_id="lab-edge-01",version="1.32.3"} 3548
+(exit 0)

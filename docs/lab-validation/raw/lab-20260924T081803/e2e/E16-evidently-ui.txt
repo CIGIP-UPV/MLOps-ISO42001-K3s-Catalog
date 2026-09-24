@@ -1,0 +1,4 @@
+# E16: Drift reports stored in the Evidently UI
+$ GET /api/projects (port-forward svc/platform-evidently)
+projects: ['zdm-anomaly-detector']
+(exit 0)
