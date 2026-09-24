@@ -43,6 +43,9 @@ CMP-12 Feedback Interface. The catalog has 31 charts.
 - The Keycloak realm import listed `openid` as a default client scope of the
   Grafana client; that scope does not exist, and every upgrade of
   `enterprise-keycloak` failed in its import Job.
+- `edge-mlflow-sync` runs are serialised with a lock on the model store: a
+  run started by hand during a scheduled run downloaded the same version into
+  the same directory and one of them failed.
 
 ## [2.0.0] - 2026-09-24
 
