@@ -1,5 +1,5 @@
 apiVersion: v1
-generated: '2026-09-23T19:56:25.000000000Z'
+generated: '2026-09-24T15:55:15.000000000Z'
 entries:
   edge-fastapi-model:
   - apiVersion: v2
@@ -39,7 +39,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-04, CMP-10
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fastapi-model-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
   edge-kafka:
   - apiVersion: v2
     name: edge-kafka
@@ -78,7 +78,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-01
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-kafka-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: kafka
       version: ~30
@@ -120,7 +120,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-01
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mosquitto-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
   edge-rabbitmq:
   - apiVersion: v2
     name: edge-rabbitmq
@@ -160,7 +160,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-01
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-rabbitmq-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
   edge-node-red:
   - apiVersion: v2
     name: edge-node-red
@@ -198,7 +198,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-01
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-node-red-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: node-red
       version: 0.30.0
@@ -242,7 +242,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-01
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-opc-ua-gateway-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
   edge-fluent-bit:
   - apiVersion: v2
     name: edge-fluent-bit
@@ -279,7 +279,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-09
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-fluent-bit-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: fluent-bit
       version: ~0.47
@@ -321,7 +321,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-08, CMP-10
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-prometheus-agent-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: prometheus
       version: ~25
@@ -363,7 +363,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-15
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-falco-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: falco
       version: ~4
@@ -404,7 +404,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-02
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mongodb-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: mongodb
       version: ~15
@@ -445,7 +445,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-02
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-postgresql-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: postgresql
       version: ~15
@@ -487,7 +487,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-02
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-postgresql-sync-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
   edge-mlflow-sync:
   - apiVersion: v2
     name: edge-mlflow-sync
@@ -525,7 +525,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-03
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/edge-mlflow-sync-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
   platform-mlflow:
   - apiVersion: v2
     name: platform-mlflow
@@ -562,7 +562,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-03
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-mlflow-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: mlflow
       version: 0.18.0
@@ -605,7 +605,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-04, CMP-14
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-training-jobs-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
   platform-evidently:
   - apiVersion: v2
     name: platform-evidently
@@ -644,7 +644,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-10, CMP-14
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-evidently-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
   platform-minio:
   - apiVersion: v2
     name: platform-minio
@@ -681,7 +681,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-02, CMP-05
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-minio-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: minio
       version: ~5
@@ -721,7 +721,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-02
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-postgresql-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: postgresql
       version: ~15
@@ -763,7 +763,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-02, CMP-11
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-timescaledb-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
   platform-grafana:
   - apiVersion: v2
     name: platform-grafana
@@ -800,7 +800,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-06, CMP-10, CMP-11
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-grafana-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: grafana
       version: ~8
@@ -842,7 +842,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-09
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-loki-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: loki
       version: ~6
@@ -883,7 +883,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-08, CMP-10, CMP-11
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-prometheus-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: kube-prometheus-stack
       version: ~61
@@ -924,7 +924,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: ''
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-rancher-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: rancher
       version: ~2.11.0
@@ -966,7 +966,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-03
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-argocd-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: argo-cd
       version: ~7
@@ -1009,7 +1009,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-07, CMP-15
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-openbao-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: openbao
       version: ~0.16.0
@@ -1054,7 +1054,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-15
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/platform-cert-manager-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: cert-manager
       version: v1.17.4
@@ -1098,7 +1098,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-07
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-keycloak-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: keycloak
       version: ~22
@@ -1139,7 +1139,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-06, CMP-11
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-grafana-dashboards-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
   enterprise-minio-overlay:
   - apiVersion: v2
     name: enterprise-minio-overlay
@@ -1177,7 +1177,7 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-05
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-minio-overlay-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
   enterprise-zammad:
   - apiVersion: v2
     name: enterprise-zammad
@@ -1214,8 +1214,46 @@ entries:
       mlops-iso42001.cigip-upv.es/ra-components: CMP-13
     urls:
     - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-zammad-0.3.0.tgz
-    created: '2026-09-23T19:56:25.000000000Z'
+    created: '2026-09-24T15:55:15.000000000Z'
     dependencies:
     - name: zammad
       version: ~10
       repository: https://zammad.github.io/zammad-helm
+  enterprise-feedback-interface:
+  - apiVersion: v2
+    name: enterprise-feedback-interface
+    type: application
+    version: 0.3.0
+    appVersion: 1.0.0
+    kubeVersion: '>=1.24.0-0'
+    description: Operators approve, correct or reject model predictions; supervisors can suspend the version in service. The
+      verdicts are labels for the next training.
+    icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-feedback-interface.svg
+    home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+    sources:
+    - https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+    keywords:
+    - iso42001
+    - enterprise
+    - human-oversight
+    - feedback
+    - human-in-the-loop
+    - keycloak
+    maintainers:
+    - name: CIGIP-UPV
+      email: cigip@upv.es
+      url: https://cigip.webs.upv.es/
+    annotations:
+      category: Human Oversight
+      artifacthub.io/category: ai-machine-learning
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name":
+        "catalog", "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+      mlops-iso42001.cigip-upv.es/tier: enterprise
+      mlops-iso42001.cigip-upv.es/namespace: feedback
+      mlops-iso42001.cigip-upv.es/display-name: Feedback Interface
+      mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.3, B.6.2.6.4
+      mlops-iso42001.cigip-upv.es/ra-components: CMP-12
+    urls:
+    - https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/charts/enterprise-feedback-interface-0.3.0.tgz
+    created: '2026-09-24T15:55:15.000000000Z'

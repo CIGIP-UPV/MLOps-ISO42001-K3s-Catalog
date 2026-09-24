@@ -28,13 +28,13 @@ Each solution is a Helm chart that K3s can deploy, with a Rancher questionnaire 
 
 ## Architecture Overview
 
-The catalog provides **30 charts**:
+The catalog provides **31 charts**:
 
 | Tier | Charts |
 |------|--------|
 | **Edge** (13) | `edge-fastapi-model`, `edge-kafka`, `edge-mosquitto`, `edge-rabbitmq`, `edge-node-red`, `edge-opc-ua-gateway`, `edge-fluent-bit`, `edge-prometheus-agent`, `edge-falco`, `edge-mongodb`, `edge-postgresql`, `edge-postgresql-sync`, `edge-mlflow-sync` |
 | **Platform** (13) | `platform-mlflow`, `platform-training-jobs`, `platform-evidently`, `platform-minio`, `platform-postgresql`, `platform-timescaledb`, `platform-grafana`, `platform-loki`, `platform-prometheus`, `platform-rancher`, `platform-argocd`, `platform-openbao`, `platform-cert-manager` |
-| **Enterprise** (4) | `enterprise-keycloak`, `enterprise-grafana-dashboards`, `enterprise-minio-overlay`, `enterprise-zammad` |
+| **Enterprise** (5) | `enterprise-keycloak`, `enterprise-grafana-dashboards`, `enterprise-minio-overlay`, `enterprise-zammad`, `enterprise-feedback-interface` |
 
 ```
 +-----------------------------------------------------------------------------+
@@ -118,7 +118,7 @@ MLOps-ISO42001-K3s-Catalog/
 ├── catalog/
 │   ├── edge/          data-ingestion/ ai-inference/ version-control/ monitoring/ security/ storage/
 │   ├── platform/      ai-lifecycle/ data-management/ monitoring/ orchestration/ security/
-│   └── enterprise/    access-management/ helpdesk/ document-store/ dashboards/
+│   └── enterprise/    access-management/ helpdesk/ document-store/ dashboards/ human-oversight/
 │       └── <solution>/README.md, manifests/{Chart.yaml, Chart.lock, values.yaml, questions.yaml, templates/, files/}
 ├── infrastructure/
 │   ├── 00-namespaces.yaml, 01-network-policies.yaml, 03-network-policies-shared.yaml
@@ -149,12 +149,12 @@ MLOps-ISO42001-K3s-Catalog/
 | CMP-09 | Logger | `edge-fluent-bit` (edge), `platform-loki` (platform) |
 | CMP-10 | Model Technical Performance Monitoring | `edge-fastapi-model` (edge), `edge-prometheus-agent` (edge), `platform-evidently` (platform), `platform-grafana` (platform), `platform-prometheus` (platform) |
 | CMP-11 | Goal-Oriented Monitoring | `platform-timescaledb` (platform), `platform-grafana` (platform), `platform-prometheus` (platform), `enterprise-grafana-dashboards` (enterprise) |
-| CMP-12 | Feedback Interface | **not covered** |
+| CMP-12 | Feedback Interface | `enterprise-feedback-interface` (enterprise) |
 | CMP-13 | AI Helpdesk | `enterprise-zammad` (enterprise) |
 | CMP-14 | Retraining Recommendation | `platform-training-jobs` (platform), `platform-evidently` (platform) |
 | CMP-15 | Security Monitoring | `edge-falco` (edge), `platform-openbao` (platform), `platform-cert-manager` (platform) |
 
-The Feedback Interface (CMP-12) has no capture interface in this version: the edge data stock provides the `operator_feedback` table and the dashboards show it, but no chart lets operators record feedback.
+The Feedback Interface (CMP-12) is `enterprise-feedback-interface`: operators record verdicts on the predictions consolidated in the platform, the training job uses them as labels, and supervisors can suspend the model version in service.
 
 ---
 
@@ -165,7 +165,7 @@ The Feedback Interface (CMP-12) has no capture interface in this version: the ed
 | B.6.1.2.2 | Resources: Monitoring Performance | `edge-prometheus-agent`, `platform-prometheus` |
 | B.6.1.3.1 | Resources: Access Control | `edge-mosquitto`, `edge-opc-ua-gateway`, `platform-grafana`, `enterprise-keycloak` |
 | B.6.1.3.2 | Resources: Version Control | `edge-mlflow-sync`, `platform-mlflow` |
-| B.6.1.3.3 | Resources: Human Oversight / Feedback | `platform-grafana`, `platform-openbao`, `enterprise-grafana-dashboards` |
+| B.6.1.3.3 | Resources: Human Oversight / Feedback | `platform-grafana`, `platform-openbao`, `enterprise-grafana-dashboards`, `enterprise-feedback-interface` |
 | B.6.1.3.4 | Resources: Inventory / Registry | `platform-mlflow`, `platform-postgresql` |
 | B.6.1.4.1 | Resources: Security of AI Assets | `platform-openbao`, `platform-cert-manager` |
 | B.6.2.3.1 | Planning: System Documentation | `platform-minio`, `platform-cert-manager`, `enterprise-minio-overlay` |
@@ -173,7 +173,7 @@ The Feedback Interface (CMP-12) has no capture interface in this version: the ed
 | B.6.2.6.1 | Operation: Infrastructure Monitoring | `edge-prometheus-agent`, `edge-mongodb`, `edge-postgresql`, `edge-postgresql-sync`, `platform-timescaledb` |
 | B.6.2.6.2 | Operation: Model Performance | `edge-fastapi-model`, `platform-evidently`, `platform-grafana`, `platform-prometheus`, `enterprise-grafana-dashboards` |
 | B.6.2.6.3 | Operation: KPI Assessment (OEE) | `edge-postgresql`, `platform-timescaledb` |
-| B.6.2.6.4 | Operation: Retraining / Lifecycle | `edge-fastapi-model`, `edge-kafka`, `edge-mosquitto`, `edge-rabbitmq`, `edge-node-red`, `edge-opc-ua-gateway`, `edge-mlflow-sync`, `platform-mlflow`, `platform-training-jobs`, `platform-argocd` |
+| B.6.2.6.4 | Operation: Retraining / Lifecycle | `edge-fastapi-model`, `edge-kafka`, `edge-mosquitto`, `edge-rabbitmq`, `edge-node-red`, `edge-opc-ua-gateway`, `edge-mlflow-sync`, `platform-mlflow`, `platform-training-jobs`, `platform-argocd`, `enterprise-feedback-interface` |
 | B.6.2.6.5 | Operation: Update & Repair Plan | `enterprise-minio-overlay` |
 | B.6.2.6.6 | Operation: Incident Communication | `enterprise-zammad` |
 | B.6.2.6.7 | Operation: Security Monitoring | `edge-falco` |

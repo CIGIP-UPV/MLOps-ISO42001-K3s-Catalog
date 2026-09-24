@@ -1,0 +1,36 @@
+# Auto-generated / enriched by infrastructure/publish.py
+# Source of truth for the Chart metadata displayed in Rancher and ArtifactHub.
+apiVersion: v2
+name: enterprise-feedback-interface
+type: application
+version: 0.3.0
+appVersion: 1.0.0
+kubeVersion: '>=1.24.0-0'
+description: Operators approve, correct or reject model predictions; supervisors can suspend the version in service. The verdicts
+  are labels for the next training.
+icon: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog/icons/enterprise-feedback-interface.svg
+home: https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog
+sources:
+- https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog
+keywords:
+- iso42001
+- enterprise
+- human-oversight
+- feedback
+- human-in-the-loop
+- keycloak
+maintainers:
+- name: CIGIP-UPV
+  email: cigip@upv.es
+  url: https://cigip.webs.upv.es/
+annotations:
+  category: Human Oversight
+  artifacthub.io/category: ai-machine-learning
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: '[{"name": "source", "url": "https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog"}, {"name": "catalog",
+    "url": "https://cigip-upv.github.io/MLOps-ISO42001-K3s-Catalog"}]'
+  mlops-iso42001.cigip-upv.es/tier: enterprise
+  mlops-iso42001.cigip-upv.es/namespace: feedback
+  mlops-iso42001.cigip-upv.es/display-name: Feedback Interface
+  mlops-iso42001.cigip-upv.es/iso42001-clauses: B.6.1.3.3, B.6.2.6.4
+  mlops-iso42001.cigip-upv.es/ra-components: CMP-12

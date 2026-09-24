@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feedback interface</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; color: #1f2933; background: #f5f7fa; }
+    header { background: #243b53; color: #fff; padding: .8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+    header form { margin: 0; }
+    main { padding: 1rem 1.2rem; max-width: 1200px; }
+    table { border-collapse: collapse; width: 100%; background: #fff; }
+    th, td { border-bottom: 1px solid #d9e2ec; padding: .35rem .5rem; text-align: left; font-size: .9rem; vertical-align: top; }
+    th { background: #e4e7eb; }
+    .anomaly { color: #b42318; font-weight: 600; }
+    .box { background: #fff; border: 1px solid #d9e2ec; padding: .8rem 1rem; margin-bottom: 1rem; }
+    .msg { background: #e3f9e5; border: 1px solid #57ae5b; padding: .5rem 1rem; margin-bottom: 1rem; }
+    .error { background: #ffe3e3; border: 1px solid #e12d39; padding: .5rem 1rem; margin-bottom: 1rem; }
+    .suspended { color: #b42318; font-weight: 700; }
+    input, select, button { font: inherit; }
+    input[type=text] { width: 12rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Feedback interface &middot; model predictions</strong>
+    {% if session %}
+    <form method="post" action="/logout">
+      <span>{{ session.user }} ({{ session.roles | join(", ") }})</span>
+      <input type="hidden" name="csrf" value="{{ session.csrf }}">
+      <button type="submit">Sign out</button>
+    </form>
+    {% endif %}
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

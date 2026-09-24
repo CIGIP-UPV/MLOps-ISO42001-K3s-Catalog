@@ -396,6 +396,17 @@ CHART_META: dict[str, dict[str, Any]] = {
         "tagline": "Incident management with webhook integration for Prometheus alerts and SMTP notifications.",
         "keywords": ["iso42001", "enterprise", "helpdesk", "zammad", "ticketing", "incident-response"],
     },
+    "enterprise-feedback-interface": {
+        "path": "catalog/enterprise/human-oversight/feedback-interface",
+        "tier": "enterprise", "namespace": "feedback", "category": "Human Oversight",
+        "display": "Feedback Interface",
+        "components": ["CMP-12"],
+        "iso_clauses": ["B.6.1.3.3", "B.6.2.6.4"],
+        "ah_category": "ai-machine-learning",
+        "tagline": "Operators approve, correct or reject model predictions; supervisors can suspend the version in "
+                   "service. The verdicts are labels for the next training.",
+        "keywords": ["iso42001", "enterprise", "human-oversight", "feedback", "human-in-the-loop", "keycloak"],
+    },
 }
 
 
@@ -486,6 +497,7 @@ ICON_GLYPHS = {
     "enterprise-grafana-dashboards": ("◈", "OEE"),
     "enterprise-minio-overlay": ("▦", "DOC"),
     "enterprise-zammad":        ("✉", "HELP"),
+    "enterprise-feedback-interface": ("✎", "FDBK"),
 }
 
 
