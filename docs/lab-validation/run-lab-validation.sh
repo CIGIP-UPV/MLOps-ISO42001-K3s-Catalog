@@ -203,10 +203,20 @@ PY
 psql_edge() { kubectl -n edge exec edge-postgresql-0 -c postgresql -- sh -c "PGPASSWORD=\"\$POSTGRES_PASSWORD\" psql -U edge_app -d zdm_edge -tA -F ' | ' -c \"$1\""; }
 psql_ts()   { kubectl -n platform exec platform-timescaledb-0 -c timescaledb -- psql -U postgres -d zdm_platform -tA -F ' | ' -c "$1"; }
 job_from() {
-  # job_from NS CRONJOB JOB: create a Job from a CronJob and wait for it
+  # job_from NS CRONJOB JOB: create a Job from a CronJob and wait until it
+  # completes (0) or fails (1), at most 900 s
   kubectl -n "$1" delete job "$3" --ignore-not-found >/dev/null 2>&1
   kubectl -n "$1" create job --from="cronjob/$2" "$3" >/dev/null || return 1
-  kubectl -n "$1" wait "job/$3" --for=condition=complete --timeout=900s
+  local t=0 state
+  while [[ $t -lt 900 ]]; do
+    state=$(kubectl -n "$1" get job "$3" -o jsonpath='{.status.conditions[?(@.status=="True")].type}' 2>/dev/null)
+    case "$state" in
+      *Complete*) echo "job.batch/$3 complete"; return 0 ;;
+      *Failed*) echo "job.batch/$3 failed"; return 1 ;;
+    esac
+    sleep 5; t=$((t + 5))
+  done
+  echo "job.batch/$3 still running after 900 s"; return 1
 }
 phase_on() { [[ " ${PHASES} " == *" $1 "* ]]; }
 
@@ -1025,12 +1035,25 @@ for r in rows: print(" | ".join(str(v) for v in r))
 sys.exit(0 if rows else 1)'
 }
 
+platform_seconds() {
+  psql_ts "SELECT count(DISTINCT date_trunc('second', time)) FROM sensor_readings WHERE machine_id = 'cnc-01' AND time > now() - interval '2 hours'" | tr -d '[:space:]'
+}
+platform_ready() { [[ $(platform_seconds) -ge 300 ]]; }
+
 e_feedback_training() {
   require_release feedback enterprise-feedback-interface || return 3
-  job_from mlops platform-training-jobs e2e-fb-train-1 >/dev/null
-  kubectl -n mlops logs job/e2e-fb-train-1 | grep -E '"event": "(feedback_labels_loaded|model_registered|release_criteria_failed)"'
-  kubectl -n mlops logs job/e2e-fb-train-1 | grep '"event": "feedback_labels_loaded"' \
-    | python3 -c 'import json,sys;d=json.loads(sys.stdin.readline());sys.exit(0 if d.get("feedback_labels",0) >= 1 else 1)'
+  # the training window needs consolidated data of the last two hours
+  wait_for 900 platform_ready || { echo "platform data stock: only $(platform_seconds) seconds of cnc-01 in the last 2 hours"; return 1; }
+  echo "platform data stock: $(platform_seconds) seconds of cnc-01 in the last 2 hours"
+  job_from mlops platform-training-jobs e2e-fb-train-1
+  local logs; logs=$(kubectl -n mlops logs job/e2e-fb-train-1 2>&1)
+  echo "$logs" | grep -E '"event": "(feedback_labels_loaded|model_registered|release_criteria_failed)"'
+  echo "$logs" | grep '"event": "feedback_labels_loaded"' | head -1 \
+    | python3 -c 'import json,sys
+line = sys.stdin.readline()
+if not line:
+    print("no feedback_labels_loaded event: the job did not reach the evaluation"); sys.exit(1)
+sys.exit(0 if json.loads(line).get("feedback_labels", 0) >= 1 else 1)'
 }
 
 e_feedback_suspension() {
