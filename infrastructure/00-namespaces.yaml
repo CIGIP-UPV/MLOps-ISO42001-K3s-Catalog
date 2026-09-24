@@ -115,3 +115,13 @@ metadata:
     tier: enterprise
     function: helpdesk
     iso42001: 'true'
+---
+# Feedback interface: operator verdicts on predictions (CMP-12)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: feedback
+  labels:
+    tier: enterprise
+    function: human-oversight
+    iso42001: 'true'

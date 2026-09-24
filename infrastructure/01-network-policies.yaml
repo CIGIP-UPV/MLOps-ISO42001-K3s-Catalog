@@ -9,7 +9,8 @@
 #   edge -> platform (5432, data consolidation), edge -> mlops (5000, version
 #   sync), edge -> monitoring (9090 remote-write, 3100 logs), logging and
 #   falco -> monitoring (3100), mlops -> minio (9000) and platform (5432),
-#   security/helpdesk -> platform (5432), monitoring -> every namespace
+#   security/helpdesk -> platform (5432), feedback -> TimescaleDB (5432),
+#   Keycloak (8080) and MLflow (5000) pods only, monitoring -> every namespace
 #   (scraping and Grafana data sources).
 # Generated with the catalog; applied by infrastructure/install.sh.
 # =============================================================================
@@ -533,6 +534,30 @@ spec:
       protocol: TCP
     - port: 9187
       protocol: TCP
+---
+# platform: the feedback interface reaches TimescaleDB, not the service PostgreSQL
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-feedback
+  namespace: platform
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: platform-timescaledb
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: feedback
+    ports:
+    - port: 5432
+      protocol: TCP
 
 # ----------------------------------------------------------------------
 # Namespace mlops
@@ -644,6 +669,30 @@ spec:
     - namespaceSelector:
         matchLabels:
           kubernetes.io/metadata.name: kube-system
+---
+# mlops: the feedback interface reaches the MLflow registry only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-feedback
+  namespace: mlops
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: mlflow
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: feedback
+    ports:
+    - port: 5000
+      protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -1008,6 +1057,161 @@ spec:
           kubernetes.io/metadata.name: platform
     ports:
     - port: 5432
+      protocol: TCP
+---
+# security: the feedback interface reaches Keycloak only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-feedback
+  namespace: security
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: keycloak
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: feedback
+    ports:
+    - port: 8080
+      protocol: TCP
+
+# ----------------------------------------------------------------------
+# Namespace feedback
+# ----------------------------------------------------------------------
+---
+# feedback: deny everything not allowed below
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: feedback
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: feedback
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: feedback
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: feedback
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - port: 8000
+      protocol: TCP
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress
+  namespace: feedback
+  labels:
+    iso42001: 'true'
+    app.kubernetes.io/part-of: iso42001-ai-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: platform
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: platform-timescaledb
+    ports:
+    - port: 5432
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: security
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: keycloak
+    ports:
+    - port: 8080
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: mlops
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: mlflow
+    ports:
+    - port: 5000
       protocol: TCP
 
 # ----------------------------------------------------------------------

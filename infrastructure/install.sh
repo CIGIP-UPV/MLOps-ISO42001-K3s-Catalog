@@ -90,6 +90,7 @@ ns_of() {
     edge-fluent-bit) echo logging ;;
     edge-falco) echo falco ;;
     enterprise-zammad) echo helpdesk ;;
+    enterprise-feedback-interface) echo feedback ;;
     edge-*) echo edge ;;
     *) die "unknown chart $1" ;;
   esac
@@ -105,7 +106,8 @@ PHASE_edge=(edge-postgresql edge-mongodb edge-mosquitto edge-rabbitmq edge-kafka
             edge-node-red edge-fastapi-model edge-mlflow-sync edge-postgresql-sync
             edge-prometheus-agent edge-fluent-bit edge-falco)
 # shellcheck disable=SC2034
-PHASE_enterprise=(enterprise-minio-overlay enterprise-grafana-dashboards enterprise-zammad)
+PHASE_enterprise=(enterprise-minio-overlay enterprise-grafana-dashboards enterprise-zammad
+                  enterprise-feedback-interface)
 ALL_PHASES=(security data edge enterprise)
 
 chart_dir() {
@@ -203,9 +205,20 @@ secret_exists() { kubectl -n "$1" get secret "$2" >/dev/null 2>&1; }
 secret_get() { kubectl -n "$1" get secret "$2" -o "jsonpath={.data.$3}" | base64 -d; }
 ensure_secret() {
   # ensure_secret NAMESPACE NAME KEY=VALUE ...
+  # An existing Secret keeps its values; only keys it lacks (added by a later
+  # catalog version) are added.
   local ns=$1 name=$2; shift 2
   if secret_exists "$ns" "$name"; then
-    info "secret ${ns}/${name}: kept"
+    local kv key added=""
+    for kv in "$@"; do
+      key=${kv%%=*}
+      if [[ -z "$(kubectl -n "$ns" get secret "$name" -o jsonpath="{.data['${key//./\\.}']}" 2>/dev/null)" ]]; then
+        kubectl -n "$ns" patch secret "$name" --type merge \
+          -p "{\"data\":{\"${key}\":\"$(printf '%s' "${kv#*=}" | base64 | tr -d '\n')\"}}" >/dev/null
+        added="${added} ${key}"
+      fi
+    done
+    if [[ -n "$added" ]]; then info "secret ${ns}/${name}: kept, added${added}"; else info "secret ${ns}/${name}: kept"; fi
     return
   fi
   local args=() kv
@@ -227,7 +240,8 @@ create_secrets() {
     "MLFLOW_DB_PASSWORD=$(rand)" "KEYCLOAK_DB_PASSWORD=$(rand)" \
     "ZAMMAD_DB_PASSWORD=$(rand)" "GRAFANA_DB_PASSWORD=$(rand)"
   ensure_secret platform platform-timescaledb-auth \
-    "postgres-password=$(rand)" "sync-password=$(rand)" "ml-password=$(rand)" "grafana-password=$(rand)"
+    "postgres-password=$(rand)" "sync-password=$(rand)" "ml-password=$(rand)" "grafana-password=$(rand)" \
+    "feedback-password=$(rand)"
   ensure_secret minio platform-minio-root "rootUser=minio-admin" "rootPassword=$(rand)"
   ensure_secret minio platform-minio-users "mlflow=$(rand)" "loki=$(rand)"
   ensure_secret edge edge-postgresql-auth "postgres-password=$(rand)" "password=$(rand)"
@@ -257,6 +271,9 @@ create_secrets() {
   ensure_secret helpdesk enterprise-zammad-db \
     "postgresql-pass=$(secret_get platform platform-postgresql-app-passwords ZAMMAD_DB_PASSWORD)"
   ensure_secret helpdesk enterprise-zammad-redis "redis-password=$(rand)"
+  ensure_secret feedback enterprise-feedback-db \
+    "password=$(secret_get platform platform-timescaledb-auth feedback-password)"
+  ensure_secret feedback enterprise-feedback-session "secret-key=$(rand)$(rand)"
 }
 
 # -----------------------------------------------------------------------------
