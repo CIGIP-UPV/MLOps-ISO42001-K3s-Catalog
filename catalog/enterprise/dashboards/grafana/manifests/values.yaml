@@ -31,3 +31,4 @@ dashboards:
   zdm-data-drift: true          # CMP-02/11/14: consolidation, OEE, drift
   zdm-security-audit: true      # CMP-15/09: Falco, API audit, job events
   zdm-edge-predictions: true    # CMP-03: predictions and version history
+  zdm-operator-feedback: true   # CMP-12: operator verdicts and disagreement

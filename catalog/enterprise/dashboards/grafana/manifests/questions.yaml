@@ -42,3 +42,10 @@ questions:
     type: boolean
     default: true
     group: "Dashboards"
+
+  - variable: dashboards.zdm-operator-feedback
+    label: "Operator Feedback (CMP-12)"
+    description: "Verdicts recorded with enterprise-feedback-interface"
+    type: boolean
+    default: true
+    group: "Dashboards"
