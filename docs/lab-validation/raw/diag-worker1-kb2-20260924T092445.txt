@@ -1,0 +1,54 @@
+
+## host
+worker1-kb2
+jue 24 sep 2026 07:24:45 UTC
+6.8.0-138-generic
+PRETTY_NAME="Ubuntu 22.04.4 LTS"
+16
+               total       usado       libre  compartido   búf/caché  disponible
+Mem:            31Gi       936Mi        24Gi        17Mi       5,3Gi        29Gi
+Inter:         2,0Gi          0B       2,0Gi
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+/dev/nvme0n1p2   468G    24G  421G   6% /
+/dev/nvme0n1p2   468G    24G  421G   6% /
+
+## BTF (Falco modern_ebpf)
+-r--r--r-- 1 root root 6099393 sep 24 09:24 /sys/kernel/btf/vmlinux
+
+## time sync
+System clock synchronized: yes
+              NTP service: active
+
+## k3s
+k3s version v1.32.6+k3s1 (eb603acd)
+k3s: inactive
+k3s-agent: active
+
+## k3s config (filtered)
+./docs/lab-validation/diagnose-cluster.sh: línea 39: /etc/rancher/k3s/config.yaml: No existe el archivo o el directorio
+ExecStart=/usr/local/bin/k3s \
+    agent \
+	'--node-name' \
+	'worker1-kb2' \
+	'--node-label' \
+	'gpu=none' \
+	'--node-label' \
+	'hardware=pc-server' \
+	'--node-label' \
+	'arch=amd64' \
+	'--node-label' \
+	'role=worker' \
+	'--node-label' \
+	'location=cloud' \
+	'--node-label' \
+	'project=cigip' \
+
+## registries.yaml
+ls: no se puede acceder a '/etc/rancher/k3s/registries.yaml': No existe el archivo o el directorio
+
+## audit policy
+ls: no se puede acceder a '/etc/rancher/k3s/audit-policy.yaml': No existe el archivo o el directorio
+ls: no se puede acceder a '/var/log/kubernetes/audit': No existe el archivo o el directorio
+
+## cluster
+kubectl cannot reach the cluster from this node (expected on agents)
