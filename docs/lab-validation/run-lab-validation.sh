@@ -750,36 +750,49 @@ phase_trace() {
 # ===========================================================================
 NP_ENFORCED=true
 NP_CLIENT_NODE=""
+NP_SETTLE=15
 netpol_canary() {
-  # on every node, a pod behind a deny-all ingress policy must not be
-  # reachable from another namespace; otherwise that node does not enforce
-  # NetworkPolicies (each node runs its own policy controller)
-  local node ip out rc=0 i=0
-  : > "${OUT}/state/netpol-enforcing-nodes.txt"
-  kubectl create namespace lab-np-canary --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+  # per node: a pod reachable from another namespace (control) must stop being
+  # reachable once a deny-all ingress policy selects it; otherwise that node
+  # does not enforce NetworkPolicies (each node runs its own controller)
+  local node ip before after rc=0 i=0 nodes
+  : > "${OUT}/state/netpol-enforcing-nodes.txt"; : > "${OUT}/state/netpol-canary-control.txt"
+  kubectl delete namespace lab-np-canary --ignore-not-found --wait=true >/dev/null 2>&1
+  kubectl create namespace lab-np-canary >/dev/null
+  nodes=$(kubectl get nodes -o jsonpath='{.items[*].metadata.name}')
+  for node in ${nodes}; do
+    i=$((i + 1))
+    # nodeName skips the scheduler, so a NoSchedule taint does not keep it out
+    kubectl -n lab-np-canary run "canary-${i}" --image="${TOOLS_IMAGE}" --restart=Never --labels=lab-validation=test \
+      --overrides="{\"spec\": {\"nodeName\": \"${node}\"}}" \
+      --command -- sh -c 'mkdir -p /w && echo ok > /w/index.html && httpd -f -p 8080 -h /w' >/dev/null
+  done
+  kubectl -n lab-np-canary wait pod --all --for=condition=Ready --timeout=180s >/dev/null
+  sleep 5
+  probe() {
+    tmp_pod lab-np-outside "lab-np-canary-$1" "${TOOLS_IMAGE}" \
+      "if wget -q -T 5 -O /dev/null http://$2:8080/; then echo CONNECTED; else echo NOT-CONNECTED; fi" 2>&1 | tail -1
+  }
+  i=0; for node in ${nodes}; do
+    i=$((i + 1)); ip=$(kubectl -n lab-np-canary get pod "canary-${i}" -o jsonpath='{.status.podIP}')
+    echo "${node} ${ip} $(probe "c${i}" "$ip")" >> "${OUT}/state/netpol-canary-control.txt"
+  done
   kubectl apply -f - >/dev/null <<EOF
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata: {name: deny-all, namespace: lab-np-canary}
 spec: {podSelector: {}, policyTypes: [Ingress]}
 EOF
-  for node in $(kubectl get nodes -o jsonpath='{.items[*].metadata.name}'); do
-    i=$((i + 1))
-    kubectl -n lab-np-canary delete pod "canary-${i}" --ignore-not-found --wait=true >/dev/null 2>&1
-    # nodeName skips the scheduler, so a NoSchedule taint does not keep it out
-    kubectl -n lab-np-canary run "canary-${i}" --image="${TOOLS_IMAGE}" --restart=Never --labels=lab-validation=test \
-      --overrides="{\"spec\": {\"nodeName\": \"${node}\"}}" \
-      --command -- sh -c 'mkdir -p /w && echo ok > /w/index.html && httpd -f -p 8080 -h /w' >/dev/null
-    if ! kubectl -n lab-np-canary wait "pod/canary-${i}" --for=condition=Ready --timeout=180s >/dev/null; then
-      echo "${node}: canary pod not ready"; rc=1; continue
+  sleep 15
+  while read -r node ip before; do
+    after=$(probe "p${node}" "$ip")
+    echo "${node}: pod ${ip}:8080 from another namespace: without policy ${before}, with a deny-all ingress policy ${after}"
+    if [[ "$before" == CONNECTED && "$after" == NOT-CONNECTED ]]; then
+      echo "${node}" >> "${OUT}/state/netpol-enforcing-nodes.txt"
+    else
+      rc=1
     fi
-    ip=$(kubectl -n lab-np-canary get pod "canary-${i}" -o jsonpath='{.status.podIP}')
-    sleep 5
-    out=$(tmp_pod lab-np-outside "lab-np-canary-client-${i}" "${TOOLS_IMAGE}" \
-          "if wget -q -T 5 -O /dev/null http://${ip}:8080/; then echo CONNECTED; else echo BLOCKED; fi" 2>&1 | tail -1)
-    echo "${node}: client in lab-np-outside -> pod ${ip}:8080 behind a deny-all ingress policy: ${out}"
-    if [[ "$out" == *BLOCKED* ]]; then echo "${node}" >> "${OUT}/state/netpol-enforcing-nodes.txt"; else rc=1; fi
-  done
+  done < "${OUT}/state/netpol-canary-control.txt"
   kubectl delete namespace lab-np-canary --wait=false >/dev/null 2>&1
   return $rc
 }
@@ -804,8 +817,9 @@ nc_test() {
       grep -qx "$n" "${OUT}/state/netpol-enforcing-nodes.txt" 2>/dev/null || note="destination on ${n}, which does not enforce NetworkPolicies (N-CANARY); "
     done
   fi
+  # the policy controller needs a few seconds to add a new pod to its rules
   out=$(tmp_pod "$ns" "lab-np-$(echo "$tid" | tr 'A-Z' 'a-z')" "${TOOLS_IMAGE}" \
-        "if nc -z -w 5 ${host} ${port}; then echo CONNECTED; else echo BLOCKED; fi" "[]" "${NP_CLIENT_NODE}" 2>&1)
+        "sleep ${NP_SETTLE}; if nc -z -w 5 ${host} ${port}; then echo CONNECTED; else echo BLOCKED; fi" "[]" "${NP_CLIENT_NODE}" 2>&1)
   { echo "# ${tid}: ${name}"; echo "\$ nc -z -w 5 ${host} ${port}   (pod in namespace ${ns})"
     echo "client node: ${NP_CLIENT_NODE:-any}; destination node(s): ${tnode:-n/a}"; echo "${note}${out}"; } > "${OUT}/netpol/${tid}.txt"
   if [[ "$expect" == allow ]]; then echo "$out" | grep -q CONNECTED && res=PASS || res=FAIL
@@ -830,7 +844,7 @@ phase_netpol() {
   [[ -z "${NP_CLIENT_NODE}" ]] && NP_CLIENT_NODE=$(head -1 "${OUT}/state/netpol-enforcing-nodes.txt" 2>/dev/null)
   if [[ -z "${NP_CLIENT_NODE}" ]]; then
     NP_ENFORCED=false
-    log "No node enforces NetworkPolicies: N01 to N12 are recorded as SKIP (see --enable-network-policy)"
+    log "No node enforces NetworkPolicies: N01 to N13 are recorded as SKIP (see --enable-network-policy)"
   else
     log "Network test clients run on ${NP_CLIENT_NODE} (enforces NetworkPolicies)"
   fi
@@ -853,6 +867,9 @@ phase_netpol() {
       "nc -z -w 5 github.com 443 from a pod in namespace argocd" "not run: platform-argocd is not installed; the argocd namespace belongs to another deployment"
   fi
   nc_test N12 "logging -> Loki (log conduit)" logging platform-loki.monitoring.svc.cluster.local 3100 allow
+  # egress only: the destination may run on a node that does not enforce
+  # policies, so only the egress rules of mlops can block this
+  nc_test N13 "mlops -> edge PostgreSQL (no conduit; egress rule of mlops)" mlops edge-postgresql.edge.svc.cluster.local 5432 deny
   kubectl delete namespace lab-np-outside --wait=false >/dev/null
 }
 

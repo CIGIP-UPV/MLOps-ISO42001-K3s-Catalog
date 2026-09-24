@@ -18,7 +18,7 @@ so that the analysis and the report can be completed.
 | 4 | Smoke test of every chart (S01 to S20) | `smoke/` |
 | 5 | End-to-end test (E01 to E16): OPC UA simulator, gateway, ingestion, consolidation, training, MLflow, propagation to the edge, inference, metrics, induced drift, Evidently, retraining recommendation, new version at the edge, logs in Loki | `e2e/` |
 | 6 | Traceability queries per ISO/IEC 42001 clause and component, label coverage per namespace | `trace/` |
-| 7 | NetworkPolicy tests: a canary that checks that policies are enforced (N-CANARY), an Internet control (N00) and the default deny and allowed conduits (N01 to N12) | `netpol/` |
+| 7 | NetworkPolicy tests: a canary that checks that policies are enforced (N-CANARY), an Internet control (N00) and the default deny and allowed conduits (N01 to N13) | `netpol/` |
 
 Every test writes one line to `results.jsonl` (PASS, FAIL, or SKIP when a
 precondition is not met, with the reason) and `summary.md` lists them all.
@@ -37,7 +37,7 @@ into account:
 | Finding | Option or setting |
 |---------|-------------------|
 | `kb2` is a small virtual machine (4 vCPU, 8 GiB, 64 % memory in use) that runs the control plane and the Rancher agent | `--taint-control-plane kb2`: only the DaemonSets of the catalog (Falco, Fluent Bit, node-exporter) run on it |
-| K3s runs with `disable-network-policy: true`: no NetworkPolicy is enforced | `--enable-network-policy`; the N-CANARY test checks that they are enforced, otherwise N01 to N12 are SKIP |
+| K3s runs with `disable-network-policy: true`: no NetworkPolicy is enforced | `--enable-network-policy`; the N-CANARY test checks that they are enforced, otherwise N01 to N13 are SKIP |
 | `edgenode01` is the edge device; `worker1-kb2` hosts the platform and enterprise tiers | `--edge-nodes edgenode01` (the platform and enterprise pods are kept off it) |
 | An Argo CD that is not the catalog's already runs in `argocd` | `--skip-chart platform-argocd`: nothing is installed or changed in `argocd`; S15 is SKIP |
 | `edgenode01` is arm64 and the Bitnami MongoDB images are amd64 only | `--skip-chart edge-mongodb`; S18 is SKIP (MongoDB is not part of the end-to-end flow) |
@@ -173,7 +173,7 @@ a warning if it finds any; do not commit if it does.
   or the kernel lacks an ipset type, as the `tegra` kernel of `edgenode01`
   lacks `ip_set_hash_ip`). The network tests then run their clients on a node
   that enforces policies, and each result names the node of the destination;
-  if no node enforces them, N01 to N12 are SKIP.
+  if no node enforces them, N01 to N13 are SKIP.
 - **A chart failed during the installation**: the run continues with the next
   chart; the reason is in `install.jsonl` and `state/*-warning-events.txt`.
 
