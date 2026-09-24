@@ -33,6 +33,9 @@
 #                           example with Rancher): only create the platform CA
 #   --with-rancher          also install platform-rancher (never when a
 #                           Rancher server is already present)
+#   --separate-tiers        keep platform and enterprise pods (not DaemonSets)
+#                           off the edge nodes (required node affinity), for
+#                           clusters where only some nodes are edge devices
 #   --site-id ID            edge site identifier (default edge-site-01)
 #   --values-dir DIR        extra values: DIR/<chart>.yaml is passed with -f
 #   --log FILE              run log (default ./install-<timestamp>.jsonl)
@@ -57,6 +60,7 @@ TIMEOUT="15m"
 SITE_ID="edge-site-01"
 DRY_RUN=false
 USE_EXISTING_CM=false
+SEPARATE_TIERS=false
 WITH_RANCHER=false
 VALUES_DIR=""
 ONLY=()
@@ -123,6 +127,7 @@ while [[ $# -gt 0 ]]; do
     --log) RUN_LOG="$2"; shift 2 ;;
     --values-dir) VALUES_DIR="$(cd "$2" && pwd)"; shift 2 ;;
     --use-existing-cert-manager) USE_EXISTING_CM=true; shift ;;
+    --separate-tiers) SEPARATE_TIERS=true; shift ;;
     --with-rancher) WITH_RANCHER=true; shift ;;
     --dry-run) DRY_RUN=true; shift ;;
     -h|--help) sed -n '2,50p' "$0"; exit 0 ;;
@@ -247,10 +252,50 @@ create_secrets() {
 # -----------------------------------------------------------------------------
 # Base: namespaces, NetworkPolicies, Prometheus Operator CRDs, Secrets
 # -----------------------------------------------------------------------------
+skipped_namespaces() {
+  # namespaces whose charts are all skipped: the base phase leaves them alone
+  # (for example an argocd namespace that already runs another Argo CD)
+  local ns c used out="" phase var
+  for ns in $(for phase in "${ALL_PHASES[@]}"; do var="PHASE_${phase}[@]"; for c in "${!var}"; do ns_of "$c"; done; done | sort -u); do
+    used=false
+    for phase in "${ALL_PHASES[@]}"; do
+      var="PHASE_${phase}[@]"
+      for c in "${!var}"; do
+        [[ "$(ns_of "$c")" == "$ns" ]] || continue
+        skipped "$c" || used=true
+      done
+    done
+    ${used} || out="${out} ${ns}"
+  done
+  echo "${out}"
+}
+
+skipped() {
+  local x
+  if [[ ${#SKIP[@]} -gt 0 ]]; then
+    for x in "${SKIP[@]}"; do [[ "$x" == "$1" ]] && return 0; done
+  fi
+  return 1
+}
+
+apply_base_file() {
+  # kubectl apply FILE without the objects of the namespaces in $2
+  python3 - "$1" "$2" <<'PY' | kubectl apply -f -
+import sys, yaml
+path, excluded = sys.argv[1], set(sys.argv[2].split())
+docs = [d for d in yaml.safe_load_all(open(path)) if d]
+keep = [d for d in docs if not (d["metadata"].get("namespace") in excluded
+                                or (d["kind"] == "Namespace" and d["metadata"]["name"] in excluded))]
+yaml.safe_dump_all(keep, sys.stdout, sort_keys=False)
+PY
+}
+
 phase_base() {
   info "=== Base ==="
-  kubectl apply -f "${INFRA}/00-namespaces.yaml"
-  kubectl apply -f "${INFRA}/01-network-policies.yaml"
+  local excluded; excluded=$(skipped_namespaces)
+  [[ -n "${excluded// /}" ]] && info "namespaces left untouched (all their charts skipped):${excluded}"
+  apply_base_file "${INFRA}/00-namespaces.yaml" "${excluded}"
+  apply_base_file "${INFRA}/01-network-policies.yaml" "${excluded}"
   # Several charts ship ServiceMonitors: the CRDs must exist before them.
   info "Prometheus Operator CRDs (from platform-prometheus)"
   local d kps; d=$(mktemp -d)
@@ -317,7 +362,7 @@ install_chart() {
   start=$(date +%s)
   set +e
   # shellcheck disable=SC2046
-  out=$(ISO42001_CHART_DIR="$dir" helm upgrade --install "$c" "$dir" -n "$ns" --create-namespace \
+  out=$(ISO42001_CHART_DIR="$dir" ISO42001_AVOID_EDGE="${SEPARATE_TIERS}" helm upgrade --install "$c" "$dir" -n "$ns" --create-namespace \
         --wait --timeout "${TIMEOUT}" --post-renderer "${POSTRENDER}" $(extra_args "$c") 2>&1)
   rc=$?
   set -e
