@@ -1,0 +1,4 @@
+# N13: mlops -> edge PostgreSQL (no conduit; egress rule of mlops)
+$ nc -z -w 5 edge-postgresql.edge.svc.cluster.local 5432   (pod in namespace mlops)
+client node: worker1-kb2; destination node(s): edgenode01
+destination on edgenode01, which does not enforce NetworkPolicies (N-CANARY); BLOCKED

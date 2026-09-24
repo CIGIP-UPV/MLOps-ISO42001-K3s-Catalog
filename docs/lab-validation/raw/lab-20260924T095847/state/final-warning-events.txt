@@ -1,0 +1,33 @@
+NAMESPACE    LAST SEEN   TYPE      REASON                              OBJECT                                             MESSAGE
+edge         54m         Warning   UnexpectedJob                       cronjob/edge-postgresql-sync                       Saw a job that the controller did not create or forgot: e2e-sync-2
+mlops        54m         Warning   UnexpectedJob                       cronjob/platform-evidently-drift                   Saw a job that the controller did not create or forgot: e2e-drift-1
+edge         53m         Warning   UnexpectedJob                       cronjob/edge-mlflow-sync                           Saw a job that the controller did not create or forgot: e2e-vsync-2
+monitoring   51m         Warning   Unhealthy                           pod/node-exporter-prometheus-node-exporter-574fl   Readiness probe failed: Get "http://<ip-edgenode01>:9100/": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+argocd       45m         Warning   Unhealthy                           pod/argocd-repo-server-bdf78b574-m7s9g             Liveness probe failed: Get "http://10.42.2.209:8084/healthz?full=true": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+default      43m         Warning   InvalidDiskCapacity                 node/worker1-kb2                                   invalid capacity 0 on image filesystem
+mlops        43m         Warning   FailedMount                         pod/platform-evidently-drift-29837360-rlc9n        MountVolume.SetUp failed for volume "scripts" : object "mlops"/"platform-evidently-drift" not registered
+default      43m         Warning   InvalidDiskCapacity                 node/edgenode01                                    invalid capacity 0 on image filesystem
+default      43m         Warning   PossibleMemoryBackedVolumesOnDisk   node/edgenode01                                    The tmpfs noswap option is not supported. Memory-backed volumes (e.g. secrets, emptyDirs, etc.) might be swapped to disk and should no longer be considered secure.
+argocd       40m         Warning   Unhealthy                           pod/argocd-repo-server-bdf78b574-m7s9g             Liveness probe failed: Get "http://10.42.2.209:8084/healthz?full=true": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+edge         39m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837364                  Job has reached the specified backoff limit
+edge         37m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837366                  Job has reached the specified backoff limit
+edge         33m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837370                  Job has reached the specified backoff limit
+default      32m         Warning   InvalidDiskCapacity                 node/edgenode01                                    invalid capacity 0 on image filesystem
+default      32m         Warning   PossibleMemoryBackedVolumesOnDisk   node/edgenode01                                    The tmpfs noswap option is not supported. Memory-backed volumes (e.g. secrets, emptyDirs, etc.) might be swapped to disk and should no longer be considered secure.
+edge         31m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837372                  Job has reached the specified backoff limit
+edge         29m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837374                  Job has reached the specified backoff limit
+edge         27m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837376                  Job has reached the specified backoff limit
+edge         25m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837378                  Job has reached the specified backoff limit
+edge         23m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837380                  Job has reached the specified backoff limit
+edge         21m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837382                  Job has reached the specified backoff limit
+edge         19m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837384                  Job has reached the specified backoff limit
+edge         17m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837386                  Job has reached the specified backoff limit
+edge         15m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837388                  Job has reached the specified backoff limit
+edge         13m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837390                  Job has reached the specified backoff limit
+edge         11m         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837392                  Job has reached the specified backoff limit
+edge         9m19s       Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837394                  Job has reached the specified backoff limit
+edge         7m19s       Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837396                  Job has reached the specified backoff limit
+edge         5m18s       Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837398                  Job has reached the specified backoff limit
+edge         3m18s       Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837400                  Job has reached the specified backoff limit
+monitoring   2m26s       Warning   Unhealthy                           pod/node-exporter-prometheus-node-exporter-574fl   Readiness probe failed: Get "http://<ip-edgenode01>:9100/": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+edge         79s         Warning   BackoffLimitExceeded                job/edge-postgresql-sync-29837402                  Job has reached the specified backoff limit
