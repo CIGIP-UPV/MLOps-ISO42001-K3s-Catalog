@@ -105,9 +105,10 @@ Requirements found in the laboratory validation:
 The catalog was validated on a three-node K3s 1.32 cluster (control plane, amd64 worker for the platform and enterprise tiers, and an NVIDIA Jetson AGX Orin as the edge device). The report (in Spanish, for the thesis) and the raw evidence of every run are in [`docs/lab-validation/`](docs/lab-validation/):
 
 - [`INFORME_VALIDACION_LAB.md`](docs/lab-validation/INFORME_VALIDACION_LAB.md) and [`results.json`](docs/lab-validation/results.json): environment, component and deployment tables, smoke, end-to-end, traceability and network results, refinements and limitations;
+- [`ADDENDUM_CMP12.md`](docs/lab-validation/ADDENDUM_CMP12.md) and [`results_cmp12.json`](docs/lab-validation/results_cmp12.json): the feedback interface (CMP-12);
 - [`run-lab-validation.sh`](docs/lab-validation/run-lab-validation.sh) and [`LAB_RUN_INSTRUCTIONS.md`](docs/lab-validation/LAB_RUN_INSTRUCTIONS.md): the runner that installs the catalog and collects the evidence, to repeat the validation on another cluster.
 
-In short: 27 charts installed with `install.sh` without failures; 18 of 18 applicable smoke tests; 16 of 16 end-to-end steps, from an OPC UA simulator to drift-triggered retraining and the new model version served at the edge; label queries return resources for all 19 ISO/IEC 42001 clauses and 14 of the 15 components (CMP-12 has no chart); NetworkPolicy segmentation verified on the nodes that enforce it.
+In short: 27 charts installed with `install.sh` without failures; 18 of 18 applicable smoke tests; 16 of 16 end-to-end steps, from an OPC UA simulator to drift-triggered retraining and the new model version served at the edge; label queries return resources for all 19 ISO/IEC 42001 clauses and 14 of the 15 components (CMP-12 had no chart then); NetworkPolicy segmentation verified on the nodes that enforce it. The [CMP-12 addendum](docs/lab-validation/ADDENDUM_CMP12.md) validates the feedback interface afterwards (all 15 components now have a chart) and documents a fix to the consolidation when the platform node enforces NetworkPolicies.
 
 ---
 
