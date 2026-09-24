@@ -167,16 +167,19 @@ PY
 }
 
 tmp_pod() {
-  # tmp_pod NS NAME IMAGE SHELL_COMMAND [ENV_JSON]: short-lived pod, prints its log
-  local ns=$1 name=$2 image=$3 cmd=$4 env=${5:-[]} phase
+  # tmp_pod NS NAME IMAGE SHELL_COMMAND [ENV_JSON] [NODE]: short-lived pod
+  # (on NODE when given), prints its log
+  local ns=$1 name=$2 image=$3 cmd=$4 env=${5:-[]} node=${6:-} phase
   kubectl -n "$ns" delete pod "$name" --ignore-not-found --wait=true >/dev/null 2>&1
-  python3 - "$name" "$image" "$cmd" "$env" <<'PY' | kubectl -n "$ns" apply -f - >/dev/null
+  python3 - "$name" "$image" "$cmd" "$env" "$node" <<'PY' | kubectl -n "$ns" apply -f - >/dev/null
 import json, sys
-name, image, cmd, env = sys.argv[1:5]
+name, image, cmd, env, node = sys.argv[1:6]
+spec = {"restartPolicy": "Never", "terminationGracePeriodSeconds": 1,
+        "containers": [{"name": "t", "image": image, "command": ["sh", "-c", cmd], "env": json.loads(env)}]}
+if node:
+    spec["nodeName"] = node
 print(json.dumps({"apiVersion": "v1", "kind": "Pod",
-  "metadata": {"name": name, "labels": {"lab-validation": "test"}},
-  "spec": {"restartPolicy": "Never", "terminationGracePeriodSeconds": 1,
-           "containers": [{"name": "t", "image": image, "command": ["sh", "-c", cmd], "env": json.loads(env)}]}}))
+  "metadata": {"name": name, "labels": {"lab-validation": "test"}}, "spec": spec}))
 PY
   local t=0
   while :; do
@@ -746,11 +749,13 @@ phase_trace() {
 # 7. Network policies
 # ===========================================================================
 NP_ENFORCED=true
+NP_CLIENT_NODE=""
 netpol_canary() {
   # on every node, a pod behind a deny-all ingress policy must not be
   # reachable from another namespace; otherwise that node does not enforce
   # NetworkPolicies (each node runs its own policy controller)
   local node ip out rc=0 i=0
+  : > "${OUT}/state/netpol-enforcing-nodes.txt"
   kubectl create namespace lab-np-canary --dry-run=client -o yaml | kubectl apply -f - >/dev/null
   kubectl apply -f - >/dev/null <<EOF
 apiVersion: networking.k8s.io/v1
@@ -773,7 +778,7 @@ EOF
     out=$(tmp_pod lab-np-outside "lab-np-canary-client-${i}" "${TOOLS_IMAGE}" \
           "if wget -q -T 5 -O /dev/null http://${ip}:8080/; then echo CONNECTED; else echo BLOCKED; fi" 2>&1 | tail -1)
     echo "${node}: client in lab-np-outside -> pod ${ip}:8080 behind a deny-all ingress policy: ${out}"
-    [[ "$out" == *BLOCKED* ]] || rc=1
+    if [[ "$out" == *BLOCKED* ]]; then echo "${node}" >> "${OUT}/state/netpol-enforcing-nodes.txt"; else rc=1; fi
   done
   kubectl delete namespace lab-np-canary --wait=false >/dev/null 2>&1
   return $rc
@@ -787,23 +792,47 @@ nc_test() {
       "nc -z -w 5 ${host} ${port} from a pod in namespace ${ns}" "not run: this cluster does not enforce NetworkPolicies (see N-CANARY)"
     return 0
   fi
+  # the client runs on a node that enforces policies; the destination may run
+  # on one that does not (its ingress rules are then not applied)
+  local tnode="" tsvc tns note=""
+  if [[ "$host" == *.svc.cluster.local ]]; then
+    tsvc=${host%%.*}; tns=${host#*.}; tns=${tns%%.*}
+    tnode=$(kubectl -n "$tns" get endpointslice -l "kubernetes.io/service-name=${tsvc}" \
+            -o jsonpath='{.items[*].endpoints[*].nodeName}' 2>/dev/null | tr ' ' '\n' | sort -u | tr '\n' ' ')
+    tnode=${tnode% }
+    local n; for n in ${tnode}; do
+      grep -qx "$n" "${OUT}/state/netpol-enforcing-nodes.txt" 2>/dev/null || note="destination on ${n}, which does not enforce NetworkPolicies (N-CANARY); "
+    done
+  fi
   out=$(tmp_pod "$ns" "lab-np-$(echo "$tid" | tr 'A-Z' 'a-z')" "${TOOLS_IMAGE}" \
-        "if nc -z -w 5 ${host} ${port}; then echo CONNECTED; else echo BLOCKED; fi" 2>&1)
-  { echo "# ${tid}: ${name}"; echo "\$ nc -z -w 5 ${host} ${port}   (pod in namespace ${ns})"; echo "${out}"; } > "${OUT}/netpol/${tid}.txt"
+        "if nc -z -w 5 ${host} ${port}; then echo CONNECTED; else echo BLOCKED; fi" "[]" "${NP_CLIENT_NODE}" 2>&1)
+  { echo "# ${tid}: ${name}"; echo "\$ nc -z -w 5 ${host} ${port}   (pod in namespace ${ns})"
+    echo "client node: ${NP_CLIENT_NODE:-any}; destination node(s): ${tnode:-n/a}"; echo "${note}${out}"; } > "${OUT}/netpol/${tid}.txt"
   if [[ "$expect" == allow ]]; then echo "$out" | grep -q CONNECTED && res=PASS || res=FAIL
   else echo "$out" | grep -q BLOCKED && res=PASS || res=FAIL; fi
   record "$tid" netpol "${name} (expected: ${expect})" "$res" 0 "netpol/${tid}.txt" \
-    "nc -z -w 5 ${host} ${port} from a pod in namespace ${ns}" "$(echo "$out" | tail -1)"
+    "nc -z -w 5 ${host} ${port} from a pod in namespace ${ns} on ${NP_CLIENT_NODE:-any node}" "${note}$(echo "$out" | tail -1)"
 }
 
 phase_netpol() {
   log "=== 7. Network policies ==="
   kubectl get networkpolicy -A > "${OUT}/netpol/policies.txt"
   kubectl create namespace lab-np-outside --dry-run=client -o yaml | kubectl apply -f - >/dev/null
-  if ! run_test N-CANARY netpol "NetworkPolicies are enforced on every node (pod behind a deny-all policy)" netpol/N-CANARY.txt \
-       "per node: httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside" netpol_canary; then
+  run_test N-CANARY netpol "NetworkPolicies are enforced on every node (pod behind a deny-all policy)" netpol/N-CANARY.txt \
+    "per node: httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside" netpol_canary
+  # clients run on a node that enforces policies, preferably not the control plane
+  NP_CLIENT_NODE=""
+  local n
+  for n in $(cat "${OUT}/state/netpol-enforcing-nodes.txt" 2>/dev/null); do
+    kubectl get node "$n" -o jsonpath='{.metadata.labels}' | grep -q 'node-role.kubernetes.io/control-plane' && continue
+    NP_CLIENT_NODE=$n; break
+  done
+  [[ -z "${NP_CLIENT_NODE}" ]] && NP_CLIENT_NODE=$(head -1 "${OUT}/state/netpol-enforcing-nodes.txt" 2>/dev/null)
+  if [[ -z "${NP_CLIENT_NODE}" ]]; then
     NP_ENFORCED=false
-    log "NetworkPolicies are not enforced in this cluster: N01 to N12 are recorded as SKIP (see --enable-network-policy)"
+    log "No node enforces NetworkPolicies: N01 to N12 are recorded as SKIP (see --enable-network-policy)"
+  else
+    log "Network test clients run on ${NP_CLIENT_NODE} (enforces NetworkPolicies)"
   fi
   # control: without it, a "deny" towards the Internet proves nothing
   nc_test N00 "namespace outside the catalog -> Internet (control, no policy)" lab-np-outside github.com 443 allow

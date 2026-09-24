@@ -169,8 +169,11 @@ a warning if it finds any; do not commit if it does.
   is installed): the branch is not pushed or the repository is private; pass
   another public branch with `--branch`.
 - **N-CANARY fails**: NetworkPolicies are not enforced on at least one node (the
-  controller is still disabled, or that node cannot run it); the evidence says
-  which node, and N01 to N12 are then SKIP.
+  controller is still disabled, the agent was not restarted after enabling it,
+  or the kernel lacks an ipset type, as the `tegra` kernel of `edgenode01`
+  lacks `ip_set_hash_ip`). The network tests then run their clients on a node
+  that enforces policies, and each result names the node of the destination;
+  if no node enforces them, N01 to N12 are SKIP.
 - **A chart failed during the installation**: the run continues with the next
   chart; the reason is in `install.jsonl` and `state/*-warning-events.txt`.
 
