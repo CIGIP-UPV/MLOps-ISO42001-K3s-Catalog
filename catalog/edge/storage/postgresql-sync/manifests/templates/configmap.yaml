@@ -89,17 +89,18 @@ data:
     SELECT :rows_read, :rows_written, :to_id;
 
   extract-predictions.sql: |
-    COPY (SELECT id, timestamp, machine_id, model_name, model_version, score, label
+    COPY (SELECT id, timestamp, machine_id, model_name, model_version, score, label, features
             FROM predictions WHERE id > :wm ORDER BY id LIMIT :n)
       TO STDOUT WITH (FORMAT csv);
 
   load-predictions.sql: |
     CREATE TEMP TABLE stg (id BIGINT, ts TIMESTAMPTZ, machine_id TEXT, model_name TEXT,
-                           model_version TEXT, score DOUBLE PRECISION, label TEXT);
+                           model_version TEXT, score DOUBLE PRECISION, label TEXT, features JSONB);
     \copy stg FROM pstdin WITH (FORMAT csv)
     WITH ins AS (
-      INSERT INTO predictions (time, site_id, machine_id, model_name, model_version, score, label, source_id, batch_id)
-      SELECT ts, :'site', machine_id, model_name, model_version, score, label, id, :batch FROM stg
+      INSERT INTO predictions (time, site_id, machine_id, model_name, model_version, score, label, features,
+                               source_id, batch_id)
+      SELECT ts, :'site', machine_id, model_name, model_version, score, label, features, id, :batch FROM stg
       ON CONFLICT DO NOTHING RETURNING 1)
     SELECT (SELECT count(*) FROM stg) AS rows_read,
            (SELECT count(*) FROM ins) AS rows_written,
