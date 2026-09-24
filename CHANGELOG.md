@@ -5,7 +5,34 @@ All notable changes to this catalog are documented here. Versions follow
 Zenodo under the concept DOI
 [10.5281/zenodo.19882677](https://doi.org/10.5281/zenodo.19882677).
 
-## [Unreleased]
+## [2.1.1] - 2026-09-24
+
+Release metadata for 2.1.0, which was tagged without it, and the figure of
+the reference architecture. The chart sources are those of 2.1.0.
+
+### Added
+
+- Figure of the reference architecture AR-MLOps-ZDM in the README
+  (`docs/reference-architecture.png`).
+
+### Changed
+
+- The nine charts changed in 2.1.0 move to version 0.4.0:
+  `enterprise-feedback-interface`, `edge-fastapi-model`, `edge-postgresql`,
+  `edge-postgresql-sync`, `edge-mlflow-sync`, `platform-training-jobs`,
+  `platform-timescaledb`, `enterprise-keycloak` and
+  `enterprise-grafana-dashboards`. The other charts stay at 0.3.0. The code
+  validated in the laboratory as 0.3.0 (`docs/lab-validation/ADDENDUM_CMP12.md`)
+  is the code of 0.4.0.
+- `publish.py` keeps the version in each `Chart.yaml` instead of giving every
+  chart the same version.
+
+### Fixed
+
+- `CITATION.cff` and `.zenodo.json` described release 2.0.0 (30 charts) and
+  the changelog still listed the changes of 2.1.0 as unreleased.
+
+## [2.1.0] - 2026-09-24
 
 Closes the last component of the reference architecture without a chart,
 CMP-12 Feedback Interface. The catalog has 31 charts.
@@ -148,4 +175,6 @@ The report and the evidence are in `docs/lab-validation/`.
 First public versions; see the corresponding GitHub releases and Zenodo
 records.
 
+[2.1.1]: https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog/compare/v2.1.0...v2.1.1
+[2.1.0]: https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/CIGIP-UPV/MLOps-ISO42001-K3s-Catalog/compare/v1.0.1...v2.0.0

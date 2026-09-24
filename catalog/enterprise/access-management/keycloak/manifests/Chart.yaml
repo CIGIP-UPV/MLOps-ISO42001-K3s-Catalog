@@ -3,7 +3,7 @@
 apiVersion: v2
 name: enterprise-keycloak
 type: application
-version: 0.3.0
+version: 0.4.0
 appVersion: 25.0.6
 kubeVersion: '>=1.24.0-0'
 description: Identity provider with AI system realm, RBAC roles and pre-configured OIDC clients.
