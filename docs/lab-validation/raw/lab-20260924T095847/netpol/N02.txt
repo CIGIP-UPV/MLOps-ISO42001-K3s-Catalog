@@ -1,0 +1,4 @@
+# N02: edge -> MLflow (version sync conduit)
+$ nc -z -w 5 platform-mlflow.mlops.svc.cluster.local 5000   (pod in namespace edge)
+client node: worker1-kb2; destination node(s): worker1-kb2
+CONNECTED
