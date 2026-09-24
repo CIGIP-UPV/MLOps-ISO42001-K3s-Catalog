@@ -373,9 +373,12 @@ s_kafka() {
 }
 s_mosquitto() {
   tmp_pod edge lab-s04 "${MQTT_IMAGE}" '
-    mosquitto_sub -h edge-mosquitto -u nodered -P "$NR" -t lab/smoke -C 1 -W 20 > /tmp/got & s=$!
-    sleep 2; mosquitto_pub -h edge-mosquitto -u gateway -P "$GW" -t lab/smoke -m hello
-    wait $s; echo "received: $(cat /tmp/got)"
+    mosquitto_sub -h edge-mosquitto -u nodered -P "$NR" -t lab/smoke -C 1 -W 30 > /tmp/got & s=$!
+    # publish until the subscriber (possibly on another node) has received it
+    i=0; while [ $i -lt 20 ] && [ ! -s /tmp/got ]; do
+      sleep 1; mosquitto_pub -h edge-mosquitto -u gateway -P "$GW" -t lab/smoke -m hello; i=$((i + 1))
+    done
+    wait $s; echo "received: $(cat /tmp/got) (after ${i} publish attempts)"
     if mosquitto_pub -h edge-mosquitto -t lab/smoke -m anonymous 2>/dev/null; then echo "anonymous accepted"; exit 1; else echo "anonymous refused"; fi
     grep -q hello /tmp/got' \
     "$(secret_env GW edge-mosquitto-users gateway NR edge-mosquitto-users nodered)"
