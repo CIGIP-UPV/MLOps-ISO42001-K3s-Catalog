@@ -1,0 +1,19 @@
+# S21: Feedback interface health, sign-in and denied access without credentials
+$ GET /healthz; GET / and /api/predictions and POST /feedback without session; sign-in with a wrong password, without role, as operator
+user lab-operator: created
+user lab-operator: password set from the Secret, realm role operator
+user lab-supervisor: created
+user lab-supervisor: password set from the Secret, realm role production-manager
+user lab-viewer: created
+user lab-viewer: password set from the Secret, realm role data-scientist
+client feedback-interface: {'publicClient': True, 'directAccessGrantsEnabled': True, 'standardFlowEnabled': False}
+GET /healthz: 200 (expected 200)
+GET / without session: 303 http://127.0.0.1:18100/login (expected 303 to /login)
+GET /api/predictions without session: 401 (expected 401)
+POST /feedback without session: 401 (expected 401)
+sign-in with a wrong password: 401 (expected 401)
+sign-in of a user without a role of the interface (data-scientist): 403 (expected 403)
+sign-in of lab-operator (operator): 200 (expected 200)
+session: lab-operator ['operator'] can_suspend: False
+checks passed: 7/7
+(exit 0)

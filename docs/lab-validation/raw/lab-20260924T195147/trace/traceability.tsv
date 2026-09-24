@@ -1,0 +1,36 @@
+key	label	resources	command
+B.6.1.2.2	Resources: Monitoring Performance	20	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.2.2 --no-headers
+B.6.1.3.1	Resources: Access Control	14	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.1 --no-headers
+B.6.1.3.2	Resources: Version Control	6	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.2 --no-headers
+B.6.1.3.3	Resources: Human Oversight / Feedback	11	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.3 --no-headers
+B.6.1.3.4	Resources: Inventory / Registry	8	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.3.4 --no-headers
+B.6.1.4.1	Resources: Security of AI Assets	14	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.1.4.1 --no-headers
+B.6.2.3.1	Planning: System Documentation	14	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.3.1 --no-headers
+B.6.2.5.1	Planning: Deployment Plan	4	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.5.1 --no-headers
+B.6.2.6.1	Operation: Infrastructure Monitoring	27	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.1 --no-headers
+B.6.2.6.2	Operation: Model Performance	29	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.2 --no-headers
+B.6.2.6.3	Operation: KPI Assessment (OEE)	10	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.3 --no-headers
+B.6.2.6.4	Operation: Retraining / Lifecycle	32	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.4 --no-headers
+B.6.2.6.5	Operation: Update & Repair Plan	1	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.5 --no-headers
+B.6.2.6.6	Operation: Incident Communication	14	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.6 --no-headers
+B.6.2.6.7	Operation: Security Monitoring	6	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.6.7 --no-headers
+B.6.2.8.1	Operation: Logging / Audit Trail	52	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.6.2.8.1 --no-headers
+B.8.0.2.1	Continual Improvement: Roles	10	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.8.0.2.1 --no-headers
+B.8.0.4.1	Continual Improvement: Helpdesk	14	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.8.0.4.1 --no-headers
+B.8.0.5.1	Continual Improvement: Alerts	37	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/B.8.0.5.1 --no-headers
+CMP-01	Input Data Monitoring	17	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-01 --no-headers
+CMP-02	Data Stock	33	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-02 --no-headers
+CMP-03	Version Control	6	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-03 --no-headers
+CMP-04	Model	6	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-04 --no-headers
+CMP-05	Document Store	5	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-05 --no-headers
+CMP-06	Information Centre	3	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-06 --no-headers
+CMP-07	User Access & Oversight	10	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-07 --no-headers
+CMP-08	Infrastructure Technical Monitoring	20	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-08 --no-headers
+CMP-09	Logger	9	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-09 --no-headers
+CMP-10	Model Technical Performance Monitoring	32	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-10 --no-headers
+CMP-11	Goal-Oriented Monitoring	24	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-11 --no-headers
+CMP-12	Feedback Interface	3	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-12 --no-headers
+CMP-13	AI Helpdesk	14	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-13 --no-headers
+CMP-14	Retraining Recommendation	9	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-14 --no-headers
+CMP-15	Security Monitoring	20	kubectl get pods,svc,deploy,sts -A -l mlops-iso42001.cigip-upv.es/CMP-15 --no-headers
+iso42001=true	all catalog resources	143	kubectl get pods,svc,deploy,sts -A -l iso42001=true --no-headers

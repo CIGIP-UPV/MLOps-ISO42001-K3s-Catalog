@@ -1,0 +1,4 @@
+# N16: feedback -> platform service PostgreSQL (same namespace as TimescaleDB, not allowed)
+$ nc -z -w 5 platform-postgresql.platform.svc.cluster.local 5432   (pod in namespace feedback)
+client node: worker1-kb2; destination node(s): worker1-kb2
+BLOCKED

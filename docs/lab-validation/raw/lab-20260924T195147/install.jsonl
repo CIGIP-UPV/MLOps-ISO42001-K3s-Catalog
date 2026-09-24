@@ -1,0 +1,2 @@
+{"chart": "platform-timescaledb", "namespace": "platform", "start": 1790279585, "seconds": 9, "result": "ok", "pods_ready": "1/1", "message": ""}
+{"chart": "edge-postgresql-sync", "namespace": "edge", "start": 1790279595, "seconds": 1, "result": "ok", "pods_ready": "0/11", "message": ""}
