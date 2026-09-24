@@ -30,12 +30,23 @@
 # Options:
 #   --enable-audit       run infrastructure/enable-audit.sh --apply first
 #                        (needs root; restarts the k3s service)
+#   --enable-network-policy
+#                        remove disable-network-policy from the K3s server
+#                        configuration (backup kept) and restart k3s, so that
+#                        NetworkPolicies are enforced (needs root)
+#   --taint-control-plane NODE
+#                        taint NODE (NoSchedule) so that only DaemonSets of the
+#                        catalog run on the control plane
+#   --skip-chart CHART   do not install CHART (repeatable); its smoke test is
+#                        recorded as SKIP
 #   --skip-install       do not run install.sh (re-run the tests only)
 #   --force              install even if the resource estimate does not fit
 #   --no-openbao-init    do not initialise and unseal OpenBao
 #   --branch NAME        git branch that Argo CD syncs in its smoke test
 #                        (default: the branch checked out here)
-#   --edge-nodes "A B"   nodes labelled as edge (default: every node)
+#   --edge-nodes "A B"   nodes labelled as edge (default: every node); when
+#                        given, platform and enterprise pods are kept off
+#                        them (install.sh --separate-tiers)
 #   --phases "4 5"       run only these phases (4 smoke, 5 e2e, 6 trace,
 #                        7 netpol); implies --skip-install
 # =============================================================================
@@ -53,6 +64,9 @@ FORCE=false
 OPENBAO_INIT=true
 BRANCH="$(git -C "${ROOT}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo lab-validation)"
 EDGE_NODES=""
+ENABLE_NETPOL=false
+TAINT_NODE=""
+SKIP_CHARTS=""
 PHASES="1 2 3 4 5 6 7"
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -62,6 +76,9 @@ while [[ $# -gt 0 ]]; do
     --no-openbao-init) OPENBAO_INIT=false; shift ;;
     --branch) BRANCH="$2"; shift 2 ;;
     --edge-nodes) EDGE_NODES="$2"; shift 2 ;;
+    --enable-network-policy) ENABLE_NETPOL=true; shift ;;
+    --taint-control-plane) TAINT_NODE="$2"; shift 2 ;;
+    --skip-chart) SKIP_CHARTS="${SKIP_CHARTS} $2"; shift 2 ;;
     --phases) PHASES="$2"; SKIP_INSTALL=true; shift 2 ;;
     -h|--help) sed -n '2,45p' "$0"; exit 0 ;;
     *) echo "unknown option $1" >&2; exit 1 ;;
@@ -215,6 +232,7 @@ json.dump(rows, sys.stdout, indent=1)' > "${OUT}/env/nodes.json"
   kubectl get sc > "${OUT}/env/storageclasses.txt" 2>&1
   kubectl get ns > "${OUT}/env/namespaces-before.txt" 2>&1
   helm list -A > "${OUT}/env/helm-releases-before.txt" 2>&1
+  { kubectl top nodes; echo; kubectl get nodes -o custom-columns=NODE:.metadata.name,TAINTS:.spec.taints; } > "${OUT}/env/node-usage-before.txt" 2>&1
   cat "${OUT}/env/versions.txt"
   record ENV-01 environment "environment captured" PASS 0 env/versions.txt "see env/ (versions, nodes, storage classes, namespaces, releases)"
 }
@@ -229,8 +247,35 @@ label_edge() {
 }
 estimate() { python3 "${LAB}/tools/estimate_resources.py" "${ROOT}" "${OUT}/env/resource-estimate.json"; }
 
+taint_node() {
+  kubectl taint nodes "${TAINT_NODE}" node-role.kubernetes.io/control-plane=true:NoSchedule --overwrite \
+    && kubectl get node "${TAINT_NODE}" -o jsonpath='{.spec.taints}{"\n"}'
+}
+
+enable_netpol() {
+  # K3s: the embedded NetworkPolicy controller is off with disable-network-policy
+  local cfg=/etc/rancher/k3s/config.yaml
+  if [[ ! -f "$cfg" ]] || ! grep -qE '^disable-network-policy:[[:space:]]*true' "$cfg"; then
+    echo "disable-network-policy is not set in ${cfg}: nothing to change"
+    return 0
+  fi
+  cp -p "$cfg" "${cfg}.bak-$(date +%Y%m%dT%H%M%S)" || return 1
+  sed -i '/^disable-network-policy:/d' "$cfg" || return 1
+  echo "removed disable-network-policy from ${cfg} (backup kept next to it); restarting k3s"
+  systemctl restart k3s || return 1
+  wait_for 180 kubectl get --raw /readyz && echo "API server ready"
+}
+
 phase_preparation() {
   log "=== 2. Preparation ==="
+  if [[ -n "${TAINT_NODE}" ]]; then
+    run_test PREP-00 preparation "control plane reserved (NoSchedule taint on ${TAINT_NODE})" state/taint.txt \
+      "kubectl taint nodes ${TAINT_NODE} node-role.kubernetes.io/control-plane=true:NoSchedule" taint_node
+  fi
+  if ${ENABLE_NETPOL}; then
+    run_test PREP-04 preparation "K3s NetworkPolicy controller enabled" state/enable-network-policy.txt \
+      "remove disable-network-policy from /etc/rancher/k3s/config.yaml; systemctl restart k3s" enable_netpol
+  fi
   run_test PREP-01 preparation "edge label on the nodes" state/edge-label.txt \
     "kubectl label node <nodes> node-role.kubernetes.io/edge=true --overwrite" label_edge
   if ${ENABLE_AUDIT}; then
@@ -259,6 +304,9 @@ install_catalog() {
      && ! helm -n cert-manager status platform-cert-manager >/dev/null 2>&1; then
     extra="--use-existing-cert-manager"
   fi
+  local c
+  for c in ${SKIP_CHARTS}; do extra="${extra} --skip ${c}"; done
+  [[ -n "${EDGE_NODES}" ]] && extra="${extra} --separate-tiers"
   echo "extra options: ${extra:-none}"
   # shellcheck disable=SC2086
   "${ROOT}/infrastructure/install.sh" --values-dir "${LAB}/lab-values" --site-id lab-edge-01 \
@@ -271,7 +319,7 @@ install_catalog() {
 phase_install() {
   log "=== 3. Installation ==="
   run_test INST-00 installation "install.sh, all phases" state/install-summary.txt \
-    "infrastructure/install.sh --values-dir docs/lab-validation/lab-values --site-id lab-edge-01 [--use-existing-cert-manager]" install_catalog
+    "infrastructure/install.sh --values-dir docs/lab-validation/lab-values --site-id lab-edge-01 [--use-existing-cert-manager] [--skip CHART] [--separate-tiers]" install_catalog
   python3 - "${OUT}/install.jsonl" "${RESULTS}" <<'PY'
 import json, sys, os
 if os.path.exists(sys.argv[1]):
@@ -419,7 +467,15 @@ EOF
   kubectl -n platform delete secret lab-smoke-cert --ignore-not-found >/dev/null
   return $rc
 }
+require_release() {
+  # require_release NS RELEASE: the catalog release is installed
+  helm -n "$1" status "$2" >/dev/null 2>&1 && return 0
+  echo "not run: release $2 is not installed in namespace $1 (skipped in this laboratory, see the run options)"
+  return 1
+}
 s_argocd() {
+  # never create the test Application in an Argo CD that is not the catalog's
+  require_release argocd platform-argocd || return 3
   kubectl apply -f - <<EOF
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -452,6 +508,7 @@ s_timescaledb() {
 }
 s_edgepg() { psql_edge "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1"; }
 s_mongodb() {
+  require_release edge edge-mongodb || return 3
   kubectl -n edge exec deploy/edge-mongodb -c mongodb -- sh -c \
     'mongosh --quiet -u root -p "$MONGODB_ROOT_PASSWORD" --eval "db.getSiblingDB(\"edge_buffer\").getCollectionNames()"'
 }
@@ -674,9 +731,39 @@ phase_trace() {
 # ===========================================================================
 # 7. Network policies
 # ===========================================================================
+NP_ENFORCED=true
+netpol_canary() {
+  # a pod behind a deny-all ingress policy must not be reachable from another
+  # namespace; otherwise the cluster does not enforce NetworkPolicies
+  local ip out
+  kubectl create namespace lab-np-canary --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+  kubectl -n lab-np-canary delete pod canary --ignore-not-found --wait=true >/dev/null 2>&1
+  kubectl -n lab-np-canary run canary --image="${TOOLS_IMAGE}" --restart=Never --labels=lab-validation=test \
+    --command -- sh -c 'mkdir -p /w && echo ok > /w/index.html && httpd -f -p 8080 -h /w' >/dev/null
+  kubectl -n lab-np-canary wait pod/canary --for=condition=Ready --timeout=180s >/dev/null || { echo "canary pod not ready"; return 1; }
+  ip=$(kubectl -n lab-np-canary get pod canary -o jsonpath='{.status.podIP}')
+  kubectl apply -f - >/dev/null <<EOF
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: deny-all, namespace: lab-np-canary}
+spec: {podSelector: {}, policyTypes: [Ingress]}
+EOF
+  sleep 10
+  out=$(tmp_pod lab-np-outside lab-np-canary-client "${TOOLS_IMAGE}" \
+        "if wget -q -T 5 -O /dev/null http://${ip}:8080/; then echo CONNECTED; else echo BLOCKED; fi" 2>&1)
+  echo "client in lab-np-outside -> pod ${ip}:8080 behind a deny-all ingress policy: ${out}"
+  kubectl delete namespace lab-np-canary --wait=false >/dev/null 2>&1
+  echo "$out" | grep -q BLOCKED
+}
+
 nc_test() {
   # nc_test ID NAME NS HOST PORT EXPECT(allow|deny)
   local tid=$1 name=$2 ns=$3 host=$4 port=$5 expect=$6 out res
+  if ! ${NP_ENFORCED}; then
+    record "$tid" netpol "${name} (expected: ${expect})" SKIP 0 "netpol/N-CANARY.txt" \
+      "nc -z -w 5 ${host} ${port} from a pod in namespace ${ns}" "not run: this cluster does not enforce NetworkPolicies (see N-CANARY)"
+    return 0
+  fi
   out=$(tmp_pod "$ns" "lab-np-$(echo "$tid" | tr 'A-Z' 'a-z')" "${TOOLS_IMAGE}" \
         "if nc -z -w 5 ${host} ${port}; then echo CONNECTED; else echo BLOCKED; fi" 2>&1)
   { echo "# ${tid}: ${name}"; echo "\$ nc -z -w 5 ${host} ${port}   (pod in namespace ${ns})"; echo "${out}"; } > "${OUT}/netpol/${tid}.txt"
@@ -690,6 +777,11 @@ phase_netpol() {
   log "=== 7. Network policies ==="
   kubectl get networkpolicy -A > "${OUT}/netpol/policies.txt"
   kubectl create namespace lab-np-outside --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+  if ! run_test N-CANARY netpol "NetworkPolicies are enforced (pod behind a deny-all policy)" netpol/N-CANARY.txt \
+       "httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside" netpol_canary; then
+    NP_ENFORCED=false
+    log "NetworkPolicies are not enforced in this cluster: N01 to N12 are recorded as SKIP (see --enable-network-policy)"
+  fi
   # control: without it, a "deny" towards the Internet proves nothing
   nc_test N00 "namespace outside the catalog -> Internet (control, no policy)" lab-np-outside github.com 443 allow
   nc_test N01 "edge -> platform TimescaleDB (consolidation conduit)" edge platform-timescaledb.platform.svc.cluster.local 5432 allow
@@ -702,7 +794,12 @@ phase_netpol() {
   nc_test N08 "mlops -> Internet (default deny egress)" mlops github.com 443 deny
   nc_test N09 "security -> platform PostgreSQL (Keycloak database)" security platform-postgresql.platform.svc.cluster.local 5432 allow
   nc_test N10 "helpdesk -> MLflow (no conduit)" helpdesk platform-mlflow.mlops.svc.cluster.local 5000 deny
-  nc_test N11 "argocd -> Internet 443 (Git and Helm repositories)" argocd github.com 443 allow
+  if helm -n argocd status platform-argocd >/dev/null 2>&1; then
+    nc_test N11 "argocd -> Internet 443 (Git and Helm repositories)" argocd github.com 443 allow
+  else
+    record N11 netpol "argocd -> Internet 443 (Git and Helm repositories) (expected: allow)" SKIP 0 "" \
+      "nc -z -w 5 github.com 443 from a pod in namespace argocd" "not run: platform-argocd is not installed; the argocd namespace belongs to another deployment"
+  fi
   nc_test N12 "logging -> Loki (log conduit)" logging platform-loki.monitoring.svc.cluster.local 3100 allow
   kubectl delete namespace lab-np-outside --wait=false >/dev/null
 }

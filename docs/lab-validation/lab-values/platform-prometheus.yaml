@@ -1,0 +1,8 @@
+# Laboratory setting: the lab cluster already runs another node-exporter
+# (release node-exporter in the monitoring namespace) on host port 9100, so
+# the one of the catalog listens on 9101.
+kube-prometheus-stack:
+  prometheus-node-exporter:
+    service:
+      port: 9101
+      targetPort: 9101
