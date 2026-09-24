@@ -82,6 +82,8 @@ META_PREFIX = "mlops-iso42001.cigip-upv.es"
 
 # ───────────────────────────────────────────────────────── Chart metadata ──
 
+# Version given to a chart whose Chart.yaml has none; every other chart keeps
+# the version in its Chart.yaml, raised by hand when the chart changes.
 NEW_CHART_VERSION = "0.3.0"
 
 # Each entry:
@@ -702,7 +704,7 @@ def enrich_chart_yaml(chart_name: str) -> tuple[pathlib.Path, dict]:
     data["apiVersion"] = "v2"
     data["name"] = chart_name
     data["type"] = data.get("type", "application")
-    data["version"] = NEW_CHART_VERSION
+    data["version"] = str(data.get("version", NEW_CHART_VERSION))
     data["appVersion"] = str(data.get("appVersion", "1.0.0"))
     data["kubeVersion"] = ">=1.24.0-0"
     data["description"] = meta["tagline"]
@@ -827,7 +829,7 @@ def package_chart(chart_name: str) -> pathlib.Path:
         if chart.get("dependencies"):
             run(["helm", "dependency", "build", str(dst)])
         run(["helm", "package", str(dst), "-d", str(CHARTS_DIR)])
-    return CHARTS_DIR / f"{chart_name}-{NEW_CHART_VERSION}.tgz"
+    return CHARTS_DIR / f"{chart_name}-{chart['version']}.tgz"
 
 
 def file_digest(path: pathlib.Path) -> str:
@@ -1040,7 +1042,8 @@ def main() -> int:
         sync_values(chart_name)
         ensure_readme(chart_name)
         enriched.append((chart_name, data))
-    print(f"[chart]   enriched {len(enriched)} charts (version {NEW_CHART_VERSION}), label blocks synced")
+    versions = ", ".join(sorted({d["version"] for _, d in enriched}))
+    print(f"[chart]   enriched {len(enriched)} charts (versions {versions}), label blocks synced")
 
     if args.update_locks or not args.skip_package:
         ensure_repos()
@@ -1051,7 +1054,7 @@ def main() -> int:
 
     packaged: list[tuple[str, dict, pathlib.Path]] = []
     for chart_name, data in enriched:
-        tgz = CHARTS_DIR / f"{chart_name}-{NEW_CHART_VERSION}.tgz"
+        tgz = CHARTS_DIR / f"{chart_name}-{data['version']}.tgz"
         if not args.skip_package:
             tgz = package_chart(chart_name)
         packaged.append((chart_name, data, tgz))

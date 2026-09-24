@@ -3,7 +3,7 @@
 apiVersion: v2
 name: edge-postgresql-sync
 type: application
-version: 0.3.0
+version: 0.4.0
 appVersion: 1.0.0
 kubeVersion: '>=1.24.0-0'
 description: Incremental, watermark-based consolidation of the edge data stock into the platform data stock, with a batch

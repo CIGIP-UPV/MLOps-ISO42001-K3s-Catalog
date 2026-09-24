@@ -3,7 +3,7 @@
 apiVersion: v2
 name: enterprise-feedback-interface
 type: application
-version: 0.3.0
+version: 0.4.0
 appVersion: 1.0.0
 kubeVersion: '>=1.24.0-0'
 description: Operators approve, correct or reject model predictions; supervisors can suspend the version in service. The verdicts

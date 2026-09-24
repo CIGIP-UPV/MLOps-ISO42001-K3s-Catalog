@@ -3,7 +3,7 @@
 apiVersion: v2
 name: platform-timescaledb
 type: application
-version: 0.3.0
+version: 0.4.0
 appVersion: 2.17.2-pg16
 kubeVersion: '>=1.24.0-0'
 description: Platform time-series data stock with hypertables for consolidated sensor readings, predictions and OEE KPIs.
