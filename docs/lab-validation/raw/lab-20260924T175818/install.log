@@ -1,0 +1,158 @@
+[17:58:19] INFO  MLOps ISO/IEC 42001 K3s catalog installer (source: local, phases: base security data edge enterprise)
+WARNING: version difference between client (1.29) and server (1.32) exceeds the supported minor version skew of +/-1
+[17:58:19] INFO  Cluster: v1.32.6+k3s1, helm v3.19.0+g3d8990f
+[17:58:20] INFO  Edge nodes (node-role.kubernetes.io/edge=true): 1
+[17:58:20] INFO  Helm repositories of the chart dependencies
+[17:58:45] INFO  === Base ===
+[17:58:46] INFO  namespaces left untouched (all their charts skipped): argocd
+namespace/edge unchanged
+namespace/logging unchanged
+namespace/falco unchanged
+namespace/platform unchanged
+namespace/mlops unchanged
+namespace/minio unchanged
+namespace/monitoring unchanged
+namespace/openbao unchanged
+namespace/security unchanged
+namespace/helpdesk unchanged
+namespace/feedback created
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-platform unchanged
+networkpolicy.networking.k8s.io/allow-node-red-npm unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-loki unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-egress unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress-databases unchanged
+networkpolicy.networking.k8s.io/allow-ingress-feedback created
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-ingress-feedback created
+networkpolicy.networking.k8s.io/allow-egress unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-scrape unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-db unchanged
+networkpolicy.networking.k8s.io/allow-ingress-feedback created
+networkpolicy.networking.k8s.io/default-deny created
+networkpolicy.networking.k8s.io/allow-dns created
+networkpolicy.networking.k8s.io/allow-same-namespace created
+networkpolicy.networking.k8s.io/allow-ingress created
+networkpolicy.networking.k8s.io/allow-egress created
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-db unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+[17:58:52] INFO  Prometheus Operator CRDs (from platform-prometheus)
+[17:59:25] INFO  === Secrets ===
+[17:59:25] INFO  secret platform/platform-postgresql-auth: kept
+[17:59:26] INFO  secret platform/platform-postgresql-app-passwords: kept
+[17:59:27] INFO  secret platform/platform-timescaledb-auth: kept, added feedback-password
+[17:59:28] INFO  secret minio/platform-minio-root: kept
+[17:59:28] INFO  secret minio/platform-minio-users: kept
+[17:59:29] INFO  secret edge/edge-postgresql-auth: kept
+[17:59:30] INFO  secret mlops/platform-mlflow-db: kept
+[17:59:30] INFO  secret mlops/platform-mlflow-s3: kept
+[17:59:31] INFO  secret mlops/platform-ml-db: kept
+[17:59:31] INFO  secret monitoring/platform-loki-s3: kept
+[17:59:32] INFO  secret monitoring/platform-grafana-admin: kept
+[17:59:32] INFO  secret monitoring/platform-grafana-datasources: kept
+[17:59:33] INFO  secret edge/edge-postgresql-sync-target: kept
+[17:59:33] INFO  secret edge/edge-mongodb-auth: kept
+[17:59:34] INFO  secret edge/edge-mosquitto-users: kept
+[17:59:34] INFO  secret edge/edge-rabbitmq-auth: kept
+[17:59:35] INFO  secret edge/edge-node-red-admin: kept
+[17:59:35] INFO  secret security/enterprise-keycloak-admin: kept
+[17:59:35] INFO  secret security/enterprise-keycloak-db: kept
+[17:59:36] INFO  secret helpdesk/enterprise-zammad-db: kept
+[17:59:36] INFO  secret helpdesk/enterprise-zammad-redis: kept
+[17:59:37] INFO  secret feedback/enterprise-feedback-db: created
+[17:59:37] INFO  secret feedback/enterprise-feedback-session: created
+[17:59:37] INFO  === Phase security ===
+[17:59:37] INFO  skip platform-cert-manager (not selected)
+[17:59:37] INFO  skip platform-openbao (not selected)
+[17:59:37] INFO  skip platform-postgresql (not selected)
+[18:00:02] INFO  install enterprise-keycloak -> security
+[18:00:31] INFO    ok in 29 s, pods ready 1/1
+[18:00:31] INFO  skip platform-argocd (not selected)
+[18:00:31] INFO  === Phase data ===
+[18:00:31] INFO  skip platform-minio (not selected)
+[18:00:31] INFO  install platform-timescaledb -> platform
+[18:01:18] INFO    ok in 47 s, pods ready 1/1
+[18:01:18] INFO  skip platform-prometheus (not selected)
+[18:01:18] INFO  skip platform-loki (not selected)
+[18:01:18] INFO  skip platform-grafana (not selected)
+[18:01:18] INFO  skip platform-mlflow (not selected)
+[18:01:18] INFO  install platform-training-jobs -> mlops
+[18:01:19] INFO    ok in 1 s, pods ready 0/0
+[18:01:20] INFO  skip platform-evidently (not selected)
+[18:01:20] INFO  === Phase edge ===
+[18:01:46] INFO  install edge-postgresql -> edge
+[18:01:53] INFO    ok in 7 s, pods ready 1/1
+[18:01:53] INFO  skip edge-mongodb (not selected)
+[18:01:53] INFO  skip edge-mosquitto (not selected)
+[18:01:53] INFO  skip edge-rabbitmq (not selected)
+[18:01:53] INFO  skip edge-kafka (not selected)
+[18:01:53] INFO  skip edge-opc-ua-gateway (not selected)
+[18:01:53] INFO  skip edge-node-red (not selected)
+[18:01:53] INFO  install edge-fastapi-model -> edge
+[18:02:08] INFO    ok in 15 s, pods ready 1/1
+[18:02:08] INFO  install edge-mlflow-sync -> edge
+[18:02:09] INFO    ok in 1 s, pods ready 1/1
+[18:02:10] INFO  install edge-postgresql-sync -> edge
+[18:02:11] INFO    ok in 0 s, pods ready 0/12
+[18:02:11] INFO  skip edge-prometheus-agent (not selected)
+[18:02:11] INFO  skip edge-fluent-bit (not selected)
+[18:02:11] INFO  skip edge-falco (not selected)
+[18:02:11] INFO  === Phase enterprise ===
+[18:02:11] INFO  skip enterprise-minio-overlay (not selected)
+[18:02:11] INFO  install enterprise-grafana-dashboards -> monitoring
+[18:02:12] INFO    ok in 1 s, pods ready 0/0
+[18:02:12] INFO  skip enterprise-zammad (not selected)
+[18:02:12] INFO  install enterprise-feedback-interface -> feedback
+[18:02:28] INFO    ok in 16 s, pods ready 1/1
+[18:02:28] INFO  === Done. Run log: /root/MLOps-ISO42001-K3s-Catalog/docs/lab-validation/raw/lab-20260924T175818/install.jsonl ===
+  ok     enterprise-keycloak              security         29 s  pods 1/1
+  ok     platform-timescaledb             platform         47 s  pods 1/1
+  ok     platform-training-jobs           mlops             1 s  pods 0/0
+  ok     edge-postgresql                  edge              7 s  pods 1/1
+  ok     edge-fastapi-model               edge             15 s  pods 1/1
+  ok     edge-mlflow-sync                 edge              1 s  pods 1/1
+  ok     edge-postgresql-sync             edge              0 s  pods 0/12
+  ok     enterprise-grafana-dashboards    monitoring        1 s  pods 0/0
+  ok     enterprise-feedback-interface    feedback         16 s  pods 1/1
+  9/9 releases ok

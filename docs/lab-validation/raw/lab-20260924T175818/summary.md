@@ -1,0 +1,18 @@
+# Laboratory validation run: summary
+
+| Phase | PASS | FAIL | SKIP |
+|---|---|---|---|
+| installation | 10 | 0 | 0 |
+
+| ID | Result | Name | Seconds | Evidence | Detail |
+|---|---|---|---|---|---|
+| INST-00 | PASS | install.sh, all phases | 250 | state/install-summary.txt |   ok     edge-postgresql-sync             edge              0 s  pods 0/12   ok     enterprise-grafana-dashboards    monitoring        1 s   |
+| INST-01 | PASS | enterprise-keycloak | 29 | install.jsonl | pods ready 1/1 |
+| INST-02 | PASS | platform-timescaledb | 47 | install.jsonl | pods ready 1/1 |
+| INST-03 | PASS | platform-training-jobs | 1 | install.jsonl | pods ready 0/0 |
+| INST-04 | PASS | edge-postgresql | 7 | install.jsonl | pods ready 1/1 |
+| INST-05 | PASS | edge-fastapi-model | 15 | install.jsonl | pods ready 1/1 |
+| INST-06 | PASS | edge-mlflow-sync | 1 | install.jsonl | pods ready 1/1 |
+| INST-07 | PASS | edge-postgresql-sync | 0 | install.jsonl | pods ready 0/12 |
+| INST-08 | PASS | enterprise-grafana-dashboards | 1 | install.jsonl | pods ready 0/0 |
+| INST-09 | PASS | enterprise-feedback-interface | 16 | install.jsonl | pods ready 1/1 |

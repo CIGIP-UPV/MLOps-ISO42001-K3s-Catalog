@@ -1,0 +1,33 @@
+NAMESPACE    LAST SEEN   TYPE      REASON                 OBJECT                                             MESSAGE
+edge         59m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837822                  Job has reached the specified backoff limit
+edge         57m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837824                  Job has reached the specified backoff limit
+edge         55m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837826                  Job has reached the specified backoff limit
+edge         53m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837828                  Job has reached the specified backoff limit
+edge         51m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837830                  Job has reached the specified backoff limit
+edge         49m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837832                  Job has reached the specified backoff limit
+edge         47m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837834                  Job has reached the specified backoff limit
+edge         45m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837836                  Job has reached the specified backoff limit
+edge         43m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837838                  Job has reached the specified backoff limit
+edge         41m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837840                  Job has reached the specified backoff limit
+edge         39m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837842                  Job has reached the specified backoff limit
+edge         37m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837844                  Job has reached the specified backoff limit
+edge         35m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837846                  Job has reached the specified backoff limit
+edge         33m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837848                  Job has reached the specified backoff limit
+edge         31m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837850                  Job has reached the specified backoff limit
+edge         29m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837852                  Job has reached the specified backoff limit
+edge         27m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837854                  Job has reached the specified backoff limit
+edge         25m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837856                  Job has reached the specified backoff limit
+edge         23m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837858                  Job has reached the specified backoff limit
+monitoring   22m         Warning   Unhealthy              pod/node-exporter-prometheus-node-exporter-574fl   Readiness probe failed: Get "http://<ip-edgenode01>:9100/": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+edge         21m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837860                  Job has reached the specified backoff limit
+edge         19m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837862                  Job has reached the specified backoff limit
+edge         17m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837864                  Job has reached the specified backoff limit
+edge         15m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837866                  Job has reached the specified backoff limit
+edge         13m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837868                  Job has reached the specified backoff limit
+edge         11m         Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837870                  Job has reached the specified backoff limit
+edge         9m54s       Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837872                  Job has reached the specified backoff limit
+edge         7m54s       Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837874                  Job has reached the specified backoff limit
+edge         5m54s       Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837876                  Job has reached the specified backoff limit
+edge         3m55s       Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837878                  Job has reached the specified backoff limit
+edge         114s        Warning   BackoffLimitExceeded   job/edge-postgresql-sync-29837880                  Job has reached the specified backoff limit
+edge         35s         Warning   Unhealthy              pod/edge-fastapi-model-6567b8cb94-6sj66            Readiness probe failed: Get "http://10.42.2.233:8000/health": dial tcp 10.42.2.233:8000: connect: connection refused
