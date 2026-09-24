@@ -1,0 +1,4 @@
+# N15: feedback -> edge PostgreSQL (no conduit into the edge)
+$ nc -z -w 5 edge-postgresql.edge.svc.cluster.local 5432   (pod in namespace feedback)
+client node: worker1-kb2; destination node(s): edgenode01
+destination on edgenode01, which does not enforce NetworkPolicies (N-CANARY); BLOCKED

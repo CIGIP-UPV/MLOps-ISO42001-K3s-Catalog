@@ -56,6 +56,12 @@ training:
 releaseCriteria:
   minSamples: 200
   maxAnomalyRate: 0.10
+  # Operator feedback as labels (feedback interface, CMP-12): with at least
+  # minLabels labelled predictions, the candidate must agree with the
+  # operators on at least minAgreement of them (0 = report only).
+  feedback:
+    minLabels: 20
+    minAgreement: 0
 
 # Platform data stock, read-only role "ml".
 dataStock:

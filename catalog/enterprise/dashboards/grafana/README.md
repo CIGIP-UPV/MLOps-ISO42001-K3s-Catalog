@@ -24,13 +24,14 @@ The chart provisions the enterprise dashboards of the AI system into the Grafana
 | ZDM: Input Data Monitoring (CMP-01) | Prometheus | Age of the last valid sample, valid and rejected samples by reason, OPC UA reads and errors |
 | ZDM: Data Consolidation, KPIs and Drift | TimescaleDB | Rows consolidated from the edge, last batches, OEE by machine, drift share and retraining recommendations |
 | ZDM: Security Events and Audit Trail | Loki | Falco events, Kubernetes API changes (audit log), events of the MLOps jobs |
-| ZDM: Edge Predictions and Model Versions | Edge PostgreSQL | Predictions, version history of edge version control, operator feedback records |
+| ZDM: Edge Predictions and Model Versions | Edge PostgreSQL | Predictions, version history of edge version control, operator feedback records of the edge table |
+| ZDM: Operator Feedback (CMP-12) | TimescaleDB | Disagreement rate by model version, verdicts over time, corrected labels and latest verdicts from the feedback interface |
 
 The Kubernetes infrastructure dashboards (CMP-08) come from `platform-prometheus` (kube-prometheus-stack), which renders them for the same sidecar.
 
 Earlier versions of this chart shipped an empty `values.yaml` and a ConfigMap with pseudo-JSON descriptions of dashboards that Grafana could not import.
 
-The *Operator Feedback* records are shown read-only. The catalog provides no interface that captures operator feedback (Feedback Interface, CMP-12), so that component remains a documented gap.
+Operator verdicts are captured by [`enterprise-feedback-interface`](../../human-oversight/feedback-interface/README.md) (Feedback Interface, CMP-12) and stored in the platform data stock, which the *Operator Feedback* dashboard reads; the edge `operator_feedback` table is kept for a future interface at the plant.
 
 ---
 

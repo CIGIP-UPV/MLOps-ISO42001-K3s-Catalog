@@ -8,7 +8,9 @@ sections.py (sections 8 to 10). Usage, from the repository root:
 
     python3 docs/lab-validation/tools/build_report.py
 """
-import importlib.util, json, pathlib, re, sys
+from __future__ import annotations
+
+import json, pathlib, re, subprocess, sys, types
 
 import yaml
 
@@ -17,15 +19,26 @@ LAB = ROOT / "docs/lab-validation"
 TEXTS = LAB / "tools/report"
 
 
+# The report describes the catalog that was validated (release 2.0.0), not
+# the current working tree: its metadata is read from that commit.
+CATALOG_REF = "c326de3"   # tip of lab-validation, released as v2.0.0
+
+
+def git_show(path: str) -> str | None:
+    r = subprocess.run(["git", "-C", str(ROOT), "show", f"{CATALOG_REF}:{path}"], capture_output=True, text=True)
+    return r.stdout if r.returncode == 0 else None
+
+
 def catalog():
-    spec = importlib.util.spec_from_file_location("publish", ROOT / "infrastructure/publish.py")
-    p = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(p)
+    p = types.ModuleType("publish_validated")
+    p.__file__ = str(ROOT / "infrastructure/publish.py")
+    exec(compile(git_show("infrastructure/publish.py"), "publish.py", "exec"), p.__dict__)
     out = {"iso_reqs": p.ISO_REQS, "components": p.COMPONENTS, "charts": []}
     for name, m in p.CHART_META.items():
-        d = ROOT / m["path"] / "manifests"
-        ch = yaml.safe_load((d / "Chart.yaml").read_text())
-        lock = yaml.safe_load((d / "Chart.lock").read_text()) if (d / "Chart.lock").exists() else {}
+        d = m["path"] + "/manifests"
+        ch = yaml.safe_load(git_show(f"{d}/Chart.yaml"))
+        lock_text = git_show(f"{d}/Chart.lock")
+        lock = yaml.safe_load(lock_text) if lock_text else {}
         deps = [{"name": x["name"], "version": x["version"], "repository": x.get("repository", "")}
                 for x in (lock or {}).get("dependencies", [])]
         out["charts"].append({

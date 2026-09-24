@@ -1,0 +1,93 @@
+{{- if .Values.schemaJob.enabled }}
+# =============================================================================
+# Schema Job: applies files/schema.sql to the running database after every
+# install and upgrade (the init script only runs on the first start), so that
+# existing installations receive new tables, columns, roles and grants
+# without restarting the database. Idempotent.
+# =============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "platform-timescaledb.fullname" . }}-schema
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "platform-timescaledb.labels" . | nindent 4 }}
+    app.kubernetes.io/component: schema
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "platform-timescaledb.labels" . | nindent 8 }}
+        app.kubernetes.io/component: schema
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 70
+      containers:
+        - name: schema
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -eu
+              i=0
+              until pg_isready -h "$PGHOST" -p "$PGPORT" -U postgres -q; do
+                i=$((i + 1)); [ "$i" -ge 60 ] && { echo "database not ready"; exit 1; }; sleep 5
+              done
+              psql -v ON_ERROR_STOP=1 -h "$PGHOST" -p "$PGPORT" -U postgres -d "$PGDATABASE" -q \
+                -v sync_pw="$SYNC_DB_PASSWORD" -v ml_pw="$ML_DB_PASSWORD" \
+                -v grafana_pw="$GRAFANA_DB_PASSWORD" -v feedback_pw="$FEEDBACK_DB_PASSWORD" \
+                -f /schema/schema.sql
+              echo '{"component": "platform-timescaledb", "event": "schema_applied"}'
+          env:
+            - name: PGHOST
+              value: {{ include "platform-timescaledb.fullname" . }}
+            - name: PGPORT
+              value: {{ .Values.service.port | quote }}
+            - name: PGDATABASE
+              value: {{ .Values.database | quote }}
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.auth.existingSecret }}, key: postgres-password }
+            - name: SYNC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.auth.existingSecret }}, key: sync-password }
+            - name: ML_DB_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.auth.existingSecret }}, key: ml-password }
+            - name: GRAFANA_DB_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.auth.existingSecret }}, key: grafana-password }
+            - name: FEEDBACK_DB_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.auth.existingSecret }}, key: feedback-password }
+          volumeMounts:
+            - name: schema
+              mountPath: /schema
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+      volumes:
+        - name: schema
+          configMap:
+            name: {{ include "platform-timescaledb.fullname" . }}-schema
+      # Helm hooks are not post-rendered, so install.sh --separate-tiers does not
+      # reach this Job: prefer the nodes that are not edge devices here.
+      affinity:
+        {{- if .Values.affinity }}
+        {{- toYaml .Values.affinity | nindent 8 }}
+        {{- else }}
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - { key: node-role.kubernetes.io/edge, operator: DoesNotExist }
+        {{- end }}
+{{- end }}

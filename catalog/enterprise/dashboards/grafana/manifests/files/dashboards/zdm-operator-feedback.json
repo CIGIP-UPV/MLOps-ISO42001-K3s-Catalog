@@ -1,0 +1,199 @@
+{
+  "uid": "zdm-operator-feedback",
+  "title": "ZDM: Operator Feedback (CMP-12)",
+  "description": "Operator verdicts on model predictions from the feedback interface (platform data stock): disagreement by model version, used as labels by the training job.",
+  "tags": [
+    "iso42001",
+    "zdm",
+    "feedback",
+    "human-oversight",
+    "cmp-12"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "timezone": "browser",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Operator disagreement rate by model version",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "timescaledb"
+      },
+      "description": "Share of incorrect verdicts among the predictions judged correct or incorrect (latest verdict of each prediction).",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (site_id, prediction_source_id, prediction_time)\n         site_id, prediction_source_id, prediction_time, model_version, verdict, created_at\n    FROM operator_feedback\n   ORDER BY site_id, prediction_source_id, prediction_time, created_at DESC)\nSELECT model_version,\n       count(*) FILTER (WHERE verdict = 'incorrect') AS incorrect,\n       count(*) FILTER (WHERE verdict = 'correct') AS correct,\n       count(*) FILTER (WHERE verdict = 'uncertain') AS uncertain,\n       round((count(*) FILTER (WHERE verdict = 'incorrect'))::numeric\n             / NULLIF(count(*) FILTER (WHERE verdict <> 'uncertain'), 0), 4) AS disagreement_rate\n  FROM latest\n GROUP BY model_version ORDER BY model_version::int DESC",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "timescaledb"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 2,
+      "title": "Verdicts over time",
+      "type": "timeseries",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "timescaledb"
+      },
+      "description": "All verdicts recorded, including superseded ones.",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT time_bucket('1 hour', created_at) AS time, verdict AS metric, count(*) AS value\n  FROM operator_feedback WHERE $__timeFilter(created_at)\n GROUP BY 1, 2 ORDER BY 1",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "timescaledb"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 3,
+      "title": "Predictions reviewed by operators",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "timescaledb"
+      },
+      "description": "",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (site_id, prediction_source_id, prediction_time)\n         site_id, prediction_source_id, prediction_time, model_version, verdict, created_at\n    FROM operator_feedback\n   ORDER BY site_id, prediction_source_id, prediction_time, created_at DESC)\nSELECT count(*) AS reviewed FROM latest",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "timescaledb"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 4,
+      "title": "Corrected labels",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "timescaledb"
+      },
+      "description": "",
+      "gridPos": {
+        "x": 6,
+        "y": 8,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT count(*) AS corrected FROM operator_feedback WHERE corrected_label IS NOT NULL",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "timescaledb"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 5,
+      "title": "Latest verdicts",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "timescaledb"
+      },
+      "description": "",
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 10
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT created_at, operator, machine_id, model_version, predicted_label, verdict, corrected_label, comment\n  FROM operator_feedback ORDER BY id DESC LIMIT 20",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "timescaledb"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    }
+  ]
+}

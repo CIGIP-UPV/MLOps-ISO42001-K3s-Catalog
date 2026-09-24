@@ -5,6 +5,56 @@ All notable changes to this catalog are documented here. Versions follow
 Zenodo under the concept DOI
 [10.5281/zenodo.19882677](https://doi.org/10.5281/zenodo.19882677).
 
+## [Unreleased]
+
+Closes the last component of the reference architecture without a chart,
+CMP-12 Feedback Interface. The catalog has 31 charts.
+
+### Added
+
+- `enterprise-feedback-interface` (namespace `feedback`): operators review the
+  predictions consolidated in the platform and record a verdict (correct,
+  incorrect or uncertain, with an optional corrected label and comment);
+  supervisors can suspend and resume the model version in service. Sign-in
+  against the `ai-system` realm of Keycloak (new client `feedback-interface`),
+  signed session cookie with CSRF protection, JSON events and Prometheus
+  metrics; unit tests in `tests/`.
+- Schema Jobs in `platform-timescaledb` and `edge-postgresql`: an idempotent
+  schema is applied after every install and upgrade, so existing
+  installations receive new tables, columns, roles and grants without
+  restarting the database.
+- Operator Feedback dashboard (disagreement rate by model version).
+- Laboratory phase 8 of `run-lab-validation.sh` and its option `--only-chart`.
+
+### Changed
+
+- `edge-fastapi-model` records the input features of every prediction, and
+  `edge-postgresql-sync` consolidates them (column `predictions.features`).
+- `platform-training-jobs` uses the latest operator verdict of each
+  prediction as a label: it measures the agreement of the candidate with the
+  operators and, with `releaseCriteria.feedback`, can block its release.
+- `edge-mlflow-sync` propagates the `suspended` tag of the served version;
+  `edge-fastapi-model` answers 503 while it is suspended.
+- `install.sh` adds the keys a new version needs to Secrets that already
+  exist, keeping their values.
+
+### Fixed
+
+- The Keycloak realm import listed `openid` as a default client scope of the
+  Grafana client; that scope does not exist, and every upgrade of
+  `enterprise-keycloak` failed in its import Job.
+- `edge-mlflow-sync` runs are serialised with a lock on the model store: a
+  run started by hand during a scheduled run downloaded the same version into
+  the same directory and one of them failed.
+- `edge-postgresql-sync` waits up to a minute for both databases before the
+  first batch. With NetworkPolicies enforced by the K3s controller, a new pod
+  is refused for a moment until the controller of the destination node
+  includes it, so every run failed in the laboratory once the platform node
+  enforced policies. A failed step now stops the table instead of running the
+  next statements with empty values.
+- The TimescaleDB schema Job prefers the nodes without the edge label (Helm
+  hooks are not reached by `install.sh --separate-tiers`).
+
 ## [2.0.0] - 2026-09-24
 
 Validated release: the catalog was installed and tested end to end on a

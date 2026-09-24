@@ -3,7 +3,8 @@ Edge model server (FastAPI).
 
 Serves the model version that edge-mlflow-sync has placed in MODEL_DIR:
 
-    MODEL_DIR/current.json            {"name", "version", "path", "features", ...}
+    MODEL_DIR/current.json            {"name", "version", "path", "features",
+                                       "suspended", ...}
     MODEL_DIR/versions/<name>-v<N>/   MLflow pyfunc model
 
 Endpoints
@@ -14,8 +15,13 @@ Endpoints
     POST /predict   score one or more samples
     GET  /metrics   Prometheus metrics (ISO/IEC 42001 B.6.2.6.2)
 
-Every prediction is logged to the edge data stock (table predictions) and as
-a JSON line on stdout (Fluent Bit -> Loki, B.6.2.8.1).
+Every prediction is logged to the edge data stock (table predictions, with
+its input features so that operator feedback can later be used as labels)
+and as a JSON line on stdout (Fluent Bit -> Loki, B.6.2.8.1).
+
+A version suspended by a supervisor in the feedback interface (MLflow tag
+suspended=true, propagated by edge-mlflow-sync into current.json) is not
+served: /predict answers 503 until it is resumed (human oversight, B.6.1.3.3).
 """
 
 from __future__ import annotations
@@ -53,6 +59,7 @@ SCORE = Histogram("model_anomaly_score", "Anomaly score of served predictions",
                   buckets=(-0.2, -0.1, 0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8))
 INFO = Gauge("model_info", "Model version currently served (value 1)", ["model_name", "model_version"])
 LOADED = Gauge("model_loaded", "1 when a model is loaded")
+SUSPENDED = Gauge("model_suspended", "1 when the loaded version is suspended by a supervisor")
 RELOADS = Counter("model_reloads_total", "Model reload attempts", ["result"])
 LOG_ERRORS = Counter("model_prediction_log_errors_total", "Predictions not written to the edge data stock")
 
@@ -76,6 +83,7 @@ def load_current() -> dict:
         INFO.remove(old["name"], str(old["version"]))
     INFO.labels(meta["name"], str(meta["version"])).set(1)
     LOADED.set(1)
+    SUSPENDED.set(1 if meta.get("suspended") else 0)
     return meta
 
 
@@ -115,7 +123,8 @@ def version() -> dict:
     return {"model_name": meta["name"], "model_version": str(meta["version"]),
             "alias": meta.get("alias"), "run_id": meta.get("run_id"),
             "features": meta.get("features"), "sha256": meta.get("sha256"),
-            "loaded_at": state["loaded_at"]}
+            "loaded_at": state["loaded_at"], "suspended": bool(meta.get("suspended")),
+            "suspension": meta.get("suspension")}
 
 
 @app.post("/reload")
@@ -127,8 +136,10 @@ def reload() -> dict:
         emit("model_reload_failed", error=str(exc))
         raise HTTPException(status_code=500, detail=f"reload failed: {exc}") from exc
     RELOADS.labels("ok").inc()
-    emit("model_reloaded", model_name=meta["name"], model_version=str(meta["version"]))
-    return {"model_name": meta["name"], "model_version": str(meta["version"])}
+    emit("model_reloaded", model_name=meta["name"], model_version=str(meta["version"]),
+         suspended=bool(meta.get("suspended")))
+    return {"model_name": meta["name"], "model_version": str(meta["version"]),
+            "suspended": bool(meta.get("suspended"))}
 
 
 class Sample(BaseModel):
@@ -147,8 +158,8 @@ def log_predictions(rows: list[tuple]) -> None:
                               password=os.environ["DB_PASSWORD"], connect_timeout=3) as conn:
             with conn.cursor() as cur:
                 cur.executemany(
-                    "INSERT INTO predictions (machine_id, model_name, model_version, input_hash, score, label)"
-                    " VALUES (%s, %s, %s, %s, %s, %s)", rows)
+                    "INSERT INTO predictions (machine_id, model_name, model_version, input_hash, score, label,"
+                    " features) VALUES (%s, %s, %s, %s, %s, %s, %s)", rows)
     except Exception as exc:  # noqa: BLE001
         LOG_ERRORS.inc()
         emit("prediction_log_failed", error=str(exc))
@@ -161,6 +172,9 @@ def predict(req: PredictRequest) -> dict:
     if model is None:
         raise HTTPException(status_code=503, detail="no model loaded")
     name, ver = meta["name"], str(meta["version"])
+    if meta.get("suspended"):
+        PREDICTIONS.labels(name, ver, "suspended").inc(len(req.samples))
+        raise HTTPException(status_code=503, detail=f"model version {ver} is suspended by a supervisor")
     features = meta["features"]
     missing = sorted({f for s in req.samples for f in features if f not in s.features})
     if missing:
@@ -180,7 +194,8 @@ def predict(req: PredictRequest) -> dict:
         SCORE.labels(name, ver).observe(score)
         digest = hashlib.sha256(json.dumps(s.features, sort_keys=True).encode()).hexdigest()[:16]
         results.append({"machine_id": s.machine_id, "score": score, "label": label})
-        rows.append((s.machine_id, name, ver, digest, score, label))
+        used = {f: s.features[f] for f in features}
+        rows.append((s.machine_id, name, ver, digest, score, label, json.dumps(used, sort_keys=True)))
         emit("prediction", machine_id=s.machine_id, model_name=name, model_version=ver,
              input_hash=digest, score=round(score, 6), label=label)
     if LOG_PREDICTIONS:

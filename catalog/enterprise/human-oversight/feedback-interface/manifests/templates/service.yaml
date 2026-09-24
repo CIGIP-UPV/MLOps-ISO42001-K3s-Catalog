@@ -1,0 +1,36 @@
+# =============================================================================
+# Feedback interface Service (and ServiceMonitor for its metrics)
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "enterprise-feedback-interface.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "enterprise-feedback-interface.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+  selector:
+    {{- include "enterprise-feedback-interface.selectorLabels" . | nindent 4 }}
+{{- if and .Values.metrics.serviceMonitor.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "enterprise-feedback-interface.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "enterprise-feedback-interface.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "enterprise-feedback-interface.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+{{- end }}

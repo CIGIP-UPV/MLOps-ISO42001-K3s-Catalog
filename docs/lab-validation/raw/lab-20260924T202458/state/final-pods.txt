@@ -1,0 +1,96 @@
+NAMESPACE             NAME                                                        READY   STATUS      RESTARTS         AGE     IP               NODE          NOMINATED NODE   READINESS GATES
+argocd                argocd-application-controller-0                             1/1     Running     0                13d     10.42.2.210      edgenode01    <none>           <none>
+argocd                argocd-applicationset-controller-59b85c945c-mpv4d           1/1     Running     0                13d     10.42.2.211      edgenode01    <none>           <none>
+argocd                argocd-dex-server-7bb57f7bdd-xszqs                          1/1     Running     0                13d     10.42.1.140      worker1-kb2   <none>           <none>
+argocd                argocd-notifications-controller-6649448fc9-rqkcp            1/1     Running     0                13d     10.42.1.143      worker1-kb2   <none>           <none>
+argocd                argocd-redis-789b7d6769-b77z7                               1/1     Running     0                13d     10.42.1.141      worker1-kb2   <none>           <none>
+argocd                argocd-repo-server-bdf78b574-m7s9g                          1/1     Running     1 (12h ago)      13d     10.42.2.209      edgenode01    <none>           <none>
+argocd                argocd-server-699496df6b-krg2m                              1/1     Running     0                13d     10.42.1.142      worker1-kb2   <none>           <none>
+cattle-fleet-system   fleet-agent-5b4d94b689-ss2rr                                1/1     Running     0                24d     10.42.0.93       kb2           <none>           <none>
+cattle-system         cattle-cluster-agent-59d74f9965-5t4ht                       1/1     Running     0                12h     10.42.1.145      worker1-kb2   <none>           <none>
+cattle-system         cattle-cluster-agent-59d74f9965-g6fc2                       1/1     Running     0                12h     10.42.2.212      edgenode01    <none>           <none>
+cattle-system         rancher-webhook-77d56cc9c-gpmjk                             1/1     Running     0                24d     10.42.0.90       kb2           <none>           <none>
+cattle-system         system-upgrade-controller-86f54779d-ccmr8                   1/1     Running     11 (17d ago)     143d    10.42.1.138      worker1-kb2   <none>           <none>
+cert-manager          platform-cert-manager-77dff97f47-sbr4z                      1/1     Running     0                12h     10.42.1.147      worker1-kb2   <none>           <none>
+cert-manager          platform-cert-manager-cainjector-6c77457fcd-7p8ps           1/1     Running     0                12h     10.42.1.146      worker1-kb2   <none>           <none>
+cert-manager          platform-cert-manager-webhook-66896cc9fd-w6kdd              1/1     Running     0                12h     10.42.1.148      worker1-kb2   <none>           <none>
+default               gpu-operator-57688bd4f7-k9wgv                               1/1     Running     2 (12h ago)      24d     10.42.0.94       kb2           <none>           <none>
+default               nvidia-gpu-node-feature-discovery-gc-7d87657f65-4ts6d       1/1     Running     1 (17d ago)      24d     10.42.0.95       kb2           <none>           <none>
+default               nvidia-gpu-node-feature-discovery-master-5457f48cf7-t92zt   1/1     Running     1046 (12h ago)   24d     10.42.0.96       kb2           <none>           <none>
+default               nvidia-gpu-node-feature-discovery-worker-bq8q4              1/1     Running     8136 (12h ago)   178d    10.42.2.198      edgenode01    <none>           <none>
+default               nvidia-gpu-node-feature-discovery-worker-dqmxq              1/1     Running     9645 (17d ago)   178d    10.42.1.137      worker1-kb2   <none>           <none>
+default               nvidia-gpu-node-feature-discovery-worker-gvp84              1/1     Running     1047 (12h ago)   178d    10.42.0.83       kb2           <none>           <none>
+edge                  e2e-fb-sync-1-n5vjg                                         0/1     Completed   0                4m32s   10.42.2.56       edgenode01    <none>           <none>
+edge                  edge-fastapi-model-6f74f58764-c2q6j                         1/1     Running     0                147m    10.42.2.187      edgenode01    <none>           <none>
+edge                  edge-kafka-controller-0                                     2/2     Running     0                11h     10.42.2.227      edgenode01    <none>           <none>
+edge                  edge-mlflow-sync-29838027-plz65                             0/1     Completed   0                2m38s   10.42.2.62       edgenode01    <none>           <none>
+edge                  edge-mlflow-sync-29838028-lkslr                             0/1     Completed   0                98s     10.42.2.71       edgenode01    <none>           <none>
+edge                  edge-mlflow-sync-29838029-hqffd                             0/1     Completed   0                38s     10.42.2.72       edgenode01    <none>           <none>
+edge                  edge-mosquitto-66596b94f9-gqnkg                             1/1     Running     0                11h     10.42.2.223      edgenode01    <none>           <none>
+edge                  edge-node-red-54fcdc8d-24vcr                                1/1     Running     0                11h     10.42.2.231      edgenode01    <none>           <none>
+edge                  edge-opc-ua-gateway-57556df8b7-zhpq7                        1/1     Running     0                11h     10.42.2.229      edgenode01    <none>           <none>
+edge                  edge-postgresql-0                                           2/2     Running     0                11h     10.42.2.221      edgenode01    <none>           <none>
+edge                  edge-postgresql-schema-hgwz7                                0/1     Completed   0                147m    10.42.2.186      edgenode01    <none>           <none>
+edge                  edge-postgresql-sync-29837988-bxspf                         0/1     Error       0                41m     10.42.2.233      edgenode01    <none>           <none>
+edge                  edge-postgresql-sync-29837988-x9pfx                         0/1     Error       0                41m     10.42.2.234      edgenode01    <none>           <none>
+edge                  edge-postgresql-sync-29837988-zhbwg                         0/1     Error       0                41m     10.42.2.235      edgenode01    <none>           <none>
+edge                  edge-postgresql-sync-29837990-67ztz                         0/1     Error       0                39m     10.42.2.239      edgenode01    <none>           <none>
+edge                  edge-postgresql-sync-29837990-t2qqc                         0/1     Error       0                39m     10.42.2.242      edgenode01    <none>           <none>
+edge                  edge-postgresql-sync-29837990-tmb2m                         0/1     Error       0                39m     10.42.2.240      edgenode01    <none>           <none>
+edge                  edge-postgresql-sync-29837992-kggbg                         0/1     Error       0                37m     10.42.2.245      edgenode01    <none>           <none>
+edge                  edge-postgresql-sync-29837992-mpxqh                         0/1     Error       0                37m     10.42.2.248      edgenode01    <none>           <none>
+edge                  edge-postgresql-sync-29837992-z26z5                         0/1     Error       0                37m     10.42.2.247      edgenode01    <none>           <none>
+edge                  edge-postgresql-sync-29838026-7php6                         0/1     Completed   0                3m38s   10.42.2.59       edgenode01    <none>           <none>
+edge                  edge-postgresql-sync-29838028-4mxzk                         0/1     Completed   0                98s     10.42.2.70       edgenode01    <none>           <none>
+edge                  edge-prometheus-agent-server-79487cfbd-dhh2p                2/2     Running     0                11h     10.42.2.237      edgenode01    <none>           <none>
+edge                  edge-rabbitmq-7f56f7dd6-6kbhx                               1/1     Running     0                11h     10.42.2.225      edgenode01    <none>           <none>
+edge                  opc-plc-56b8ff4778-tm5cn                                    1/1     Running     0                12h     10.42.2.215      edgenode01    <none>           <none>
+falco                 edge-falco-5zc82                                            2/2     Running     0                11h     10.42.0.98       kb2           <none>           <none>
+falco                 edge-falco-falcosidekick-6ff5d75b9f-jws26                   1/1     Running     0                11h     10.42.2.243      edgenode01    <none>           <none>
+falco                 edge-falco-falcosidekick-6ff5d75b9f-pgj8z                   1/1     Running     0                11h     10.42.1.177      worker1-kb2   <none>           <none>
+falco                 edge-falco-wzjb8                                            2/2     Running     0                11h     10.42.1.176      worker1-kb2   <none>           <none>
+feedback              enterprise-feedback-interface-68dd7dbdbb-m7xsk              1/1     Running     0                147m    10.42.1.22       worker1-kb2   <none>           <none>
+helpdesk              enterprise-zammad-0                                         4/4     Running     0                11h     10.42.1.185      worker1-kb2   <none>           <none>
+helpdesk              enterprise-zammad-elasticsearch-master-0                    1/1     Running     0                11h     10.42.1.183      worker1-kb2   <none>           <none>
+helpdesk              enterprise-zammad-memcached-8656bfb979-86s8f                1/1     Running     0                11h     10.42.1.179      worker1-kb2   <none>           <none>
+helpdesk              enterprise-zammad-redis-master-0                            1/1     Running     0                11h     10.42.1.184      worker1-kb2   <none>           <none>
+kube-system           coredns-5688667fd4-6qtwm                                    1/1     Running     12 (17d ago)     246d    10.42.0.85       kb2           <none>           <none>
+kube-system           local-path-provisioner-774c6665dc-x4rkv                     1/1     Running     13 (17d ago)     246d    10.42.0.91       kb2           <none>           <none>
+kube-system           metrics-server-6f4c6675d5-5hgjc                             1/1     Running     12 (17d ago)     246d    10.42.0.84       kb2           <none>           <none>
+kube-system           nvidia-device-plugin-daemonset-fnfx9                        1/1     Running     3 (17d ago)      178d    10.42.1.139      worker1-kb2   <none>           <none>
+kube-system           nvidia-device-plugin-daemonset-nr4xh                        1/1     Running     6 (51d ago)      178d    10.42.2.203      edgenode01    <none>           <none>
+kube-system           nvidia-device-plugin-daemonset-xmt72                        1/1     Running     9 (17d ago)      178d    10.42.0.88       kb2           <none>           <none>
+logging               edge-fluent-bit-mtwv2                                       1/1     Running     0                11h     10.42.2.241      edgenode01    <none>           <none>
+logging               edge-fluent-bit-qjz66                                       1/1     Running     0                11h     10.42.1.175      worker1-kb2   <none>           <none>
+logging               edge-fluent-bit-xgvs4                                       1/1     Running     0                11h     10.42.0.97       kb2           <none>           <none>
+minio                 enterprise-minio-overlay-provision-1-x9nqm                  0/1     Completed   0                11h     <none>           worker1-kb2   <none>           <none>
+minio                 platform-minio-64b5c4576c-cthgw                             1/1     Running     0                12h     10.42.1.157      worker1-kb2   <none>           <none>
+mlops                 e2e-fb-train-1-jf5fq                                        0/1     Completed   0                4m18s   10.42.1.50       worker1-kb2   <none>           <none>
+mlops                 e2e-train-1-vv2r6                                           0/1     Completed   0                11h     <none>           worker1-kb2   <none>           <none>
+mlops                 platform-evidently-67f84d8789-btsfq                         1/1     Running     0                11h     10.42.1.172      worker1-kb2   <none>           <none>
+mlops                 platform-evidently-drift-29838000-xhdwb                     0/1     Completed   0                29m     10.42.1.39       worker1-kb2   <none>           <none>
+mlops                 platform-evidently-drift-29838010-ttq66                     0/1     Completed   0                19m     10.42.1.41       worker1-kb2   <none>           <none>
+mlops                 platform-evidently-drift-29838020-2j6kr                     0/1     Completed   0                9m38s   10.42.1.48       worker1-kb2   <none>           <none>
+mlops                 platform-mlflow-9795b4dd6-9q4k9                             1/1     Running     0                11h     10.42.1.170      worker1-kb2   <none>           <none>
+mlops                 platform-training-jobs-drift-4jvzb-28479                    0/1     Completed   0                29m     10.42.1.40       worker1-kb2   <none>           <none>
+mlops                 platform-training-jobs-drift-d8rts-c4gqs                    0/1     Completed   0                11h     <none>           worker1-kb2   <none>           <none>
+mlops                 platform-training-jobs-drift-rxjj9-jjmkv                    0/1     Completed   0                10h     10.42.1.196      worker1-kb2   <none>           <none>
+mlops                 platform-training-jobs-drift-tr4qv-6k7qf                    0/1     Completed   0                9m29s   10.42.1.49       worker1-kb2   <none>           <none>
+monitoring            alertmanager-platform-prometheus-alertmanager-0             2/2     Running     0                11h     10.42.1.164      worker1-kb2   <none>           <none>
+monitoring            kube-state-metrics-bc786b5fb-zlrfr                          1/1     Running     0                24d     10.42.0.87       kb2           <none>           <none>
+monitoring            node-exporter-prometheus-node-exporter-574fl                1/1     Running     2396 (17d ago)   78d     <ip-edgenode01>   edgenode01    <none>           <none>
+monitoring            node-exporter-prometheus-node-exporter-6prxf                1/1     Running     2276 (17d ago)   78d     <ip-worker1-kb2>   worker1-kb2   <none>           <none>
+monitoring            node-exporter-prometheus-node-exporter-6pxz9                1/1     Running     1754 (17d ago)   78d     <ip-kb2>    kb2           <none>           <none>
+monitoring            platform-grafana-64cfc97f9b-jfddk                           2/2     Running     0                11h     10.42.1.169      worker1-kb2   <none>           <none>
+monitoring            platform-loki-0                                             1/1     Running     0                11h     10.42.1.167      worker1-kb2   <none>           <none>
+monitoring            platform-prometheus-kube-state-metrics-5855888b5d-c84bb     1/1     Running     0                11h     10.42.1.160      worker1-kb2   <none>           <none>
+monitoring            platform-prometheus-operator-7dc64d87dc-6dcpr               1/1     Running     0                11h     10.42.1.161      worker1-kb2   <none>           <none>
+monitoring            platform-prometheus-prometheus-node-exporter-k7n47          1/1     Running     0                11h     <ip-edgenode01>   edgenode01    <none>           <none>
+monitoring            platform-prometheus-prometheus-node-exporter-nfxd4          1/1     Running     0                11h     <ip-kb2>    kb2           <none>           <none>
+monitoring            platform-prometheus-prometheus-node-exporter-zftbg          1/1     Running     0                11h     <ip-worker1-kb2>   worker1-kb2   <none>           <none>
+monitoring            prometheus-platform-prometheus-prometheus-0                 2/2     Running     0                11h     10.42.1.165      worker1-kb2   <none>           <none>
+openbao               platform-openbao-0                                          1/1     Running     0                12h     10.42.1.152      worker1-kb2   <none>           <none>
+platform              platform-postgresql-0                                       2/2     Running     0                12h     10.42.1.154      worker1-kb2   <none>           <none>
+platform              platform-timescaledb-0                                      2/2     Running     0                12h     10.42.1.159      worker1-kb2   <none>           <none>
+platform              platform-timescaledb-schema-cnd9q                           0/1     Completed   0                36m     10.42.1.36       worker1-kb2   <none>           <none>
+security              enterprise-keycloak-0                                       1/1     Running     0                12h     10.42.1.155      worker1-kb2   <none>           <none>

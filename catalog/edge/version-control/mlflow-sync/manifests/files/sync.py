@@ -11,7 +11,15 @@ Each run:
      to reload and verifies that /version reports the new version;
   5. records every step in the edge data stock (table model_versions) and as
      JSON lines on stdout, and keeps the last KEEP_VERSIONS versions on disk
-     so that a previous version can be restored (rollback).
+     so that a previous version can be restored (rollback);
+  6. propagates the suspension of a version: when a supervisor sets the tag
+     suspended=true on it in the registry (feedback interface, human
+     oversight), current.json is marked as suspended and the edge model server
+     stops serving it; removing the tag resumes it.
+
+Runs are serialised with a lock on the model store: a run started by hand
+while the CronJob is running waits for it instead of downloading the same
+version into the same place.
 
 Environment: MLFLOW_TRACKING_URI, MODEL_NAME, MODEL_ALIAS, MODEL_DIR,
 SERVER_URL, KEEP_VERSIONS, DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD.
@@ -19,6 +27,7 @@ SERVER_URL, KEEP_VERSIONS, DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD.
 
 from __future__ import annotations
 
+import fcntl
 import hashlib
 import json
 import os
@@ -75,7 +84,36 @@ def prune(name: str, keep: int, active: str) -> None:
             emit("version_pruned", path=str(old))
 
 
+def suspension(mv) -> dict | None:
+    """Suspension recorded on the model version in the registry, or None."""
+    tags = dict(mv.tags or {})
+    if tags.get("suspended") != "true":
+        return None
+    return {"by": tags.get("suspended_by"), "at": tags.get("suspended_at"), "reason": tags.get("suspended_reason")}
+
+
+def switch(meta: dict, server: str) -> tuple[bool, dict]:
+    """Write current.json atomically, reload the server and read back /version."""
+    staged = MODEL_DIR / ".current.json.tmp"
+    staged.write_text(json.dumps(meta, indent=1))
+    os.replace(staged, CURRENT)  # atomic switch
+    try:
+        requests.post(f"{server}/reload", timeout=60).raise_for_status()
+        served = requests.get(f"{server}/version", timeout=10).json()
+    except Exception as exc:  # noqa: BLE001
+        return False, {"error": str(exc)[:300]}
+    ok = (str(served.get("model_version")) == str(meta["version"])
+          and bool(served.get("suspended")) == bool(meta.get("suspended")))
+    return ok, served
+
+
 def main() -> int:
+    with open(MODEL_DIR / ".sync.lock", "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)  # released when the file is closed
+        return sync()
+
+
+def sync() -> int:
     name, alias = ENV.get("MODEL_NAME", "zdm-anomaly-detector"), ENV.get("MODEL_ALIAS", "champion")
     server = ENV.get("SERVER_URL", "http://edge-fastapi-model:8000").rstrip("/")
     keep = int(ENV.get("KEEP_VERSIONS", "3"))
@@ -87,16 +125,27 @@ def main() -> int:
         emit("no_promoted_version", model_name=name, alias=alias, error=str(exc)[:300])
         return 0
 
+    susp = suspension(mv)
     current = json.loads(CURRENT.read_text()) if CURRENT.exists() else {}
     if str(current.get("version")) == str(mv.version) and current.get("name") == name:
-        emit("up_to_date", model_name=name, model_version=mv.version, alias=alias)
+        if bool(current.get("suspended")) == bool(susp):
+            emit("up_to_date", model_name=name, model_version=mv.version, alias=alias, suspended=bool(susp))
+            return 0
+        # Same version, suspension changed: switch the flag without touching the model files.
+        ok, served = switch({**current, "suspended": bool(susp), "suspension": susp}, server)
+        status, event = ("suspended", "version_suspended") if susp else ("resumed", "version_resumed")
+        if not ok:
+            emit("suspension_switch_failed", model_name=name, model_version=mv.version, served=served)
+            return 1
+        record(name, str(mv.version), status, alias, mv.run_id, mv.source, current.get("sha256"))
+        emit(event, model_name=name, model_version=mv.version, alias=alias, **({"suspension": susp} if susp else {}))
         return 0
 
     emit("new_version_detected", model_name=name, model_version=mv.version, alias=alias,
          previous_version=current.get("version"), run_id=mv.run_id)
     target = f"versions/{name}-v{mv.version}"
     dest = MODEL_DIR / target
-    tmp = MODEL_DIR / "versions" / f".{name}-v{mv.version}.tmp"
+    tmp = MODEL_DIR / "versions" / f".{name}-v{mv.version}.{os.getpid()}.tmp"
     try:
         shutil.rmtree(tmp, ignore_errors=True)
         tmp.mkdir(parents=True)
@@ -118,17 +167,10 @@ def main() -> int:
 
     meta = {"name": name, "version": str(mv.version), "alias": alias, "run_id": mv.run_id,
             "source": mv.source, "path": target, "features": features, "sha256": sha,
+            "suspended": bool(susp), "suspension": susp,
             "synced_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     staged = MODEL_DIR / ".current.json.tmp"
-    staged.write_text(json.dumps(meta, indent=1))
-    os.replace(staged, CURRENT)  # atomic switch
-
-    try:
-        requests.post(f"{server}/reload", timeout=60).raise_for_status()
-        served = requests.get(f"{server}/version", timeout=10).json()
-        ok = str(served.get("model_version")) == str(mv.version)
-    except Exception as exc:  # noqa: BLE001
-        ok, served = False, {"error": str(exc)[:300]}
+    ok, served = switch(meta, server)
     if not ok:
         # Keep the previous version active so the edge keeps serving it.
         if current:

@@ -1,0 +1,14 @@
+# E20: Suspension of the version in service stops it at the edge; resuming restores it
+$ POST /models/suspend (lab-supervisor); job edge-mlflow-sync; POST edge /predict (503); POST /models/resume; job; /predict (200)
+served before: version 4 suspended False
+sign-in of lab-supervisor (production-manager): 200
+suspend: {"model_name":"zdm-anomaly-detector","model_version":"4","suspended":true}
+{"ts": "2026-09-24T20:09:24Z", "component": "edge-mlflow-sync", "event": "version_suspended", "model_name": "zdm-anomaly-detector", "model_version": "4", "alias": "champion", "suspension": {"by": "lab-supervisor", "at": "2026-09-24T20:09:12Z", "reason": "laboratory validation E20"}}
+served after suspending: version 4 suspended True {'by': 'lab-supervisor', 'at': '2026-09-24T20:09:12Z', 'reason': 'laboratory validation E20'}
+POST /predict while suspended: 503 (expected 503)
+resume: {"model_name":"zdm-anomaly-detector","model_version":"4","suspended":false}
+{"ts": "2026-09-24T20:09:42Z", "component": "edge-mlflow-sync", "event": "version_resumed", "model_name": "zdm-anomaly-detector", "model_version": "4", "alias": "champion"}
+POST /predict after resuming: 200 (expected 200)
+2026-09-24 20:09:42.505075+00 | 4 | resumed
+2026-09-24 20:09:24.324843+00 | 4 | suspended
+(exit 0)

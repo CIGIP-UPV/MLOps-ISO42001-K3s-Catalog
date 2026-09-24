@@ -18,6 +18,12 @@ iso42001Labels: &iso42001Labels
   mlops-iso42001.cigip-upv.es/CMP-02: "true"
 # END iso42001-labels
 
+# Brings an existing database up to date after every install and upgrade
+# (templates/job-schema.yaml); the initdb scripts only run on the first start.
+schemaJob:
+  enabled: true
+  image: public.ecr.aws/docker/library/postgres:16-alpine   # Docker official image, public ECR mirror
+
 postgresql:
   # The chart's own NetworkPolicy allows ingress from every namespace and all
   # egress; policies add up, so it would open the default deny of the catalog

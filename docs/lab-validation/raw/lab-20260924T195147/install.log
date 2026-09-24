@@ -1,0 +1,144 @@
+[19:51:47] INFO  MLOps ISO/IEC 42001 K3s catalog installer (source: local, phases: base security data edge enterprise)
+WARNING: version difference between client (1.29) and server (1.32) exceeds the supported minor version skew of +/-1
+[19:51:48] INFO  Cluster: v1.32.6+k3s1, helm v3.19.0+g3d8990f
+[19:51:49] INFO  Edge nodes (node-role.kubernetes.io/edge=true): 1
+[19:51:49] INFO  Helm repositories of the chart dependencies
+[19:52:13] INFO  === Base ===
+[19:52:13] INFO  namespaces left untouched (all their charts skipped): argocd
+namespace/edge unchanged
+namespace/logging unchanged
+namespace/falco unchanged
+namespace/platform unchanged
+namespace/mlops unchanged
+namespace/minio unchanged
+namespace/monitoring unchanged
+namespace/openbao unchanged
+namespace/security unchanged
+namespace/helpdesk unchanged
+namespace/feedback unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-platform unchanged
+networkpolicy.networking.k8s.io/allow-node-red-npm unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-loki unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-egress unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress-databases unchanged
+networkpolicy.networking.k8s.io/allow-ingress-feedback unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-ingress-feedback unchanged
+networkpolicy.networking.k8s.io/allow-egress unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-scrape unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-db unchanged
+networkpolicy.networking.k8s.io/allow-ingress-feedback unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+networkpolicy.networking.k8s.io/allow-egress-db unchanged
+networkpolicy.networking.k8s.io/default-deny unchanged
+networkpolicy.networking.k8s.io/allow-dns unchanged
+networkpolicy.networking.k8s.io/allow-same-namespace unchanged
+networkpolicy.networking.k8s.io/allow-kube-apiserver unchanged
+networkpolicy.networking.k8s.io/allow-ingress unchanged
+[19:52:20] INFO  Prometheus Operator CRDs (from platform-prometheus)
+[19:52:54] INFO  === Secrets ===
+[19:52:54] INFO  secret platform/platform-postgresql-auth: kept
+[19:52:55] INFO  secret platform/platform-postgresql-app-passwords: kept
+[19:52:56] INFO  secret platform/platform-timescaledb-auth: kept
+[19:52:56] INFO  secret minio/platform-minio-root: kept
+[19:52:57] INFO  secret minio/platform-minio-users: kept
+[19:52:57] INFO  secret edge/edge-postgresql-auth: kept
+[19:52:58] INFO  secret mlops/platform-mlflow-db: kept
+[19:52:58] INFO  secret mlops/platform-mlflow-s3: kept
+[19:52:59] INFO  secret mlops/platform-ml-db: kept
+[19:52:59] INFO  secret monitoring/platform-loki-s3: kept
+[19:53:00] INFO  secret monitoring/platform-grafana-admin: kept
+[19:53:00] INFO  secret monitoring/platform-grafana-datasources: kept
+[19:53:01] INFO  secret edge/edge-postgresql-sync-target: kept
+[19:53:01] INFO  secret edge/edge-mongodb-auth: kept
+[19:53:02] INFO  secret edge/edge-mosquitto-users: kept
+[19:53:02] INFO  secret edge/edge-rabbitmq-auth: kept
+[19:53:03] INFO  secret edge/edge-node-red-admin: kept
+[19:53:03] INFO  secret security/enterprise-keycloak-admin: kept
+[19:53:03] INFO  secret security/enterprise-keycloak-db: kept
+[19:53:04] INFO  secret helpdesk/enterprise-zammad-db: kept
+[19:53:04] INFO  secret helpdesk/enterprise-zammad-redis: kept
+[19:53:04] INFO  secret feedback/enterprise-feedback-db: kept
+[19:53:05] INFO  secret feedback/enterprise-feedback-session: kept
+[19:53:05] INFO  === Phase security ===
+[19:53:05] INFO  skip platform-cert-manager (not selected)
+[19:53:05] INFO  skip platform-openbao (not selected)
+[19:53:05] INFO  skip platform-postgresql (not selected)
+[19:53:05] INFO  skip enterprise-keycloak (not selected)
+[19:53:05] INFO  skip platform-argocd (not selected)
+[19:53:05] INFO  === Phase data ===
+[19:53:05] INFO  skip platform-minio (not selected)
+[19:53:05] INFO  install platform-timescaledb -> platform
+[19:53:15] INFO    ok in 9 s, pods ready 1/1
+[19:53:15] INFO  skip platform-prometheus (not selected)
+[19:53:15] INFO  skip platform-loki (not selected)
+[19:53:15] INFO  skip platform-grafana (not selected)
+[19:53:15] INFO  skip platform-mlflow (not selected)
+[19:53:15] INFO  skip platform-training-jobs (not selected)
+[19:53:15] INFO  skip platform-evidently (not selected)
+[19:53:15] INFO  === Phase edge ===
+[19:53:15] INFO  skip edge-postgresql (not selected)
+[19:53:15] INFO  skip edge-mongodb (not selected)
+[19:53:15] INFO  skip edge-mosquitto (not selected)
+[19:53:15] INFO  skip edge-rabbitmq (not selected)
+[19:53:15] INFO  skip edge-kafka (not selected)
+[19:53:15] INFO  skip edge-opc-ua-gateway (not selected)
+[19:53:15] INFO  skip edge-node-red (not selected)
+[19:53:15] INFO  skip edge-fastapi-model (not selected)
+[19:53:15] INFO  skip edge-mlflow-sync (not selected)
+[19:53:15] INFO  install edge-postgresql-sync -> edge
+[19:53:16] INFO    ok in 1 s, pods ready 0/11
+[19:53:16] INFO  skip edge-prometheus-agent (not selected)
+[19:53:16] INFO  skip edge-fluent-bit (not selected)
+[19:53:16] INFO  skip edge-falco (not selected)
+[19:53:16] INFO  === Phase enterprise ===
+[19:53:16] INFO  skip enterprise-minio-overlay (not selected)
+[19:53:16] INFO  skip enterprise-grafana-dashboards (not selected)
+[19:53:16] INFO  skip enterprise-zammad (not selected)
+[19:53:16] INFO  skip enterprise-feedback-interface (not selected)
+[19:53:16] INFO  === Done. Run log: /root/MLOps-ISO42001-K3s-Catalog/docs/lab-validation/raw/lab-20260924T195147/install.jsonl ===
+  ok     platform-timescaledb             platform          9 s  pods 1/1
+  ok     edge-postgresql-sync             edge              1 s  pods 0/11
+  2/2 releases ok

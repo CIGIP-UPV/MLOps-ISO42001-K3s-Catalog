@@ -19,6 +19,9 @@
 #                       recommendation -> new version at the edge -> logs
 #   6. traceability     kubectl queries per ISO/IEC 42001 clause and component
 #   7. network policies default deny and allowed conduits
+#   8. feedback interface (CMP-12): sign-in, operator verdict on a real
+#                       prediction, dashboard, verdicts as training labels,
+#                       suspension of the version in service, events, conduits
 #
 # Every test appends one JSON line to results.jsonl (id, phase, name, result,
 # seconds, evidence file, command, detail). No Secret value is printed or
@@ -39,6 +42,8 @@
 #                        catalog run on the control plane
 #   --skip-chart CHART   do not install CHART (repeatable); its smoke test is
 #                        recorded as SKIP
+#   --only-chart CHART   install or upgrade only CHART (repeatable); the base
+#                        phase (namespaces, policies, Secrets) always runs
 #   --skip-install       do not run install.sh (re-run the tests only)
 #   --force              install even if the resource estimate does not fit
 #   --no-openbao-init    do not initialise and unseal OpenBao
@@ -48,7 +53,8 @@
 #                        given, platform and enterprise pods are kept off
 #                        them (install.sh --separate-tiers)
 #   --phases "4 5"       run only these phases (4 smoke, 5 e2e, 6 trace,
-#                        7 netpol); implies --skip-install
+#                        7 netpol, 8 feedback interface); implies
+#                        --skip-install unless 3 is listed
 # =============================================================================
 set -uo pipefail
 
@@ -67,7 +73,8 @@ EDGE_NODES=""
 ENABLE_NETPOL=false
 TAINT_NODE=""
 SKIP_CHARTS=""
-PHASES="1 2 3 4 5 6 7"
+PHASES="1 2 3 4 5 6 7 8"
+ONLY_CHARTS=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --enable-audit) ENABLE_AUDIT=true; shift ;;
@@ -79,7 +86,8 @@ while [[ $# -gt 0 ]]; do
     --enable-network-policy) ENABLE_NETPOL=true; shift ;;
     --taint-control-plane) TAINT_NODE="$2"; shift 2 ;;
     --skip-chart) SKIP_CHARTS="${SKIP_CHARTS} $2"; shift 2 ;;
-    --phases) PHASES="$2"; SKIP_INSTALL=true; shift 2 ;;
+    --only-chart) ONLY_CHARTS="${ONLY_CHARTS} $2"; shift 2 ;;
+    --phases) PHASES="$2"; [[ " $2 " == *" 3 "* ]] || SKIP_INSTALL=true; shift 2 ;;
     -h|--help) sed -n '2,45p' "$0"; exit 0 ;;
     *) echo "unknown option $1" >&2; exit 1 ;;
   esac
@@ -195,10 +203,20 @@ PY
 psql_edge() { kubectl -n edge exec edge-postgresql-0 -c postgresql -- sh -c "PGPASSWORD=\"\$POSTGRES_PASSWORD\" psql -U edge_app -d zdm_edge -tA -F ' | ' -c \"$1\""; }
 psql_ts()   { kubectl -n platform exec platform-timescaledb-0 -c timescaledb -- psql -U postgres -d zdm_platform -tA -F ' | ' -c "$1"; }
 job_from() {
-  # job_from NS CRONJOB JOB: create a Job from a CronJob and wait for it
+  # job_from NS CRONJOB JOB: create a Job from a CronJob and wait until it
+  # completes (0) or fails (1), at most 900 s
   kubectl -n "$1" delete job "$3" --ignore-not-found >/dev/null 2>&1
   kubectl -n "$1" create job --from="cronjob/$2" "$3" >/dev/null || return 1
-  kubectl -n "$1" wait "job/$3" --for=condition=complete --timeout=900s
+  local t=0 state
+  while [[ $t -lt 900 ]]; do
+    state=$(kubectl -n "$1" get job "$3" -o jsonpath='{.status.conditions[?(@.status=="True")].type}' 2>/dev/null)
+    case "$state" in
+      *Complete*) echo "job.batch/$3 complete"; return 0 ;;
+      *Failed*) echo "job.batch/$3 failed"; return 1 ;;
+    esac
+    sleep 5; t=$((t + 5))
+  done
+  echo "job.batch/$3 still running after 900 s"; return 1
 }
 phase_on() { [[ " ${PHASES} " == *" $1 "* ]]; }
 
@@ -309,6 +327,7 @@ install_catalog() {
   fi
   local c
   for c in ${SKIP_CHARTS}; do extra="${extra} --skip ${c}"; done
+  for c in ${ONLY_CHARTS}; do extra="${extra} --only ${c}"; done
   [[ -n "${EDGE_NODES}" ]] && extra="${extra} --separate-tiers"
   echo "extra options: ${extra:-none}"
   # shellcheck disable=SC2086
@@ -336,7 +355,8 @@ if os.path.exists(sys.argv[1]):
 PY
   snapshot state/after-install
   # without any release the tests would only time out one after another
-  if ! helm list -A -q 2>/dev/null | grep -qE '^(edge|platform|enterprise)-'; then
+  # count, not grep -q: with pipefail, grep -q can end helm with SIGPIPE and fail the pipeline
+  if [[ "$(helm list -A -q 2>/dev/null | grep -cE '^(edge|platform|enterprise)-')" -eq 0 ]]; then
     log "install.sh did not install any release of the catalog; stopping. See install.log."
     finish; exit 4
   fi
@@ -422,7 +442,7 @@ s_loki() {
 s_falco() {
   local node; node=$(kubectl -n edge get pod -l app.kubernetes.io/instance=edge-fastapi-model -o jsonpath='{.items[0].spec.nodeName}' 2>/dev/null)
   echo "model server node: ${node:-unknown}"
-  if [[ -n "$node" ]] && ! kubectl -n falco get pod -l app.kubernetes.io/name=falco --field-selector "spec.nodeName=${node}" -o name 2>/dev/null | grep -q .; then
+  if [[ -n "$node" ]] && ! kubectl -n falco get pod -l app.kubernetes.io/name=falco --field-selector "spec.nodeName=${node}" -o name 2>/dev/null | grep -c . >/dev/null; then
     echo "not run: no Falco pod on ${node} (the Falco driver cannot run there, see lab-values/edge-falco.yaml)"
     return 3
   fi
@@ -598,7 +618,7 @@ e_consolidation() {
 e_training() {
   job_from mlops platform-training-jobs e2e-train-1; local rc=$?
   kubectl -n mlops logs job/e2e-train-1 | grep '"component"'
-  [[ $rc -eq 0 ]] && kubectl -n mlops logs job/e2e-train-1 | grep -q '"promoted_alias": "champion"'
+  [[ $rc -eq 0 ]] && kubectl -n mlops logs job/e2e-train-1 | grep -c '"promoted_alias": "champion"' >/dev/null
 }
 e_registry() {
   port_forward mlops svc/platform-mlflow 15000:5000 || return 1
@@ -655,7 +675,7 @@ e_drift() {
   job_from mlops platform-evidently-drift e2e-drift-1; local rc=$?
   kubectl -n mlops logs job/e2e-drift-1 --all-containers | grep '"component"'
   psql_ts "SELECT id, model_version, round(drift_share::numeric,3), drifted_columns, recommended, action FROM retraining_recommendations ORDER BY id DESC LIMIT 3"
-  [[ $rc -eq 0 ]] && psql_ts "SELECT recommended FROM retraining_recommendations ORDER BY id DESC LIMIT 1" | grep -q t
+  [[ $rc -eq 0 ]] && psql_ts "SELECT recommended FROM retraining_recommendations ORDER BY id DESC LIMIT 1" | grep -c t >/dev/null
 }
 e_retraining() {
   # the scheduled drift check may start it before e2e-drift-1: accept any
@@ -672,7 +692,7 @@ print("job.batch/" + jobs[-1][1] if jobs else "")' "${since:-9999}")
   if [[ -z "$j" ]]; then
     # a retraining started by an earlier run within the cooldown blocks a
     # new one by design: report it as not run rather than as a failure
-    if psql_ts "SELECT action FROM retraining_recommendations ORDER BY id DESC LIMIT 1" | grep -q 'within the cooldown'; then
+    if psql_ts "SELECT action FROM retraining_recommendations ORDER BY id DESC LIMIT 1" | grep -c 'within the cooldown' >/dev/null; then
       echo "not run: a retraining was already started within the cooldown (earlier run); re-run after the cooldown"
       echo cooldown > "${OUT}/state/retraining-skipped.txt"; return 3
     fi
@@ -680,7 +700,7 @@ print("job.batch/" + jobs[-1][1] if jobs else "")' "${since:-9999}")
   fi
   kubectl -n mlops wait "$j" --for=condition=complete --timeout=900s; local rc=$?
   kubectl -n mlops logs "$j" | grep '"component"'
-  [[ $rc -eq 0 ]] && kubectl -n mlops logs "$j" | grep -q '"trigger": "drift"\|"model_registered"'
+  [[ $rc -eq 0 ]] && kubectl -n mlops logs "$j" | grep -c '"trigger": "drift"\|"model_registered"' >/dev/null
 }
 e_new_version() {
   port_forward edge svc/edge-fastapi-model 18001:8000 || return 1
@@ -838,7 +858,7 @@ phase_netpol() {
   NP_CLIENT_NODE=""
   local n
   for n in $(cat "${OUT}/state/netpol-enforcing-nodes.txt" 2>/dev/null); do
-    kubectl get node "$n" -o jsonpath='{.metadata.labels}' | grep -q 'node-role.kubernetes.io/control-plane' && continue
+    kubectl get node "$n" -o jsonpath='{.metadata.labels}' | grep -c 'node-role.kubernetes.io/control-plane' >/dev/null && continue
     NP_CLIENT_NODE=$n; break
   done
   [[ -z "${NP_CLIENT_NODE}" ]] && NP_CLIENT_NODE=$(head -1 "${OUT}/state/netpol-enforcing-nodes.txt" 2>/dev/null)
@@ -874,6 +894,243 @@ phase_netpol() {
 }
 
 # ===========================================================================
+# 8. Feedback interface (CMP-12)
+# ===========================================================================
+FB_JAR_DIR=""
+FB_URL="http://127.0.0.1:18100"
+KC_LOCAL="http://127.0.0.1:18080"
+
+kc_admin_token() {
+  # admin token of the master realm (password read from the Secret, never printed)
+  local pw; pw=$(kubectl -n security get secret enterprise-keycloak-admin -o jsonpath='{.data.admin-password}' | base64 -d)
+  printf 'grant_type=password&client_id=admin-cli&username=admin&password=%s' \
+    "$(python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1]))' "$pw")" \
+    | curl -sf -X POST "${KC_LOCAL}/realms/master/protocol/openid-connect/token" --data @- \
+    | python3 -c 'import json,sys;print(json.load(sys.stdin)["access_token"])'
+}
+
+fb_user_password() { kubectl -n feedback get secret feedback-lab-users -o jsonpath="{.data.$1}" | base64 -d; }
+
+fb_lab_users() {
+  # Laboratory users of the ai-system realm: lab-operator (operator),
+  # lab-supervisor (production-manager) and lab-viewer (data-scientist, no
+  # role of the interface). Random passwords kept in feedback/feedback-lab-users.
+  if ! kubectl -n feedback get secret feedback-lab-users >/dev/null 2>&1; then
+    kubectl -n feedback create secret generic feedback-lab-users \
+      --from-literal=operator="$(openssl rand -hex 12)" --from-literal=supervisor="$(openssl rand -hex 12)" \
+      --from-literal=viewer="$(openssl rand -hex 12)" >/dev/null
+    kubectl -n feedback label secret feedback-lab-users lab-validation=users >/dev/null
+  fi
+  port_forward security svc/enterprise-keycloak 18080:80 || return 1
+  local token spec user key role id
+  token=$(kc_admin_token) || { echo "no admin token"; return 1; }
+  for spec in lab-operator:operator:operator lab-supervisor:supervisor:production-manager lab-viewer:viewer:data-scientist; do
+    IFS=: read -r user key role <<<"$spec"
+    id=$(curl -sf -H "Authorization: Bearer ${token}" "${KC_LOCAL}/admin/realms/ai-system/users?username=${user}&exact=true" \
+         | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d[0]["id"] if d else "")')
+    if [[ -z "$id" ]]; then
+      curl -sf -X POST -H "Authorization: Bearer ${token}" -H 'Content-Type: application/json' \
+        "${KC_LOCAL}/admin/realms/ai-system/users" \
+        -d "{\"username\":\"${user}\",\"enabled\":true,\"emailVerified\":true,\"firstName\":\"Lab\",\"lastName\":\"${key}\",\"email\":\"${user}@lab.invalid\"}" || return 1
+      id=$(curl -sf -H "Authorization: Bearer ${token}" "${KC_LOCAL}/admin/realms/ai-system/users?username=${user}&exact=true" \
+           | python3 -c 'import json,sys;print(json.load(sys.stdin)[0]["id"])')
+      echo "user ${user}: created"
+    else
+      echo "user ${user}: exists"
+    fi
+    fb_user_password "$key" | python3 -c 'import json,sys;print(json.dumps({"type":"password","value":sys.stdin.read(),"temporary":False}))' \
+      | curl -sf -X PUT -H "Authorization: Bearer ${token}" -H 'Content-Type: application/json' \
+          "${KC_LOCAL}/admin/realms/ai-system/users/${id}/reset-password" --data @- || return 1
+    curl -sf -H "Authorization: Bearer ${token}" "${KC_LOCAL}/admin/realms/ai-system/roles/${role}" \
+      | python3 -c 'import json,sys;print(json.dumps([json.load(sys.stdin)]))' \
+      | curl -sf -X POST -H "Authorization: Bearer ${token}" -H 'Content-Type: application/json' \
+          "${KC_LOCAL}/admin/realms/ai-system/users/${id}/role-mappings/realm" --data @- || return 1
+    echo "user ${user}: password set from the Secret, realm role ${role}"
+  done
+  curl -sf -H "Authorization: Bearer ${token}" "${KC_LOCAL}/admin/realms/ai-system/clients?clientId=feedback-interface" \
+    | python3 -c 'import json,sys;c=json.load(sys.stdin)[0];print("client feedback-interface:", {k:c.get(k) for k in ("publicClient","directAccessGrantsEnabled","standardFlowEnabled")})'
+}
+
+fb_login() {
+  # fb_login USER KEY: session cookie in the temporary jar of USER; prints the HTTP status
+  printf '{"username":"%s","password":%s}' "$1" "$(fb_user_password "$2" | python3 -c 'import json,sys;print(json.dumps(sys.stdin.read()))')" \
+    | curl -s -o /dev/null -w '%{http_code}' -c "${FB_JAR_DIR}/$1" -H 'Content-Type: application/json' "${FB_URL}/login" --data @-
+}
+
+fb_csrf() { curl -sf -b "${FB_JAR_DIR}/$1" "${FB_URL}/api/session" | python3 -c 'import json,sys;print(json.load(sys.stdin)["csrf"])'; }
+
+s_feedback() {
+  require_release feedback enterprise-feedback-interface || return 3
+  fb_lab_users || return 1
+  port_forward feedback svc/enterprise-feedback-interface 18100:8000 || return 1
+  local ok=0 code
+  code=$(curl -s -o /dev/null -w '%{http_code}' "${FB_URL}/healthz"); echo "GET /healthz: ${code} (expected 200)"; [[ $code == 200 ]] && ok=$((ok + 1))
+  code=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "${FB_URL}/"); echo "GET / without session: ${code} (expected 303 to /login)"; [[ $code == "303 ${FB_URL}/login" ]] && ok=$((ok + 1))
+  code=$(curl -s -o /dev/null -w '%{http_code}' "${FB_URL}/api/predictions"); echo "GET /api/predictions without session: ${code} (expected 401)"; [[ $code == 401 ]] && ok=$((ok + 1))
+  code=$(curl -s -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' -d '{"verdict":"correct"}' "${FB_URL}/feedback"); echo "POST /feedback without session: ${code} (expected 401)"; [[ $code == 401 ]] && ok=$((ok + 1))
+  code=$(curl -s -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' -d '{"username":"lab-operator","password":"wrong"}' "${FB_URL}/login"); echo "sign-in with a wrong password: ${code} (expected 401)"; [[ $code == 401 ]] && ok=$((ok + 1))
+  code=$(fb_login lab-viewer viewer); echo "sign-in of a user without a role of the interface (data-scientist): ${code} (expected 403)"; [[ $code == 403 ]] && ok=$((ok + 1))
+  code=$(fb_login lab-operator operator); echo "sign-in of lab-operator (operator): ${code} (expected 200)"; [[ $code == 200 ]] && ok=$((ok + 1))
+  curl -sf -b "${FB_JAR_DIR}/lab-operator" "${FB_URL}/api/session" | python3 -c 'import json,sys;d=json.load(sys.stdin);print("session:", d["user"], d["roles"], "can_suspend:", d["can_suspend"])'
+  echo "checks passed: ${ok}/7"; [[ $ok -eq 7 ]]
+}
+
+e_feedback_verdict() {
+  require_release feedback enterprise-feedback-interface || return 3
+  port_forward edge svc/edge-fastapi-model 18001:8000 || return 1
+  port_forward feedback svc/enterprise-feedback-interface 18100:8000 || return 1
+  local f t0 pred csrf resp id
+  t0=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  f=$(psql_edge "SELECT json_object_agg(feature_name, v) FROM (SELECT feature_name, avg(value) v FROM sensor_features WHERE machine_id='cnc-01' AND timestamp > now() - interval '30 seconds' GROUP BY 1) s")
+  echo "prediction requested at ${t0} with the features of the last 30 s of cnc-01"
+  curl -sf http://127.0.0.1:18001/predict -H 'Content-Type: application/json' -d "{\"samples\":[{\"machine_id\":\"cnc-01\",\"features\":${f}}]}" || return 1; echo
+  job_from edge edge-postgresql-sync e2e-fb-sync-1 >/dev/null && kubectl -n edge logs job/e2e-fb-sync-1 | grep '"table":"predictions"'
+  [[ -f "${FB_JAR_DIR}/lab-operator" ]] || fb_login lab-operator operator >/dev/null
+  pred=$(curl -sf -b "${FB_JAR_DIR}/lab-operator" "${FB_URL}/api/predictions?limit=20" | python3 -c '
+import json, sys
+t0 = sys.argv[1].replace("T", " ").replace("Z", "")
+rows = [p for p in json.load(sys.stdin)["predictions"] if p["machine_id"] == "cnc-01" and p["time"][:19] >= t0[:19]]
+print(json.dumps(rows[0]) if rows else "")' "$t0")
+  [[ -n "$pred" ]] || { echo "the prediction did not reach the platform"; return 1; }
+  echo "prediction listed by the interface: ${pred}"
+  csrf=$(fb_csrf lab-operator)
+  resp=$(python3 -c '
+import json, sys
+p = json.loads(sys.argv[1])
+other = "normal" if p["label"] == "anomaly" else "anomaly"
+print(json.dumps({"site_id": p["site_id"], "source_id": p["source_id"], "time": p["time"], "verdict": "incorrect",
+                  "corrected_label": other, "comment": "laboratory validation E17"}))' "$pred" \
+    | curl -s -w '\n%{http_code}' -b "${FB_JAR_DIR}/lab-operator" -H "X-CSRF-Token: ${csrf}" -H 'Content-Type: application/json' \
+        "${FB_URL}/feedback" --data @-)
+  echo "POST /feedback: $(echo "$resp" | tail -1) $(echo "$resp" | head -1)"
+  [[ "$(echo "$resp" | tail -1)" == 201 ]] || return 1
+  id=$(echo "$resp" | head -1 | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
+  echo "$id" > "${OUT}/state/feedback-id.txt"
+  echo "row in the platform data stock:"
+  psql_ts "SELECT id, created_at, site_id, prediction_source_id, machine_id, model_version, predicted_label, verdict, corrected_label, comment, operator FROM operator_feedback WHERE id = ${id}" | grep -c "lab-operator" >/dev/null \
+    && psql_ts "SELECT id, created_at, site_id, prediction_source_id, machine_id, model_version, predicted_label, verdict, corrected_label, comment, operator FROM operator_feedback WHERE id = ${id}"
+}
+
+e_feedback_dashboard() {
+  require_release feedback enterprise-feedback-interface || return 3
+  port_forward monitoring svc/platform-grafana 13000:80 || return 1
+  local gp; gp=$(kubectl -n monitoring get secret platform-grafana-admin -o jsonpath='{.data.admin-password}' | base64 -d)
+  curl -sf -u "admin:${gp}" http://127.0.0.1:13000/api/dashboards/uid/zdm-operator-feedback > "${FB_JAR_DIR}/dashboard.json" || { echo "dashboard zdm-operator-feedback not found"; return 1; }
+  python3 - "${FB_JAR_DIR}/dashboard.json" > "${FB_JAR_DIR}/query.json" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))["dashboard"]
+p = next(p for p in d["panels"] if p["title"].startswith("Operator disagreement rate"))
+print(json.dumps({"from": "now-7d", "to": "now", "queries": [{"refId": "A", "datasource": p["datasource"],
+      "rawSql": p["targets"][0]["rawSql"], "format": "table"}]}))
+PY
+  echo "dashboard: $(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["dashboard"]["title"])' "${FB_JAR_DIR}/dashboard.json"); panel: Operator disagreement rate by model version"
+  curl -sf -u "admin:${gp}" -H 'Content-Type: application/json' http://127.0.0.1:13000/api/ds/query --data @"${FB_JAR_DIR}/query.json" \
+    | python3 -c '
+import json, sys
+f = json.load(sys.stdin)["results"]["A"]["frames"][0]
+names = [x["name"] for x in f["schema"]["fields"]]
+rows = list(zip(*f["data"]["values"]))
+print(" | ".join(names))
+for r in rows: print(" | ".join(str(v) for v in r))
+sys.exit(0 if rows else 1)'
+}
+
+platform_seconds() {
+  psql_ts "SELECT count(DISTINCT date_trunc('second', time)) FROM sensor_readings WHERE machine_id = 'cnc-01' AND time > now() - interval '2 hours'" | tr -d '[:space:]'
+}
+platform_ready() { [[ $(platform_seconds) -ge 300 ]]; }
+
+e_feedback_training() {
+  require_release feedback enterprise-feedback-interface || return 3
+  # the training window needs consolidated data of the last two hours
+  wait_for 900 platform_ready || { echo "platform data stock: only $(platform_seconds) seconds of cnc-01 in the last 2 hours"; return 1; }
+  echo "platform data stock: $(platform_seconds) seconds of cnc-01 in the last 2 hours"
+  job_from mlops platform-training-jobs e2e-fb-train-1
+  local logs; logs=$(kubectl -n mlops logs job/e2e-fb-train-1 2>&1)
+  echo "$logs" | grep -E '"event": "(feedback_labels_loaded|model_registered|release_criteria_failed)"'
+  echo "$logs" | grep '"event": "feedback_labels_loaded"' | head -1 \
+    | python3 -c 'import json,sys
+line = sys.stdin.readline()
+if not line:
+    print("no feedback_labels_loaded event: the job did not reach the evaluation"); sys.exit(1)
+sys.exit(0 if json.loads(line).get("feedback_labels", 0) >= 1 else 1)'
+}
+
+e_feedback_suspension() {
+  require_release feedback enterprise-feedback-interface || return 3
+  port_forward edge svc/edge-fastapi-model 18001:8000 || return 1
+  port_forward feedback svc/enterprise-feedback-interface 18100:8000 || return 1
+  local code csrf body='{"samples":[{"machine_id":"cnc-01","features":{"SpikeData":0,"DipData":0,"PositiveTrendData":150,"NegativeTrendData":50}}]}'
+  job_from edge edge-mlflow-sync e2e-fb-vsync-0 >/dev/null   # align the edge with the current alias first
+  echo "served before: $(curl -sf http://127.0.0.1:18001/version | python3 -c 'import json,sys;d=json.load(sys.stdin);print("version", d["model_version"], "suspended", d.get("suspended"))')"
+  code=$(fb_login lab-supervisor supervisor); echo "sign-in of lab-supervisor (production-manager): ${code}"; [[ $code == 200 ]] || return 1
+  csrf=$(fb_csrf lab-supervisor)
+  echo "suspend: $(curl -sf -b "${FB_JAR_DIR}/lab-supervisor" -H "X-CSRF-Token: ${csrf}" -H 'Content-Type: application/json' \
+       -d '{"reason":"laboratory validation E20"}' "${FB_URL}/models/suspend")"
+  job_from edge edge-mlflow-sync e2e-fb-vsync-1 >/dev/null && kubectl -n edge logs job/e2e-fb-vsync-1 | grep -E 'version_suspended|up_to_date|failed'
+  echo "served after suspending: $(curl -sf http://127.0.0.1:18001/version | python3 -c 'import json,sys;d=json.load(sys.stdin);print("version", d["model_version"], "suspended", d.get("suspended"), d.get("suspension"))')"
+  local suspended_code; suspended_code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18001/predict -H 'Content-Type: application/json' -d "$body")
+  echo "POST /predict while suspended: ${suspended_code} (expected 503)"
+  echo "resume: $(curl -sf -b "${FB_JAR_DIR}/lab-supervisor" -H "X-CSRF-Token: ${csrf}" -H 'Content-Type: application/json' -d '{}' "${FB_URL}/models/resume")"
+  job_from edge edge-mlflow-sync e2e-fb-vsync-2 >/dev/null && kubectl -n edge logs job/e2e-fb-vsync-2 | grep -E 'version_resumed|up_to_date|failed'
+  code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18001/predict -H 'Content-Type: application/json' -d "$body")
+  echo "POST /predict after resuming: ${code} (expected 200)"
+  psql_edge "SELECT received_at, model_version, status FROM model_versions WHERE status IN ('suspended', 'resumed') ORDER BY received_at DESC LIMIT 4"
+  [[ $suspended_code == 503 && $code == 200 ]]
+}
+
+e_feedback_loki() {
+  require_release feedback enterprise-feedback-interface || return 3
+  port_forward monitoring svc/platform-loki 13100:3100 || return 1
+  sleep 20
+  local ev n ok=0 total=0
+  for ev in feedback_recorded login_succeeded login_failed model_suspended model_resumed version_suspended version_resumed feedback_labels_loaded schema_applied; do
+    total=$((total + 1))
+    n=$(curl -sG http://127.0.0.1:13100/loki/api/v1/query --data-urlencode "query=sum(count_over_time({namespace=~\"feedback|edge|mlops|platform\"} |= \"\\\"${ev}\\\"\" [3h]))" \
+        | python3 -c 'import json,sys; r=json.load(sys.stdin)["data"]["result"]; print(r[0]["value"][1] if r else 0)')
+    echo "${ev}: ${n} log lines"; [[ "$n" != 0 ]] && ok=$((ok + 1))
+  done
+  echo "event types found in Loki: ${ok}/${total}"; [[ $ok -ge 7 ]]
+}
+
+phase_feedback() {
+  log "=== 8. Feedback interface (CMP-12) ==="
+  mkdir -p "${OUT}/cmp12"
+  FB_JAR_DIR=$(mktemp -d)
+  run_test S21 smoke "Feedback interface health, sign-in and denied access without credentials" cmp12/S21-feedback.txt \
+    "GET /healthz; GET / and /api/predictions and POST /feedback without session; sign-in with a wrong password, without role, as operator" s_feedback
+  run_test E17 e2e "Operator verdict on a real prediction, stored in the platform data stock" cmp12/E17-verdict.txt \
+    "POST edge /predict; job edge-postgresql-sync; GET /api/predictions; POST /feedback (lab-operator); psql operator_feedback" e_feedback_verdict
+  run_test E18 e2e "Verdict in the Grafana panel of disagreement rate by model version" cmp12/E18-dashboard.txt \
+    "GET /api/dashboards/uid/zdm-operator-feedback; POST /api/ds/query with the SQL of the panel" e_feedback_dashboard
+  run_test E19 e2e "Training uses the operator verdicts as labels" cmp12/E19-training.txt \
+    "kubectl create job --from=cronjob/platform-training-jobs e2e-fb-train-1; feedback_labels_loaded" e_feedback_training
+  run_test E20 e2e "Suspension of the version in service stops it at the edge; resuming restores it" cmp12/E20-suspension.txt \
+    "POST /models/suspend (lab-supervisor); job edge-mlflow-sync; POST edge /predict (503); POST /models/resume; job; /predict (200)" e_feedback_suspension
+  run_test E21 e2e "Events of the feedback loop in Loki" cmp12/E21-loki.txt \
+    "LogQL count_over_time per event in namespaces feedback, edge, mlops and platform" e_feedback_loki
+  rm -rf "${FB_JAR_DIR}"
+  # Network conduits of the feedback namespace (clients on an enforcing node)
+  kubectl create namespace lab-np-outside --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+  if [[ -z "${NP_CLIENT_NODE}" ]]; then
+    run_test N-CANARY netpol "NetworkPolicies are enforced on every node (pod behind a deny-all policy)" netpol/N-CANARY.txt \
+      "per node: httpd pod + deny-all ingress policy in lab-np-canary; wget from lab-np-outside" netpol_canary
+    local n
+    for n in $(cat "${OUT}/state/netpol-enforcing-nodes.txt" 2>/dev/null); do
+      kubectl get node "$n" -o jsonpath='{.metadata.labels}' | grep -c 'node-role.kubernetes.io/control-plane' >/dev/null && continue
+      NP_CLIENT_NODE=$n; break
+    done
+    [[ -z "${NP_CLIENT_NODE}" ]] && NP_ENFORCED=false
+  fi
+  nc_test N14 "feedback -> platform TimescaleDB (feedback conduit)" feedback platform-timescaledb.platform.svc.cluster.local 5432 allow
+  nc_test N15 "feedback -> edge PostgreSQL (no conduit into the edge)" feedback edge-postgresql.edge.svc.cluster.local 5432 deny
+  nc_test N16 "feedback -> platform service PostgreSQL (same namespace as TimescaleDB, not allowed)" feedback platform-postgresql.platform.svc.cluster.local 5432 deny
+  nc_test N17 "feedback -> Keycloak (sign-in conduit)" feedback enterprise-keycloak.security.svc.cluster.local 80 allow
+  nc_test N18 "feedback -> MLflow (suspension tags)" feedback platform-mlflow.mlops.svc.cluster.local 5000 allow
+  kubectl delete namespace lab-np-outside --wait=false >/dev/null 2>&1
+}
+
+# ===========================================================================
 finish() {
   snapshot state/final
   local ns; for ns in edge minio mlops security helpdesk argocd logging; do
@@ -894,4 +1151,5 @@ phase_on 4 && phase_smoke
 phase_on 5 && phase_e2e
 phase_on 6 && phase_trace
 phase_on 7 && phase_netpol
+phase_on 8 && phase_feedback
 finish
