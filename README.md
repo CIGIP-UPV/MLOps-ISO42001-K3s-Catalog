@@ -28,6 +28,10 @@ Each solution is a Helm chart that K3s can deploy, with a Rancher questionnaire 
 
 ## Architecture Overview
 
+The catalog implements the reference architecture AR-MLOps-ZDM (Annex A of the thesis): its components (blue) and functional subcomponents (white) across the device, edge, platform and enterprise tiers, with the data, monitoring and logging, configuration and event flows between them. The labels are in Spanish, as in the thesis.
+
+![Reference architecture AR-MLOps-ZDM](docs/reference-architecture.png)
+
 The catalog provides **31 charts**:
 
 | Tier | Charts |
