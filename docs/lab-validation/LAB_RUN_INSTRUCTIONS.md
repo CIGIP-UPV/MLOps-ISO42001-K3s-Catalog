@@ -1,7 +1,9 @@
 # Laboratory validation run: instructions
 
 These instructions run the laboratory validation of the catalog (thesis,
-chapter 7) on the K3s cluster of the laboratory (`kb2` and `worker1-kb2`).
+chapter 7) on the K3s cluster of the laboratory: `kb2` (control plane, a
+Hyper-V virtual machine), `worker1-kb2` (amd64 worker) and `edgenode01` (arm64
+Jetson, the edge device).
 One script, [`run-lab-validation.sh`](./run-lab-validation.sh), installs the
 catalog and collects the evidence; the results are then committed and pushed
 so that the analysis and the report can be completed.
@@ -11,12 +13,12 @@ so that the analysis and the report can be completed.
 | Phase | Content | Evidence (under `raw/<run-id>/`) |
 |-------|---------|----------------------------------|
 | 1 | Environment: OS, kernel, K3s, kubectl, Helm, Rancher and cert-manager versions; nodes (CPU, RAM); storage classes; existing namespaces and releases | `env/` |
-| 2 | Edge label on the nodes (all nodes by default), optional API audit (`--enable-audit`), estimate of the CPU and memory the catalog requests versus what is free | `state/edge-label.txt`, `env/resource-estimate.json` |
+| 2 | Control plane reserved (`--taint-control-plane`), NetworkPolicy controller enabled (`--enable-network-policy`), edge label on the edge nodes, API audit (`--enable-audit`), estimate of the CPU and memory the catalog requests versus what is free | `state/`, `env/resource-estimate.json` |
 | 3 | `infrastructure/install.sh` in the recommended order, with the laboratory values in `lab-values/`; result, time and ready pods per chart | `install.log`, `install.jsonl`, `state/after-install-*` |
 | 4 | Smoke test of every chart (S01 to S20) | `smoke/` |
 | 5 | End-to-end test (E01 to E16): OPC UA simulator, gateway, ingestion, consolidation, training, MLflow, propagation to the edge, inference, metrics, induced drift, Evidently, retraining recommendation, new version at the edge, logs in Loki | `e2e/` |
 | 6 | Traceability queries per ISO/IEC 42001 clause and component, label coverage per namespace | `trace/` |
-| 7 | NetworkPolicy tests (N00 control, N01 to N12): default deny and allowed conduits | `netpol/` |
+| 7 | NetworkPolicy tests: a canary that checks that policies are enforced (N-CANARY), an Internet control (N00) and the default deny and allowed conduits (N01 to N12) | `netpol/` |
 
 Every test writes one line to `results.jsonl` (PASS, FAIL, or SKIP when a
 precondition is not met, with the reason) and `summary.md` lists them all.
@@ -26,18 +28,45 @@ It takes about 60 to 90 minutes, most of it image downloads, the 5 minutes of
 simulated plant data that the first training needs and the 5 minutes of
 drifted data.
 
+## The laboratory cluster and the options used
+
+The diagnosis of the nodes (`raw/diag-*.txt`, made with
+[`diagnose-cluster.sh`](./diagnose-cluster.sh)) showed what the run has to take
+into account:
+
+| Finding | Option or setting |
+|---------|-------------------|
+| `kb2` is a small virtual machine (4 vCPU, 8 GiB, 64 % memory in use) that runs the control plane and the Rancher agent | `--taint-control-plane kb2`: only the DaemonSets of the catalog (Falco, Fluent Bit, node-exporter) run on it |
+| K3s runs with `disable-network-policy: true`: no NetworkPolicy is enforced | `--enable-network-policy`; the N-CANARY test checks that they are enforced, otherwise N01 to N12 are SKIP |
+| `edgenode01` is the edge device; `worker1-kb2` hosts the platform and enterprise tiers | `--edge-nodes edgenode01` (the platform and enterprise pods are kept off it) |
+| An Argo CD that is not the catalog's already runs in `argocd` | `--skip-chart platform-argocd`: nothing is installed or changed in `argocd`; S15 is SKIP |
+| `edgenode01` is arm64 and the Bitnami MongoDB images are amd64 only | `--skip-chart edge-mongodb`; S18 is SKIP (MongoDB is not part of the end-to-end flow) |
+| Another node-exporter already uses host port 9100 | the catalog's node-exporter listens on 9101 (`lab-values/platform-prometheus.yaml`) |
+| No cert-manager in the cluster | the catalog installs its own |
+
 ## Changes the script makes in the cluster
 
 - Namespaces of the catalog (`edge`, `logging`, `falco`, `platform`, `mlops`,
-  `minio`, `monitoring`, `argocd`, `openbao`, `security`, `helpdesk`), their
+  `minio`, `monitoring`, `openbao`, `security`, `helpdesk`), their
   NetworkPolicies and the Secrets the charts read (random passwords generated
-  once).
-- The 29 Helm releases of the catalog (`platform-rancher` is skipped because a
-  Rancher server is already running).
-- The label `node-role.kubernetes.io/edge=true` on every node.
-- In the existing `cert-manager` namespace: the platform internal CA (one
-  Certificate with its Secret and two ClusterIssuers). The cert-manager
-  installed with Rancher is not modified.
+  once). The existing `monitoring` namespace is shared: it gets the label and
+  the policies of the catalog; the releases already there are not modified.
+  Namespaces whose charts are all skipped (`argocd` here) are not touched.
+- The Helm releases of the catalog except the skipped ones (`platform-rancher`
+  is skipped too: the cluster is managed by an external Rancher).
+- The label `node-role.kubernetes.io/edge=true` on the edge nodes.
+- With `--taint-control-plane kb2`: the taint
+  `node-role.kubernetes.io/control-plane=true:NoSchedule` on `kb2`. Pods
+  already running there are not moved. Undo with
+  `kubectl taint nodes kb2 node-role.kubernetes.io/control-plane=true:NoSchedule-`.
+- With `--enable-network-policy`: the line `disable-network-policy: true` is
+  removed from `/etc/rancher/k3s/config.yaml` (a backup is kept next to it) and
+  `k3s` is restarted. From then on every NetworkPolicy of the cluster is
+  enforced, including those that the existing Argo CD already has in its
+  namespace; namespaces without policies are not affected. Undo by restoring
+  the backup and restarting `k3s`.
+- cert-manager: if the cluster already runs one, only the platform internal CA
+  is added; otherwise the catalog installs it.
 - OpenBao is initialised with one unseal key; the laboratory unseal key and root
   token are kept in the Secret `openbao/openbao-lab-init` (never printed).
   Use `--no-openbao-init` to skip this.
@@ -47,15 +76,13 @@ drifted data.
 - With `--enable-audit` only: `/etc/rancher/k3s/audit-policy.yaml`, new
   `kube-apiserver-arg` entries in `/etc/rancher/k3s/config.yaml` (a backup is
   kept) and a restart of the `k3s` service. The API server is unavailable for
-  a few seconds; running pods are not affected.
+  a few seconds each time `k3s` restarts; running pods are not affected.
 
 Nothing that exists before the run is deleted.
 
 ## Before you start
 
-1. Push the branch `lab-validation` to GitHub. The Argo CD smoke test (S15)
-   syncs a chart of this repository from that branch, so the repository must
-   be public and the branch pushed.
+1. Push the branch `lab-validation` to GitHub.
 2. On `kb2`, make sure these commands are available:
 
    ```bash
@@ -83,16 +110,13 @@ Nothing that exists before the run is deleted.
 
 ## Run
 
-Recommended (includes the API audit log, which needs root):
+On `kb2`, with the options of this laboratory (see the table above):
 
 ```bash
-sudo -E ./docs/lab-validation/run-lab-validation.sh --enable-audit
-```
-
-Without the audit change (no restart of k3s):
-
-```bash
-sudo -E ./docs/lab-validation/run-lab-validation.sh
+sudo -E ./docs/lab-validation/run-lab-validation.sh \
+  --enable-audit --enable-network-policy \
+  --taint-control-plane kb2 --edge-nodes edgenode01 \
+  --skip-chart platform-argocd --skip-chart edge-mongodb
 ```
 
 `sudo -E` keeps `KUBECONFIG`. Leave it running; the progress is printed and
@@ -140,8 +164,11 @@ a warning if it finds any; do not commit if it does.
   `/etc/rancher/k3s/registries.yaml` on both nodes, restart `k3s` /
   `k3s-agent`, and re-run the script (installed releases are upgraded in
   place).
-- **S15 (Argo CD) fails with a repository error**: the branch is not pushed or
-  the repository is private; pass another public branch with `--branch`.
+- **S15 (Argo CD) fails with a repository error** (only when `platform-argocd`
+  is installed): the branch is not pushed or the repository is private; pass
+  another public branch with `--branch`.
+- **N-CANARY fails**: NetworkPolicies are not enforced (the controller is still
+  disabled, or the CNI does not support them); N01 to N12 are then SKIP.
 - **A chart failed during the installation**: the run continues with the next
   chart; the reason is in `install.jsonl` and `state/*-warning-events.txt`.
 
