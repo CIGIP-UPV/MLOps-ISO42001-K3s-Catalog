@@ -75,7 +75,7 @@ kubectl label node <edge-node> node-role.kubernetes.io/edge=true
 ./infrastructure/install.sh --help          # phases, --source repo, --only/--skip, ...
 ```
 
-`install.sh` creates the namespaces and NetworkPolicies, generates the Secrets the charts read (never printed), and installs the charts of this catalog in order with `helm upgrade --install --wait` and the `iso42001` post-renderer. It keeps an existing Rancher and cert-manager untouched and writes one JSON line per release (result, time, ready pods).
+`install.sh` creates the namespaces and NetworkPolicies, generates the Secrets the charts read (never printed), and installs the charts of this catalog in order with `helm upgrade --install --wait` and the `iso42001` post-renderer. It keeps an existing Rancher and cert-manager untouched, leaves alone the namespaces whose charts are all skipped (`--skip`), and writes one JSON line per release (result, time, ready pods). When only some nodes are edge devices, `--separate-tiers` keeps the platform and enterprise pods off them.
 
 ### Individual charts from the Helm repository
 
